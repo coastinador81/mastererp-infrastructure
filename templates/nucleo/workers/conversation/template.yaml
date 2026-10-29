@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Worker de conversación.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/nucleo/workers/conversation
+      Type: String
+      Value: pendiente
+      Description: Worker de conversación.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

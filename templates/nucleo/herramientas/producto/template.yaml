@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Familia de herramientas de producto.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/nucleo/herramientas/producto
+      Type: String
+      Value: pendiente
+      Description: Familia de herramientas de producto.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

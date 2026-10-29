@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Registro de herramientas funcionales.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/nucleo/herramientas/registry
+      Type: String
+      Value: pendiente
+      Description: Registro de herramientas funcionales.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

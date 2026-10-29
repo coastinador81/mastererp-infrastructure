@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Cobro con Stripe.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/costos/stripe
+      Type: String
+      Value: pendiente
+      Description: Cobro con Stripe.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

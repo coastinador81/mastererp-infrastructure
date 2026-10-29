@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: API FastAPI. Entrada HTTP del núcleo.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/nucleo/api
+      Type: String
+      Value: pendiente
+      Description: API FastAPI. Entrada HTTP del núcleo.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

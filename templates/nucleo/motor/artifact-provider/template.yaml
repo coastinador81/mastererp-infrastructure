@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Motor de herramientas. ArtifactProvider.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/nucleo/motor/artifact-provider
+      Type: String
+      Value: pendiente
+      Description: Motor de herramientas. ArtifactProvider.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

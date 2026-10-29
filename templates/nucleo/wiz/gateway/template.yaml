@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Wiz. Canal largo de lectura.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/nucleo/wiz/gateway
+      Type: String
+      Value: pendiente
+      Description: Wiz. Canal largo de lectura.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

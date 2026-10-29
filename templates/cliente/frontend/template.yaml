@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Frontend React con Vite. Proxy HTTP y WebSocket hacia el núcleo.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/cliente/frontend
+      Type: String
+      Value: pendiente
+      Description: Frontend React con Vite. Proxy HTTP y WebSocket hacia el núcleo.
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

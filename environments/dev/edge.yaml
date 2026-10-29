@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Borde HTTPS de DEV. El balanceador, las reglas y el DNS viven en modules/edge.yaml.
+Description: Borde HTTPS de DEV. El balanceador vive en templates/foundation/edge.
 
 Parameters:
   PublicSubnetA:
@@ -20,7 +20,7 @@ Resources:
   Edge:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/edge.yaml
+      TemplateURL: ../../templates/foundation/edge/template.yaml
       Parameters:
         PublicSubnetA: !Ref PublicSubnetA
         PublicSubnetB: !Ref PublicSubnetB

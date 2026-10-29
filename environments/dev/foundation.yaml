@@ -11,14 +11,14 @@ Resources:
   Network:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/network.yaml
+      TemplateURL: ../../templates/foundation/network/template.yaml
       Parameters:
         Prefix: mastererp-dev
 
   Certificates:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/certificates.yaml
+      TemplateURL: ../../templates/foundation/certificates/template.yaml
       Parameters:
         HostedZoneId: !Ref HostedZoneId
         Prefix: mastererp-dev
@@ -29,7 +29,7 @@ Resources:
   InternalDns:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/internal-dns.yaml
+      TemplateURL: ../../templates/foundation/internal-dns/template.yaml
       Parameters:
         VpcId: !GetAtt Network.Outputs.VpcId
         ZoneName: mcp-internal-dev.erp.uonify.com

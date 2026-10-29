@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Plataforma DEV. Cada pieza está en modules y cada entrada pública usa modules/service.yaml.
+Description: Plataforma DEV. Compone las plantillas de templates/foundation, templates/datos y templates/shared.
 
 Parameters:
   VpcId:
@@ -27,7 +27,7 @@ Resources:
   Database:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/database.yaml
+      TemplateURL: ../../templates/datos/postgres/template.yaml
       Parameters:
         Prefix: mastererp-dev
         VpcId: !Ref VpcId
@@ -38,21 +38,21 @@ Resources:
   Documents:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/documents.yaml
+      TemplateURL: ../../templates/foundation/documents/template.yaml
       Parameters:
         Prefix: mastererp-dev
 
   Queues:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/queues.yaml
+      TemplateURL: ../../templates/foundation/queues/template.yaml
       Parameters:
         Prefix: mastererp-dev
 
   Identity:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/identity.yaml
+      TemplateURL: ../../templates/foundation/security/template.yaml
       Parameters:
         Prefix: mastererp-dev
         DatabaseSecretArn: !GetAtt Database.Outputs.SecretArn
@@ -62,7 +62,7 @@ Resources:
   Cluster:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../modules/cluster.yaml
+      TemplateURL: ../../templates/foundation/cluster/template.yaml
       Parameters:
         Prefix: mastererp-dev
 
@@ -70,7 +70,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: portal-web
         Prefix: mastererp-dev
@@ -86,7 +86,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: super-admin-web
         Prefix: mastererp-dev
@@ -102,7 +102,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: agents-web
         Prefix: mastererp-dev
@@ -118,7 +118,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: storefront-web
         Prefix: mastererp-dev
@@ -134,7 +134,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: client-api
         Prefix: mastererp-dev
@@ -151,7 +151,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: admin-api
         Prefix: mastererp-dev
@@ -168,7 +168,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: agents-api
         Prefix: mastererp-dev
@@ -185,7 +185,7 @@ Resources:
     Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      TemplateURL: ../../modules/service.yaml
+      TemplateURL: ../../templates/shared/service/template.yaml
       Parameters:
         Name: mcp
         Prefix: mastererp-dev
