@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Una entrada pública. Repositorio de imagen, logs, target group y servicio Fargate en cero tareas.
+Description: Una API en Fargate. Repositorio de imagen, logs, target group y servicio enganchado al balanceador.
 
 Parameters:
   Name:
@@ -92,11 +92,16 @@ Resources:
       ServiceName: !Sub ${Prefix}-${Name}
       Cluster: !Ref ClusterName
       LaunchType: FARGATE
-      DesiredCount: 0
+      DesiredCount: 1
       TaskDefinition: !Ref TaskDefinition
+      HealthCheckGracePeriodSeconds: 60
       DeploymentConfiguration:
         MinimumHealthyPercent: 0
         MaximumPercent: 200
+      LoadBalancers:
+        - ContainerName: app
+          ContainerPort: 8080
+          TargetGroupArn: !Ref TargetGroup
       NetworkConfiguration:
         AwsvpcConfiguration:
           AssignPublicIp: DISABLED

@@ -8,4 +8,4 @@ El flujo `.github/workflows/deploy-dev.yml` publica dos stacks nuevos en cada pu
 
 Las carpetas siguen el diagrama funcional, de la 1.0 a la 2.10, más las integraciones externas. Todavía no despliegan un servicio por caja: marcan el módulo con un parámetro SSM.
 
-En Fargate quedan `client-api`, `admin-api`, `agents-api` y `mcp`, todavía en cero tareas. El balanceador responde el JSON fijo de esas cuatro APIs. Las webs del esqueleto nuevo son Amplify. Los esquemas de dominio están en `mastererp-database/schema/001_domains.sql`.
+`client-api`, `admin-api`, `agents-api` y `mcp` corren en Fargate, una tarea cada uno, y el balanceador les reenvía el tráfico. Las webs están publicadas en Amplify. Las tablas de la operación inicial están en `mastererp-database/schema/002_operacion.sql`.

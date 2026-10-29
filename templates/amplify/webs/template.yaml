@@ -54,10 +54,10 @@ Resources:
     Condition: WithDomains
     Properties:
       AppId: !GetAtt Portal.AppId
-      DomainName: !Ref HostedZoneDomain
+      DomainName: dev.erp.uonify.com
       SubDomainSettings:
         - BranchName: dev
-          Prefix: dev.erp
+          Prefix: ""
 
   SuperAdmin:
     Type: AWS::Amplify::App
@@ -97,10 +97,10 @@ Resources:
     Condition: WithDomains
     Properties:
       AppId: !GetAtt SuperAdmin.AppId
-      DomainName: !Ref HostedZoneDomain
+      DomainName: super.dev.erp.uonify.com
       SubDomainSettings:
         - BranchName: dev
-          Prefix: super.dev.erp
+          Prefix: ""
 
   AgentsWeb:
     Type: AWS::Amplify::App
@@ -140,10 +140,10 @@ Resources:
     Condition: WithDomains
     Properties:
       AppId: !GetAtt AgentsWeb.AppId
-      DomainName: !Ref HostedZoneDomain
+      DomainName: agents.dev.erp.uonify.com
       SubDomainSettings:
         - BranchName: dev
-          Prefix: agents.dev.erp
+          Prefix: ""
 
   Storefront:
     Type: AWS::Amplify::App
@@ -183,12 +183,12 @@ Resources:
     Condition: WithDomains
     Properties:
       AppId: !GetAtt Storefront.AppId
-      DomainName: !Ref HostedZoneDomain
+      DomainName: store.dev.erp.uonify.com
       SubDomainSettings:
         - BranchName: dev
-          Prefix: store.dev.erp
+          Prefix: ""
         - BranchName: dev
-          Prefix: "*.store.dev.erp"
+          Prefix: "*"
 
 Outputs:
   PortalAppId:
