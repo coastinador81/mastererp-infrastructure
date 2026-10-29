@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Cluster Fargate del ambiente.
+
+Parameters:
+  Prefix:
+    Type: String
+
+Resources:
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Ref Prefix
+      ClusterSettings:
+        - Name: containerInsights
+          Value: disabled
+      Tags:
+        - Key: Name
+          Value: !Ref Prefix
+
+Outputs:
+  ClusterName:
+    Value: !Ref Cluster

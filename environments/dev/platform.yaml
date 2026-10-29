@@ -1,8 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: >
-  Esqueleto de plataforma DEV. Una base PostgreSQL para todos los dominios,
-  documentos en S3, flujos de agentes en SQS y un servicio Fargate por entrada
-  publica. Los modulos de negocio no tienen infraestructura propia.
+Description: Plataforma DEV. Cada pieza está en modules y cada entrada pública usa modules/service.yaml.
 
 Parameters:
   VpcId:
@@ -27,851 +24,204 @@ Resources:
       SourceSecurityGroupId: !Ref AlbSecurityGroupId
       Description: Trafico del balanceador hacia las tareas
 
-  DbSubnetGroup:
-    Type: AWS::RDS::DBSubnetGroup
-    Properties:
-      DBSubnetGroupName: mastererp-dev
-      DBSubnetGroupDescription: Subnets privadas de la base DEV
-      SubnetIds:
-        - !Ref PrivateSubnetA
-        - !Ref PrivateSubnetB
-      Tags:
-        - Key: Name
-          Value: mastererp-dev
-
-  DbSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Postgres de DEV, solo desde las aplicaciones
-      VpcId: !Ref VpcId
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 5432
-          ToPort: 5432
-          SourceSecurityGroupId: !Ref AppSecurityGroupId
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
-
   Database:
-    Type: AWS::RDS::DBInstance
-    DeletionPolicy: Snapshot
-    UpdateReplacePolicy: Snapshot
+    Type: AWS::CloudFormation::Stack
     Properties:
-      DBInstanceIdentifier: mastererp-dev
-      Engine: postgres
-      EngineVersion: "16.15"
-      DBInstanceClass: db.t4g.micro
-      AllocatedStorage: 20
-      MaxAllocatedStorage: 100
-      StorageType: gp3
-      StorageEncrypted: true
-      DBName: mastererp
-      MasterUsername: mastererp
-      ManageMasterUserPassword: true
-      MultiAZ: false
-      PubliclyAccessible: false
-      DBSubnetGroupName: !Ref DbSubnetGroup
-      VPCSecurityGroups:
-        - !Ref DbSecurityGroup
-      BackupRetentionPeriod: 1
-      CopyTagsToSnapshot: true
-      DeletionProtection: false
-      AutoMinorVersionUpgrade: true
-      EnableCloudwatchLogsExports:
-        - postgresql
-      Tags:
-        - Key: Name
-          Value: mastererp-dev
+      TemplateURL: ../../modules/database.yaml
+      Parameters:
+        Prefix: mastererp-dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
 
-  DocumentsBucket:
-    Type: AWS::S3::Bucket
+  Documents:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      BucketName: !Sub mastererp-dev-documents-${AWS::AccountId}
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
+      TemplateURL: ../../modules/documents.yaml
+      Parameters:
+        Prefix: mastererp-dev
 
-  AgentDeadLetterQueue:
-    Type: AWS::SQS::Queue
+  Queues:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      QueueName: mastererp-dev-agent-flows-dlq
-      MessageRetentionPeriod: 1209600
+      TemplateURL: ../../modules/queues.yaml
+      Parameters:
+        Prefix: mastererp-dev
 
-  AgentQueue:
-    Type: AWS::SQS::Queue
+  Identity:
+    Type: AWS::CloudFormation::Stack
     Properties:
-      QueueName: mastererp-dev-agent-flows
-      VisibilityTimeout: 60
-      RedrivePolicy:
-        deadLetterTargetArn: !GetAtt AgentDeadLetterQueue.Arn
-        maxReceiveCount: 5
-
-  ExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: mastererp-dev-ecs-execution
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
-
-  DataTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: mastererp-dev-task-data
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: read-database-secret
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - secretsmanager:GetSecretValue
-                Resource: !GetAtt Database.MasterUserSecret.SecretArn
-
-  AgentsTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: mastererp-dev-task-agents
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: documents-flows-and-models
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                  - s3:DeleteObject
-                  - s3:ListBucket
-                Resource:
-                  - !GetAtt DocumentsBucket.Arn
-                  - !Sub ${DocumentsBucket.Arn}/*
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                  - sqs:ReceiveMessage
-                  - sqs:DeleteMessage
-                  - sqs:GetQueueAttributes
-                  - sqs:GetQueueUrl
-                Resource: !GetAtt AgentQueue.Arn
-              - Effect: Allow
-                Action:
-                  - bedrock:InvokeModel
-                  - bedrock:InvokeModelWithResponseStream
-                Resource: "*"
-
-  McpTaskRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: mastererp-dev-task-mcp
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: ecs-tasks.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: enqueue-flows
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:SendMessage
-                  - sqs:GetQueueUrl
-                Resource: !GetAtt AgentQueue.Arn
+      TemplateURL: ../../modules/identity.yaml
+      Parameters:
+        Prefix: mastererp-dev
+        DatabaseSecretArn: !GetAtt Database.Outputs.SecretArn
+        DocumentsBucketArn: !GetAtt Documents.Outputs.BucketArn
+        AgentQueueArn: !GetAtt Queues.Outputs.QueueArn
 
   Cluster:
-    Type: AWS::ECS::Cluster
+    Type: AWS::CloudFormation::Stack
     Properties:
-      ClusterName: mastererp-dev
-      ClusterSettings:
-        - Name: containerInsights
-          Value: disabled
-      Tags:
-        - Key: Name
-          Value: mastererp-dev
+      TemplateURL: ../../modules/cluster.yaml
+      Parameters:
+        Prefix: mastererp-dev
 
-  PortalWebRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/portal-web
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  PortalWebLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/portal-web
-      RetentionInDays: 14
-
-  PortalWebTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-portal-web
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-portal-web
-
-  PortalWebTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-portal-web
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/portal-web:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref PortalWebLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  PortalWebService:
-    Type: AWS::ECS::Service
+  PortalWeb:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-portal-web
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref PortalWebTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: portal-web
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
 
-  SuperAdminWebRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/super-admin-web
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  SuperAdminWebLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/super-admin-web
-      RetentionInDays: 14
-
-  SuperAdminWebTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-super-admin-web
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-super-admin-web
-
-  SuperAdminWebTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-super-admin-web
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/super-admin-web:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref SuperAdminWebLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  SuperAdminWebService:
-    Type: AWS::ECS::Service
+  SuperAdminWeb:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-super-admin-web
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref SuperAdminWebTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: super-admin-web
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
 
-  AgentsWebRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/agents-web
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  AgentsWebLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/agents-web
-      RetentionInDays: 14
-
-  AgentsWebTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-agents-web
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-agents-web
-
-  AgentsWebTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-agents-web
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/agents-web:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref AgentsWebLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  AgentsWebService:
-    Type: AWS::ECS::Service
+  AgentsWeb:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-agents-web
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref AgentsWebTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: agents-web
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
 
-  StorefrontWebRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/storefront-web
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  StorefrontWebLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/storefront-web
-      RetentionInDays: 14
-
-  StorefrontWebTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-storefront-web
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-storefront-web
-
-  StorefrontWebTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-storefront-web
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/storefront-web:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref StorefrontWebLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  StorefrontWebService:
-    Type: AWS::ECS::Service
+  StorefrontWeb:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-storefront-web
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref StorefrontWebTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: storefront-web
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
 
-  ClientApiRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/client-api
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  ClientApiLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/client-api
-      RetentionInDays: 14
-
-  ClientApiTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-client-api
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-client-api
-
-  ClientApiTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-client-api
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      TaskRoleArn: !GetAtt DataTaskRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/client-api:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref ClientApiLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  ClientApiService:
-    Type: AWS::ECS::Service
+  ClientApi:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-client-api
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref ClientApiTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: client-api
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
+        TaskRoleArn: !GetAtt Identity.Outputs.DataTaskRoleArn
 
-  AdminApiRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/admin-api
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  AdminApiLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/admin-api
-      RetentionInDays: 14
-
-  AdminApiTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-admin-api
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-admin-api
-
-  AdminApiTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-admin-api
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      TaskRoleArn: !GetAtt DataTaskRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/admin-api:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref AdminApiLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  AdminApiService:
-    Type: AWS::ECS::Service
+  AdminApi:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-admin-api
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref AdminApiTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: admin-api
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
+        TaskRoleArn: !GetAtt Identity.Outputs.DataTaskRoleArn
 
-  AgentsApiRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/agents-api
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  AgentsApiLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/agents-api
-      RetentionInDays: 14
-
-  AgentsApiTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-agents-api
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-agents-api
-
-  AgentsApiTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-agents-api
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      TaskRoleArn: !GetAtt AgentsTaskRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/agents-api:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref AgentsApiLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  AgentsApiService:
-    Type: AWS::ECS::Service
+  AgentsApi:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-agents-api
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref AgentsApiTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: agents-api
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
+        TaskRoleArn: !GetAtt Identity.Outputs.AgentsTaskRoleArn
 
-  McpRepository:
-    Type: AWS::ECR::Repository
-    Properties:
-      RepositoryName: mastererp/mcp
-      ImageTagMutability: MUTABLE
-      ImageScanningConfiguration:
-        ScanOnPush: true
-      EncryptionConfiguration:
-        EncryptionType: AES256
-
-  McpLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /ecs/mastererp-dev/mcp
-      RetentionInDays: 14
-
-  McpTargetGroup:
-    Type: AWS::ElasticLoadBalancingV2::TargetGroup
-    Properties:
-      Name: me-dev-mcp
-      TargetType: ip
-      Protocol: HTTP
-      Port: 8080
-      VpcId: !Ref VpcId
-      HealthCheckPath: /
-      Matcher:
-        HttpCode: "200-399"
-      TargetGroupAttributes:
-        - Key: deregistration_delay.timeout_seconds
-          Value: "20"
-      Tags:
-        - Key: Name
-          Value: me-dev-mcp
-
-  McpTaskDefinition:
-    Type: AWS::ECS::TaskDefinition
-    Properties:
-      Family: mastererp-dev-mcp
-      RequiresCompatibilities: [FARGATE]
-      NetworkMode: awsvpc
-      Cpu: "256"
-      Memory: "512"
-      ExecutionRoleArn: !GetAtt ExecutionRole.Arn
-      TaskRoleArn: !GetAtt McpTaskRole.Arn
-      ContainerDefinitions:
-        - Name: app
-          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/mcp:skeleton
-          Essential: true
-          PortMappings:
-            - ContainerPort: 8080
-              Protocol: tcp
-          LogConfiguration:
-            LogDriver: awslogs
-            Options:
-              awslogs-group: !Ref McpLogGroup
-              awslogs-region: !Ref AWS::Region
-              awslogs-stream-prefix: app
-
-  McpService:
-    Type: AWS::ECS::Service
+  Mcp:
+    Type: AWS::CloudFormation::Stack
     DependsOn: AppFromAlbIngress
     Properties:
-      ServiceName: mastererp-dev-mcp
-      Cluster: !Ref Cluster
-      LaunchType: FARGATE
-      DesiredCount: 0
-      TaskDefinition: !Ref McpTaskDefinition
-      DeploymentConfiguration:
-        MinimumHealthyPercent: 0
-        MaximumPercent: 200
-      NetworkConfiguration:
-        AwsvpcConfiguration:
-          AssignPublicIp: DISABLED
-          SecurityGroups:
-            - !Ref AppSecurityGroupId
-          Subnets:
-            - !Ref PrivateSubnetA
-            - !Ref PrivateSubnetB
+      TemplateURL: ../../modules/service.yaml
+      Parameters:
+        Name: mcp
+        Prefix: mastererp-dev
+        Scope: dev
+        VpcId: !Ref VpcId
+        PrivateSubnetA: !Ref PrivateSubnetA
+        PrivateSubnetB: !Ref PrivateSubnetB
+        AppSecurityGroupId: !Ref AppSecurityGroupId
+        ClusterName: !GetAtt Cluster.Outputs.ClusterName
+        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
+        TaskRoleArn: !GetAtt Identity.Outputs.McpTaskRoleArn
 
 Outputs:
   DatabaseEndpoint:
-    Value: !GetAtt Database.Endpoint.Address
+    Value: !GetAtt Database.Outputs.Endpoint
   DatabaseSecretArn:
-    Value: !GetAtt Database.MasterUserSecret.SecretArn
+    Value: !GetAtt Database.Outputs.SecretArn
   DocumentsBucketName:
-    Value: !Ref DocumentsBucket
+    Value: !GetAtt Documents.Outputs.BucketName
   AgentQueueUrl:
-    Value: !Ref AgentQueue
+    Value: !GetAtt Queues.Outputs.QueueUrl
   ClusterName:
-    Value: !Ref Cluster
+    Value: !GetAtt Cluster.Outputs.ClusterName
   PortalWebTargetGroupArn:
-    Value: !Ref PortalWebTargetGroup
+    Value: !GetAtt PortalWeb.Outputs.TargetGroupArn
   SuperAdminWebTargetGroupArn:
-    Value: !Ref SuperAdminWebTargetGroup
+    Value: !GetAtt SuperAdminWeb.Outputs.TargetGroupArn
   AgentsWebTargetGroupArn:
-    Value: !Ref AgentsWebTargetGroup
+    Value: !GetAtt AgentsWeb.Outputs.TargetGroupArn
   StorefrontWebTargetGroupArn:
-    Value: !Ref StorefrontWebTargetGroup
+    Value: !GetAtt StorefrontWeb.Outputs.TargetGroupArn
   ClientApiTargetGroupArn:
-    Value: !Ref ClientApiTargetGroup
+    Value: !GetAtt ClientApi.Outputs.TargetGroupArn
   AdminApiTargetGroupArn:
-    Value: !Ref AdminApiTargetGroup
+    Value: !GetAtt AdminApi.Outputs.TargetGroupArn
   AgentsApiTargetGroupArn:
-    Value: !Ref AgentsApiTargetGroup
+    Value: !GetAtt AgentsApi.Outputs.TargetGroupArn
   McpTargetGroupArn:
-    Value: !Ref McpTargetGroup
+    Value: !GetAtt Mcp.Outputs.TargetGroupArn

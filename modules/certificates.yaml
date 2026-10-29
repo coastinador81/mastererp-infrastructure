@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Certificados públicos del borde y de las tiendas.
+
+Parameters:
+  HostedZoneId:
+    Type: String
+  EdgeDomain:
+    Type: String
+  EdgeWildcard:
+    Type: String
+  StoreWildcard:
+    Type: String
+  Prefix:
+    Type: String
+
+Resources:
+  EdgeCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref EdgeDomain
+      SubjectAlternativeNames:
+        - !Ref EdgeWildcard
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref EdgeDomain
+          HostedZoneId: !Ref HostedZoneId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-edge
+
+  StoreCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref StoreWildcard
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref StoreWildcard
+          HostedZoneId: !Ref HostedZoneId
+      Tags:
+        - Key: Name
+          Value: !Sub ${Prefix}-stores
+
+Outputs:
+  EdgeCertificateArn:
+    Value: !Ref EdgeCertificate
+  StoreCertificateArn:
+    Value: !Ref StoreCertificate

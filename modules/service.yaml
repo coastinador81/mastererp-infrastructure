@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Una entrada pública. Repositorio de imagen, logs, target group y servicio Fargate en cero tareas.
+
+Parameters:
+  Name:
+    Type: String
+  Prefix:
+    Type: String
+  Scope:
+    Type: String
+  VpcId:
+    Type: AWS::EC2::VPC::Id
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet::Id
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet::Id
+  AppSecurityGroupId:
+    Type: AWS::EC2::SecurityGroup::Id
+  ClusterName:
+    Type: String
+  ExecutionRoleArn:
+    Type: String
+  TaskRoleArn:
+    Type: String
+    Default: ""
+
+Conditions:
+  HasTaskRole: !Not [!Equals [!Ref TaskRoleArn, ""]]
+
+Resources:
+  Repository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub mastererp/${Name}
+      ImageTagMutability: MUTABLE
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      EncryptionConfiguration:
+        EncryptionType: AES256
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${Prefix}/${Name}
+      RetentionInDays: 14
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub me-${Scope}-${Name}
+      TargetType: ip
+      Protocol: HTTP
+      Port: 8080
+      VpcId: !Ref VpcId
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: "200-399"
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "20"
+      Tags:
+        - Key: Name
+          Value: !Sub me-${Scope}-${Name}
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${Prefix}-${Name}
+      RequiresCompatibilities: [FARGATE]
+      NetworkMode: awsvpc
+      Cpu: "256"
+      Memory: "512"
+      ExecutionRoleArn: !Ref ExecutionRoleArn
+      TaskRoleArn: !If [HasTaskRole, !Ref TaskRoleArn, !Ref AWS::NoValue]
+      ContainerDefinitions:
+        - Name: app
+          Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/mastererp/${Name}:skeleton
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8080
+              Protocol: tcp
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref LogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: app
+
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      ServiceName: !Sub ${Prefix}-${Name}
+      Cluster: !Ref ClusterName
+      LaunchType: FARGATE
+      DesiredCount: 0
+      TaskDefinition: !Ref TaskDefinition
+      DeploymentConfiguration:
+        MinimumHealthyPercent: 0
+        MaximumPercent: 200
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - !Ref AppSecurityGroupId
+          Subnets:
+            - !Ref PrivateSubnetA
+            - !Ref PrivateSubnetB
+
+Outputs:
+  TargetGroupArn:
+    Value: !Ref TargetGroup
