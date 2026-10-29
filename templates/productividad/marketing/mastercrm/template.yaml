@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Marketing. MasterCRM."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/productividad/marketing/mastercrm
+      Type: String
+      Value: pendiente
+      Description: "Marketing. MasterCRM."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

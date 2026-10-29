@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "IA de la plataforma."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/plataforma-base/ia
+      Type: String
+      Value: pendiente
+      Description: "IA de la plataforma."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

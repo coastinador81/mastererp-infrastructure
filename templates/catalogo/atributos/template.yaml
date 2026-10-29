@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Catalogo. Atributos."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/catalogo/atributos
+      Type: String
+      Value: pendiente
+      Description: "Catalogo. Atributos."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "RRHH. Empleados."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/rrhh/empleados
+      Type: String
+      Value: pendiente
+      Description: "RRHH. Empleados."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

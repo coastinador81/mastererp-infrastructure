@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Canales digitales. Pagina web."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/canales-digitales/pagina-web
+      Type: String
+      Value: pendiente
+      Description: "Canales digitales. Pagina web."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

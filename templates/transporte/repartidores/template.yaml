@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Transporte. Repartidores."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/transporte/repartidores
+      Type: String
+      Value: pendiente
+      Description: "Transporte. Repartidores."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

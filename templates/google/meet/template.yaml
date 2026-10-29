@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Google. Meet."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/google/meet
+      Type: String
+      Value: pendiente
+      Description: "Google. Meet."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

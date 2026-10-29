@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Finanzas. MasterPay."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/finanzas/masterpay
+      Type: String
+      Value: pendiente
+      Description: "Finanzas. MasterPay."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

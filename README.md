@@ -1,10 +1,10 @@
 # mastererp-infrastructure
 
-Infraestructura de MasterERP. Cada módulo del diagrama es una carpeta con su `template.yaml`, igual que en uonify-capital-infrastructure.
+Infraestructura de MasterERP. Cada caja del diagrama de módulos de negocio es una carpeta con su `template.yaml`, con la misma forma que uonify-capital-infrastructure.
 
 ## Foundation
 
-Base compartida del ambiente.
+Base de AWS del ambiente. Estas plantillas ya describen recursos reales.
 
 - `templates/foundation/network/template.yaml`
 - `templates/foundation/certificates/template.yaml`
@@ -15,52 +15,36 @@ Base compartida del ambiente.
 - `templates/foundation/security/template.yaml`
 - `templates/foundation/cluster/template.yaml`
 - `templates/shared/service/template.yaml`
-
-## Cliente
-
-- `templates/cliente/frontend/template.yaml`
-- `templates/cliente/backend/template.yaml`
-- `templates/cliente/login/template.yaml`
-
-## Núcleo
-
-- `templates/nucleo/guardias/template.yaml`
-- `templates/nucleo/api/template.yaml`
-- `templates/nucleo/wiz/gateway/template.yaml`
-- `templates/nucleo/wiz/centro-ack/template.yaml`
-- `templates/nucleo/motor/artifact-provider/template.yaml`
-- `templates/nucleo/motor/argument-resolver/template.yaml`
-- `templates/nucleo/motor/coordinador/template.yaml`
-- `templates/nucleo/herramientas/registry/template.yaml`
-- `templates/nucleo/herramientas/clientes/template.yaml`
-- `templates/nucleo/herramientas/inventario/template.yaml`
-- `templates/nucleo/herramientas/condiciones/template.yaml`
-- `templates/nucleo/herramientas/producto/template.yaml`
-- `templates/nucleo/herramientas/datos/template.yaml`
-- `templates/nucleo/workers/messaging-gateway/template.yaml`
-- `templates/nucleo/workers/rls-policy/template.yaml`
-- `templates/nucleo/workers/billing/template.yaml`
-- `templates/nucleo/workers/conversation/template.yaml`
-- `templates/nucleo/workers/notification/template.yaml`
-
-## Identidad
-
-- `templates/identidad/google-oauth/template.yaml`
-- `templates/identidad/vertex/template.yaml`
-- `templates/identidad/google-drive/template.yaml`
-- `templates/identidad/ses/template.yaml`
-
-## Costos
-
-- `templates/costos/analisis/template.yaml`
-- `templates/costos/margen/template.yaml`
-- `templates/costos/stripe/template.yaml`
-
-## Datos y redes
-
 - `templates/datos/postgres/template.yaml`
-- `templates/datos/redis/template.yaml`
-- `templates/datos/red-privada/template.yaml`
-- `templates/datos/red-autorizada/template.yaml`
 
-`environments/dev` compone la base que ya existe. Las cajas del diagrama que todavía no tienen servicio propio dejan un parámetro en SSM con valor `pendiente`.
+## Acceso
+
+- `templates/acceso/clientes/template.yaml`
+- `templates/acceso/admins/template.yaml`
+- `templates/acceso/agentes/template.yaml`
+- `templates/acceso/gateway-apis/template.yaml`
+- `templates/acceso/gateway-mcp/template.yaml`
+
+## Plataforma base
+
+- `templates/plataforma-base/onboarding-y-tenant/template.yaml`
+- `templates/plataforma-base/ia/template.yaml`
+
+## Módulos de negocio
+
+- Catalogo: productos, categoria, atributos, marcas, proveedor, inventario.
+- Finanzas: admin, contabilidad, bi, masterpay.
+- Operaciones: pedidos, preparacion, rutas, nodos.
+- Canales digitales: pagina-web, ecommerce.
+- Servicios: mantenimiento, fabricacion, proyectos, rfid.
+- RRHH: empleados, nomina, ausencias.
+- Centro de agentes: general, agentes-internos, agentes-custom, constructor, centro-de-documentacion, flujos-y-tareas, canales, aprobaciones, auditoria, configuracion.
+- Productividad: opsphere, uonify, y marketing con meta, hubspot y mastercrm.
+- Google: gmail, meet, drive.
+- Microsoft: outlook, teams, one-drive, sharepoint, planner, automate.
+- POS: ventas-en-tienda, cajas.
+- Transporte: repartidores, chipro, mrw.
+
+Cada una vive en `templates/<grupo>/<modulo>/template.yaml`.
+
+Las cajas del diagrama todavía no crean un servicio propio. La plantilla marca el módulo con un parámetro SSM en valor `pendiente`. La red, el balanceador, PostgreSQL y Fargate siguen en las plantillas de foundation.

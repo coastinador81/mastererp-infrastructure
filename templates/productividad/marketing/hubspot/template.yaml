@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Marketing. Hubspot."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/productividad/marketing/hubspot
+      Type: String
+      Value: pendiente
+      Description: "Marketing. Hubspot."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

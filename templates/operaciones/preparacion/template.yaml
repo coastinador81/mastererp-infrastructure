@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Operaciones. Preparacion."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/operaciones/preparacion
+      Type: String
+      Value: pendiente
+      Description: "Operaciones. Preparacion."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

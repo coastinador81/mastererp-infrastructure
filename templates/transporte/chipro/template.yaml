@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Transporte. Chipro."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/transporte/chipro
+      Type: String
+      Value: pendiente
+      Description: "Transporte. Chipro."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

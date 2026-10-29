@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Operaciones. Nodos."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/operaciones/nodos
+      Type: String
+      Value: pendiente
+      Description: "Operaciones. Nodos."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

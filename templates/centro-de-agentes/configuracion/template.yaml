@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Centro de agentes. Configuracion."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/centro-de-agentes/configuracion
+      Type: String
+      Value: pendiente
+      Description: "Centro de agentes. Configuracion."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module
