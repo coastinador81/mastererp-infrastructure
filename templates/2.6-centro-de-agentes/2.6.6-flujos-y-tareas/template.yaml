@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "2.6.6 Flujos y tareas."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/2.6-centro-de-agentes/2.6.6-flujos-y-tareas
+      Type: String
+      Value: pendiente
+      Description: "2.6.6 Flujos y tareas."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

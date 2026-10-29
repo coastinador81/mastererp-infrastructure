@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "2.1.6 Inventario."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/2.1-catalogo/2.1.6-inventario
+      Type: String
+      Value: pendiente
+      Description: "2.1.6 Inventario."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

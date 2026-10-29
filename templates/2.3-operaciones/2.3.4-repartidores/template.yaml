@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "2.3.4 Repartidores. Misma entidad que Transporte 2.10.1."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/2.3-operaciones/2.3.4-repartidores
+      Type: String
+      Value: pendiente
+      Description: "2.3.4 Repartidores. Misma entidad que Transporte 2.10.1."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module
