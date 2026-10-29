@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Borde HTTPS de DEV. Un balanceador, una regla por dominio y el alias en uonify.com.
+Description: Borde HTTPS de las APIs. El balanceador solo enruta client-api, admin-api, agents-api y mcp. Las webs salen por Amplify.
 
 Parameters:
   PublicSubnetA:
@@ -11,9 +11,6 @@ Parameters:
   EdgeCertificateArn:
     Type: String
     Description: Certificado de dev.erp.uonify.com y *.dev.erp.uonify.com.
-  StoreCertificateArn:
-    Type: String
-    Description: Certificado de *.store.dev.erp.uonify.com.
   HostedZoneId:
     Type: String
     Default: Z08167243FAUSDUW0Z2KP
@@ -75,84 +72,11 @@ Resources:
             ContentType: application/json
             MessageBody: '{"error":"host desconocido","env":"dev"}'
 
-  StoreListenerCertificate:
-    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
-    Properties:
-      ListenerArn: !Ref HttpsListener
-      Certificates:
-        - CertificateArn: !Ref StoreCertificateArn
-
-  PortalRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: !Ref HttpsListener
-      Priority: 10
-      Conditions:
-        - Field: host-header
-          HostHeaderConfig:
-            Values: [dev.erp.uonify.com]
-      Actions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: "200"
-            ContentType: application/json
-            MessageBody: '{"service":"portal-web","env":"dev"}'
-
-  SuperAdminRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: !Ref HttpsListener
-      Priority: 20
-      Conditions:
-        - Field: host-header
-          HostHeaderConfig:
-            Values: [super.dev.erp.uonify.com]
-      Actions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: "200"
-            ContentType: application/json
-            MessageBody: '{"service":"super-admin-web","env":"dev"}'
-
-  AgentsWebRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: !Ref HttpsListener
-      Priority: 30
-      Conditions:
-        - Field: host-header
-          HostHeaderConfig:
-            Values: [agents.dev.erp.uonify.com]
-      Actions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: "200"
-            ContentType: application/json
-            MessageBody: '{"service":"agents-web","env":"dev"}'
-
-  StoreRule:
-    Type: AWS::ElasticLoadBalancingV2::ListenerRule
-    Properties:
-      ListenerArn: !Ref HttpsListener
-      Priority: 40
-      Conditions:
-        - Field: host-header
-          HostHeaderConfig:
-            Values:
-              - store.dev.erp.uonify.com
-              - "*.store.dev.erp.uonify.com"
-      Actions:
-        - Type: fixed-response
-          FixedResponseConfig:
-            StatusCode: "200"
-            ContentType: application/json
-            MessageBody: '{"service":"storefront-web","env":"dev"}'
-
   ClientApiRule:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !Ref HttpsListener
-      Priority: 50
+      Priority: 10
       Conditions:
         - Field: host-header
           HostHeaderConfig:
@@ -168,7 +92,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !Ref HttpsListener
-      Priority: 60
+      Priority: 20
       Conditions:
         - Field: host-header
           HostHeaderConfig:
@@ -184,7 +108,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !Ref HttpsListener
-      Priority: 70
+      Priority: 30
       Conditions:
         - Field: host-header
           HostHeaderConfig:
@@ -200,7 +124,7 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::ListenerRule
     Properties:
       ListenerArn: !Ref HttpsListener
-      Priority: 80
+      Priority: 40
       Conditions:
         - Field: host-header
           HostHeaderConfig:
@@ -217,36 +141,6 @@ Resources:
     Properties:
       HostedZoneId: !Ref HostedZoneId
       RecordSets:
-        - Name: dev.erp.uonify.com
-          Type: A
-          AliasTarget:
-            HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-            DNSName: !GetAtt LoadBalancer.DNSName
-            EvaluateTargetHealth: false
-        - Name: super.dev.erp.uonify.com
-          Type: A
-          AliasTarget:
-            HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-            DNSName: !GetAtt LoadBalancer.DNSName
-            EvaluateTargetHealth: false
-        - Name: agents.dev.erp.uonify.com
-          Type: A
-          AliasTarget:
-            HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-            DNSName: !GetAtt LoadBalancer.DNSName
-            EvaluateTargetHealth: false
-        - Name: store.dev.erp.uonify.com
-          Type: A
-          AliasTarget:
-            HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-            DNSName: !GetAtt LoadBalancer.DNSName
-            EvaluateTargetHealth: false
-        - Name: "*.store.dev.erp.uonify.com"
-          Type: A
-          AliasTarget:
-            HostedZoneId: !GetAtt LoadBalancer.CanonicalHostedZoneID
-            DNSName: !GetAtt LoadBalancer.DNSName
-            EvaluateTargetHealth: false
         - Name: client-api.dev.erp.uonify.com
           Type: A
           AliasTarget:

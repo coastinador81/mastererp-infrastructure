@@ -16,7 +16,11 @@ Clientes entran por `gateways/api-clientes`. Admins entran por `gateways/api-adm
 - `templates/1.0-plataforma-base/datos/seguridad/template.yaml` — roles reales
 - `templates/1.0-plataforma-base/datos/monitoreo/template.yaml`
 
-La red, los certificados, el borde y el cluster Fargate siguen en `templates/foundation` y `templates/shared/service`. Son el ambiente AWS, no una caja del diagrama funcional.
+La red, los certificados y el cluster siguen en `templates/foundation`. El balanceador, en `templates/foundation/edge`, solo publica las cuatro APIs: `client-api`, `admin-api`, `agents-api` y `mcp`. Siguen en Fargate, en la misma red que PostgreSQL.
+
+Las cuatro webs están en `templates/amplify/webs`: `portal-web`, `super-admin-web`, `agents-web` y `storefront-web`. Amplify las sirve por CDN. Los archivos con hash se cachean un año y el HTML se revalida. El navegador llama a las APIs directo, sin API Gateway ni Lambda en ese camino.
+
+El despliegue automático está en `.github/workflows/deploy-dev.yml`. Usa un usuario IAM propio y corre en cada push a `dev`. Crea `mastererp-dev-webs` y `mastererp-dev-modules`. No toca `mastererp-dev-foundation`, `mastererp-dev-edge` ni `mastererp-dev-platform`. Los dominios de las webs siguen en el balanceador hasta un disparo manual del flujo.
 
 ## 2.0 Módulos de negocio
 

@@ -1,0 +1,66 @@
+name: Despliegue DEV
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "templates/**"
+      - "environments/dev/**"
+      - "deployment/**"
+      - ".github/workflows/deploy-dev.yml"
+  workflow_dispatch:
+    inputs:
+      associate_domains:
+        description: Publicar los dominios de Amplify
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mastererp-dev-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-west-2
+      ARTIFACTS_BUCKET: mastererp-dev-cfn-277352717693
+      ASSOCIATE_DOMAINS: ${{ github.event_name == 'workflow_dispatch' && inputs.associate_domains == true && 'true' || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+      - name: Publicar las cuatro webs en Amplify
+        run: |
+          aws cloudformation deploy \
+            --region "$AWS_REGION" \
+            --stack-name mastererp-dev-webs \
+            --template-file templates/amplify/webs/template.yaml \
+            --parameter-overrides HostedZoneDomain=uonify.com AssociateDomains="$ASSOCIATE_DOMAINS" \
+            --no-fail-on-empty-changeset \
+            --tags Project=mastererp Environment=dev
+
+      - name: Publicar los modulos como parametros
+        run: |
+          python3 deployment/render-modules-parent.py build/modules.yaml
+          aws cloudformation package \
+            --region "$AWS_REGION" \
+            --template-file build/modules.yaml \
+            --s3-bucket "$ARTIFACTS_BUCKET" \
+            --s3-prefix modules \
+            --output-template-file build/modules.packaged.yaml
+          aws cloudformation deploy \
+            --region "$AWS_REGION" \
+            --stack-name mastererp-dev-modules \
+            --template-file build/modules.packaged.yaml \
+            --parameter-overrides Environment=dev \
+            --no-fail-on-empty-changeset \
+            --tags Project=mastererp Environment=dev

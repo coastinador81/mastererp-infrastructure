@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Borde HTTPS de DEV. El balanceador vive en templates/foundation/edge.
+Description: Borde HTTPS de las APIs DEV. El balanceador vive en templates/foundation/edge.
 
 Parameters:
   PublicSubnetA:
@@ -9,8 +9,6 @@ Parameters:
   AlbSecurityGroupId:
     Type: AWS::EC2::SecurityGroup::Id
   EdgeCertificateArn:
-    Type: String
-  StoreCertificateArn:
     Type: String
   HostedZoneId:
     Type: String
@@ -26,7 +24,6 @@ Resources:
         PublicSubnetB: !Ref PublicSubnetB
         AlbSecurityGroupId: !Ref AlbSecurityGroupId
         EdgeCertificateArn: !Ref EdgeCertificateArn
-        StoreCertificateArn: !Ref StoreCertificateArn
         HostedZoneId: !Ref HostedZoneId
 
 Outputs:

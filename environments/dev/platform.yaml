@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Plataforma DEV. Compone las plantillas de templates/foundation, templates/datos y templates/shared.
+Description: APIs DEV en Fargate, en la misma VPC que PostgreSQL. Las webs estan en templates/amplify/webs.
 
 Parameters:
   VpcId:
@@ -65,70 +65,6 @@ Resources:
       TemplateURL: ../../templates/foundation/cluster/template.yaml
       Parameters:
         Prefix: mastererp-dev
-
-  PortalWeb:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: portal-web
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
-
-  SuperAdminWeb:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: super-admin-web
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
-
-  AgentsWeb:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: agents-web
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
-
-  StorefrontWeb:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: storefront-web
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
 
   ClientApi:
     Type: AWS::CloudFormation::Stack
@@ -209,14 +145,6 @@ Outputs:
     Value: !GetAtt Queues.Outputs.QueueUrl
   ClusterName:
     Value: !GetAtt Cluster.Outputs.ClusterName
-  PortalWebTargetGroupArn:
-    Value: !GetAtt PortalWeb.Outputs.TargetGroupArn
-  SuperAdminWebTargetGroupArn:
-    Value: !GetAtt SuperAdminWeb.Outputs.TargetGroupArn
-  AgentsWebTargetGroupArn:
-    Value: !GetAtt AgentsWeb.Outputs.TargetGroupArn
-  StorefrontWebTargetGroupArn:
-    Value: !GetAtt StorefrontWeb.Outputs.TargetGroupArn
   ClientApiTargetGroupArn:
     Value: !GetAtt ClientApi.Outputs.TargetGroupArn
   AdminApiTargetGroupArn:
