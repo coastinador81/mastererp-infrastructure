@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Servicios. RFID."
+Description: "2.5.4 RFID."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/servicios/rfid
       Type: String
       Value: pendiente
-      Description: "Servicios. RFID."
+      Description: "2.5.4 RFID."
 
 Outputs:
   ModuleParameter:

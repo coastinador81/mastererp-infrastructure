@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Operaciones. Nodos."
+Description: "2.3.5 Nodos."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/operaciones/nodos
       Type: String
       Value: pendiente
-      Description: "Operaciones. Nodos."
+      Description: "2.3.5 Nodos."
 
 Outputs:
   ModuleParameter:

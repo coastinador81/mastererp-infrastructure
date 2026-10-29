@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Marketing. MasterCRM."
+Description: "2.8.3.3 MasterCRM."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/productividad/marketing/mastercrm
       Type: String
       Value: pendiente
-      Description: "Marketing. MasterCRM."
+      Description: "2.8.3.3 MasterCRM."
 
 Outputs:
   ModuleParameter:

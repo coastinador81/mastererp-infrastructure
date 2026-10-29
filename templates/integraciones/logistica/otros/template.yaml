@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Otros operadores logisticos."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/integraciones/logistica/otros
+      Type: String
+      Value: pendiente
+      Description: "Otros operadores logisticos."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

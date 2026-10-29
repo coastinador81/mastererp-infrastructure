@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Partners."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/integraciones/otros/partners
+      Type: String
+      Value: pendiente
+      Description: "Partners."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

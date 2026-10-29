@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Catalogo. Marcas."
+Description: "2.1.4 Marcas."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/catalogo/marcas
       Type: String
       Value: pendiente
-      Description: "Catalogo. Marcas."
+      Description: "2.1.4 Marcas."
 
 Outputs:
   ModuleParameter:

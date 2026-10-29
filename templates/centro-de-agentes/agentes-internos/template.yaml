@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Centro de agentes. Agentes internos."
+Description: "2.6.2 Agentes internos."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/centro-de-agentes/agentes-internos
       Type: String
       Value: pendiente
-      Description: "Centro de agentes. Agentes internos."
+      Description: "2.6.2 Agentes internos."
 
 Outputs:
   ModuleParameter:

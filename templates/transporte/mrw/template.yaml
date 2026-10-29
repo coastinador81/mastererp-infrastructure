@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Transporte. MRW."
+Description: "2.10.3 MRW."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/transporte/mrw
       Type: String
       Value: pendiente
-      Description: "Transporte. MRW."
+      Description: "2.10.3 MRW."
 
 Outputs:
   ModuleParameter:

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Operaciones. Rutas."
+Description: "2.3.3 Rutas."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/operaciones/rutas
       Type: String
       Value: pendiente
-      Description: "Operaciones. Rutas."
+      Description: "2.3.3 Rutas."
 
 Outputs:
   ModuleParameter:

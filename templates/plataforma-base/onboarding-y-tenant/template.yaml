@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Onboarding y tenant."
+Description: "1.1 Onboarding y Tenant. Registro, activacion, permisos y modulos contratados."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/plataforma-base/onboarding-y-tenant
       Type: String
       Value: pendiente
-      Description: "Onboarding y tenant."
+      Description: "1.1 Onboarding y Tenant. Registro, activacion, permisos y modulos contratados."
 
 Outputs:
   ModuleParameter:

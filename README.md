@@ -1,50 +1,40 @@
 # mastererp-infrastructure
 
-Infraestructura de MasterERP. Cada caja del diagrama de módulos de negocio es una carpeta con su `template.yaml`, con la misma forma que uonify-capital-infrastructure.
+Infraestructura de MasterERP, alineada al diagrama funcional. Cada caja numerada es una carpeta con `template.yaml`.
 
-## Foundation
+## Flujo
 
-Base de AWS del ambiente. Estas plantillas ya describen recursos reales.
+Clientes entran por `gateways/api-clientes`. Admins entran por `gateways/api-admin`. Agentes IA entran por `gateways/gateway-mcp` y no llegan directo a la base. Debajo está la plataforma base y, por tenant, los módulos de negocio. Al final están las integraciones externas.
 
-- `templates/foundation/network/template.yaml`
-- `templates/foundation/certificates/template.yaml`
-- `templates/foundation/internal-dns/template.yaml`
-- `templates/foundation/edge/template.yaml`
-- `templates/foundation/documents/template.yaml`
-- `templates/foundation/queues/template.yaml`
-- `templates/foundation/security/template.yaml`
-- `templates/foundation/cluster/template.yaml`
-- `templates/shared/service/template.yaml`
-- `templates/datos/postgres/template.yaml`
+## 1.0 Plataforma base
 
-## Acceso
+- `templates/plataforma-base/onboarding-y-tenant/template.yaml` — 1.1
+- `templates/plataforma-base/ia/template.yaml` — 1.2
+- `templates/plataforma-base/datos/base-de-datos/template.yaml` — PostgreSQL real
+- `templates/plataforma-base/datos/almacenamiento/template.yaml` — bucket real
+- `templates/plataforma-base/datos/colas/template.yaml` — cola real
+- `templates/plataforma-base/datos/seguridad/template.yaml` — roles reales
+- `templates/plataforma-base/datos/monitoreo/template.yaml`
 
-- `templates/acceso/clientes/template.yaml`
-- `templates/acceso/admins/template.yaml`
-- `templates/acceso/agentes/template.yaml`
-- `templates/acceso/gateway-apis/template.yaml`
-- `templates/acceso/gateway-mcp/template.yaml`
+La red, los certificados, el borde y el cluster Fargate siguen en `templates/foundation` y `templates/shared/service`. Son el ambiente AWS, no una caja del diagrama funcional.
 
-## Plataforma base
+## 2.0 Módulos de negocio
 
-- `templates/plataforma-base/onboarding-y-tenant/template.yaml`
-- `templates/plataforma-base/ia/template.yaml`
+- 2.1 Catálogo: productos, categorias, atributos, marcas, proveedores, inventario.
+- 2.2 Finanzas: administracion, contabilidad, bi-analitica, masterpay.
+- 2.3 Operaciones: pedidos, preparacion, rutas, repartidores, nodos.
+- 2.4 Canales digitales: pagina-web, ecommerce.
+- 2.5 Servicios: mantenimiento, fabricacion, proyectos, rfid.
+- 2.6 Centro de agentes: ia-general, agentes-internos, agentes-personalizados, constructor, centro-de-documentacion, flujos-y-tareas, canales, aprobaciones, auditoria, configuracion.
+- 2.7 RRHH: empleados, nomina, ausencias.
+- 2.8 Productividad: opsphere, uonify, marketing (meta, hubspot, mastercrm), google-workspace (gmail, meet, drive), microsoft-365 (outlook, teams, onedrive, sharepoint, planner, power-automate).
+- 2.9 POS: ventas-en-tienda, cajas.
+- 2.10 Transporte: repartidores, chipro, mrw.
 
-## Módulos de negocio
+Repartidores está en operaciones 2.3.4 y en transporte 2.10.1. Es la misma entidad. MasterPay, Chipro y MRW también aparecen en integraciones externas.
 
-- Catalogo: productos, categoria, atributos, marcas, proveedor, inventario.
-- Finanzas: admin, contabilidad, bi, masterpay.
-- Operaciones: pedidos, preparacion, rutas, nodos.
-- Canales digitales: pagina-web, ecommerce.
-- Servicios: mantenimiento, fabricacion, proyectos, rfid.
-- RRHH: empleados, nomina, ausencias.
-- Centro de agentes: general, agentes-internos, agentes-custom, constructor, centro-de-documentacion, flujos-y-tareas, canales, aprobaciones, auditoria, configuracion.
-- Productividad: opsphere, uonify, y marketing con meta, hubspot y mastercrm.
-- Google: gmail, meet, drive.
-- Microsoft: outlook, teams, one-drive, sharepoint, planner, automate.
-- POS: ventas-en-tienda, cajas.
-- Transporte: repartidores, chipro, mrw.
+## Integraciones externas
 
-Cada una vive en `templates/<grupo>/<modulo>/template.yaml`.
+`templates/integraciones/` cubre marketplaces, pagos, logística, CRM, Google Workspace, Microsoft 365 y otros.
 
-Las cajas del diagrama todavía no crean un servicio propio. La plantilla marca el módulo con un parámetro SSM en valor `pendiente`. La red, el balanceador, PostgreSQL y Fargate siguen en las plantillas de foundation.
+Las cajas que todavía no tienen servicio propio marcan el módulo con un parámetro SSM en valor `pendiente`.

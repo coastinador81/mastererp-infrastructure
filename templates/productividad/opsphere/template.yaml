@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Productividad. Opsphere."
+Description: "2.8.1 Opsphere."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/productividad/opsphere
       Type: String
       Value: pendiente
-      Description: "Productividad. Opsphere."
+      Description: "2.8.1 Opsphere."
 
 Outputs:
   ModuleParameter:

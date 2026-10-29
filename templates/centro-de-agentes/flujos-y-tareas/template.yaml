@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Centro de agentes. Flujos y tareas."
+Description: "2.6.6 Flujos y tareas."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/centro-de-agentes/flujos-y-tareas
       Type: String
       Value: pendiente
-      Description: "Centro de agentes. Flujos y tareas."
+      Description: "2.6.6 Flujos y tareas."
 
 Outputs:
   ModuleParameter:

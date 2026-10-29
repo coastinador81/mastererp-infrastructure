@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "RRHH. Empleados."
+Description: "2.7.1 Empleados."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/rrhh/empleados
       Type: String
       Value: pendiente
-      Description: "RRHH. Empleados."
+      Description: "2.7.1 Empleados."
 
 Outputs:
   ModuleParameter:

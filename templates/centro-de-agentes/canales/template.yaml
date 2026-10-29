@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Centro de agentes. Canales."
+Description: "2.6.7 Canales."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/centro-de-agentes/canales
       Type: String
       Value: pendiente
-      Description: "Centro de agentes. Canales."
+      Description: "2.6.7 Canales."
 
 Outputs:
   ModuleParameter:

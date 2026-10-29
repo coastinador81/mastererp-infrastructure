@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "IA de la plataforma."
+Description: "1.2 IA transversal. Orquestacion, modelos y conocimiento por tenant."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/plataforma-base/ia
       Type: String
       Value: pendiente
-      Description: "IA de la plataforma."
+      Description: "1.2 IA transversal. Orquestacion, modelos y conocimiento por tenant."
 
 Outputs:
   ModuleParameter:

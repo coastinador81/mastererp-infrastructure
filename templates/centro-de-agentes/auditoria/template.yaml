@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Centro de agentes. Auditoria."
+Description: "2.6.9 Auditoria."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/centro-de-agentes/auditoria
       Type: String
       Value: pendiente
-      Description: "Centro de agentes. Auditoria."
+      Description: "2.6.9 Auditoria."
 
 Outputs:
   ModuleParameter:

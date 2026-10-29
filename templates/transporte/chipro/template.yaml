@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Transporte. Chipro."
+Description: "2.10.2 Chipro."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/transporte/chipro
       Type: String
       Value: pendiente
-      Description: "Transporte. Chipro."
+      Description: "2.10.2 Chipro."
 
 Outputs:
   ModuleParameter:

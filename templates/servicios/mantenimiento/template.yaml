@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Servicios. Mantenimiento."
+Description: "2.5.1 Mantenimiento."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/servicios/mantenimiento
       Type: String
       Value: pendiente
-      Description: "Servicios. Mantenimiento."
+      Description: "2.5.1 Mantenimiento."
 
 Outputs:
   ModuleParameter:

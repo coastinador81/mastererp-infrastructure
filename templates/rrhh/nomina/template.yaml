@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "RRHH. Nomina."
+Description: "2.7.2 Nomina."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/rrhh/nomina
       Type: String
       Value: pendiente
-      Description: "RRHH. Nomina."
+      Description: "2.7.2 Nomina."
 
 Outputs:
   ModuleParameter:

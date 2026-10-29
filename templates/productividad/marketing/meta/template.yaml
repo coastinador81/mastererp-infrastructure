@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Marketing. Meta."
+Description: "2.8.3.1 Meta."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/productividad/marketing/meta
       Type: String
       Value: pendiente
-      Description: "Marketing. Meta."
+      Description: "2.8.3.1 Meta."
 
 Outputs:
   ModuleParameter:

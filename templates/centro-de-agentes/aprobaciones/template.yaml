@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Centro de agentes. Aprobaciones."
+Description: "2.6.8 Aprobaciones."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/centro-de-agentes/aprobaciones
       Type: String
       Value: pendiente
-      Description: "Centro de agentes. Aprobaciones."
+      Description: "2.6.8 Aprobaciones."
 
 Outputs:
   ModuleParameter:

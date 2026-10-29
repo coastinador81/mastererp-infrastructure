@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Logistica Chipro. Misma capacidad que Transporte 2.10.2."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/integraciones/logistica/chipro
+      Type: String
+      Value: pendiente
+      Description: "Logistica Chipro. Misma capacidad que Transporte 2.10.2."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

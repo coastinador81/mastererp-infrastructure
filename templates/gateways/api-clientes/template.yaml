@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "API Clientes. Sitio, ecommerce, marketplace y APIs publicas."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/gateways/api-clientes
+      Type: String
+      Value: pendiente
+      Description: "API Clientes. Sitio, ecommerce, marketplace y APIs publicas."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

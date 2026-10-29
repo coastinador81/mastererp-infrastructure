@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Finanzas. Contabilidad."
+Description: "2.2.2 Contabilidad."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/finanzas/contabilidad
       Type: String
       Value: pendiente
-      Description: "Finanzas. Contabilidad."
+      Description: "2.2.2 Contabilidad."
 
 Outputs:
   ModuleParameter:

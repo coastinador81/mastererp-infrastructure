@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Servicios. Fabricacion."
+Description: "2.5.2 Fabricacion."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/servicios/fabricacion
       Type: String
       Value: pendiente
-      Description: "Servicios. Fabricacion."
+      Description: "2.5.2 Fabricacion."
 
 Outputs:
   ModuleParameter:

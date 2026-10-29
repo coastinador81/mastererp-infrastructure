@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Integracion Drive."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/integraciones/google-workspace/drive
+      Type: String
+      Value: pendiente
+      Description: "Integracion Drive."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Centro de agentes. Centro de documentacion."
+Description: "2.6.5 Centro de documentacion."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/centro-de-agentes/centro-de-documentacion
       Type: String
       Value: pendiente
-      Description: "Centro de agentes. Centro de documentacion."
+      Description: "2.6.5 Centro de documentacion."
 
 Outputs:
   ModuleParameter:

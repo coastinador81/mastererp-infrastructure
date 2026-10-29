@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "POS. Cajas."
+Description: "2.9.2 Cajas."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/pos/cajas
       Type: String
       Value: pendiente
-      Description: "POS. Cajas."
+      Description: "2.9.2 Cajas."
 
 Outputs:
   ModuleParameter:

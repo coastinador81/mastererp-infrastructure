@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Finanzas. MasterPay."
+Description: "2.2.4 MasterPay."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/finanzas/masterpay
       Type: String
       Value: pendiente
-      Description: "Finanzas. MasterPay."
+      Description: "2.2.4 MasterPay."
 
 Outputs:
   ModuleParameter:

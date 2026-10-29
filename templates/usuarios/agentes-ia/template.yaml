@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Agentes IA internos, externos y automatizaciones."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/usuarios/agentes-ia
+      Type: String
+      Value: pendiente
+      Description: "Agentes IA internos, externos y automatizaciones."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

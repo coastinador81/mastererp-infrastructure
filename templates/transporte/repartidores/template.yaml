@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Transporte. Repartidores."
+Description: "2.10.1 Repartidores. Misma entidad que Operaciones 2.3.4."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/transporte/repartidores
       Type: String
       Value: pendiente
-      Description: "Transporte. Repartidores."
+      Description: "2.10.1 Repartidores. Misma entidad que Operaciones 2.3.4."
 
 Outputs:
   ModuleParameter:

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: "Marketing. Hubspot."
+Description: "2.8.3.2 HubSpot."
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Resources:
       Name: !Sub /mastererp/${Environment}/productividad/marketing/hubspot
       Type: String
       Value: pendiente
-      Description: "Marketing. Hubspot."
+      Description: "2.8.3.2 HubSpot."
 
 Outputs:
   ModuleParameter:

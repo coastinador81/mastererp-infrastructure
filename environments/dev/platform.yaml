@@ -27,7 +27,7 @@ Resources:
   Database:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../templates/datos/postgres/template.yaml
+      TemplateURL: ../../templates/plataforma-base/datos/base-de-datos/template.yaml
       Parameters:
         Prefix: mastererp-dev
         VpcId: !Ref VpcId
@@ -38,21 +38,21 @@ Resources:
   Documents:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../templates/foundation/documents/template.yaml
+      TemplateURL: ../../templates/plataforma-base/datos/almacenamiento/template.yaml
       Parameters:
         Prefix: mastererp-dev
 
   Queues:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../templates/foundation/queues/template.yaml
+      TemplateURL: ../../templates/plataforma-base/datos/colas/template.yaml
       Parameters:
         Prefix: mastererp-dev
 
   Identity:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: ../../templates/foundation/security/template.yaml
+      TemplateURL: ../../templates/plataforma-base/datos/seguridad/template.yaml
       Parameters:
         Prefix: mastererp-dev
         DatabaseSecretArn: !GetAtt Database.Outputs.SecretArn
