@@ -1,8 +1,0 @@
-{
-  "Prefix": "mastererp-dev",
-  "VpcCidr": "10.40.0.0/16",
-  "PublicSubnetACidr": "10.40.0.0/24",
-  "PublicSubnetBCidr": "10.40.1.0/24",
-  "PrivateSubnetACidr": "10.40.10.0/24",
-  "PrivateSubnetBCidr": "10.40.11.0/24"
-}
