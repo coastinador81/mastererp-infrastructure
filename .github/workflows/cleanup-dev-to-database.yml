@@ -1,0 +1,92 @@
+name: Reducir DEV a PostgreSQL
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Escribe DELETE_NON_DATABASE_RESOURCES para confirmar la eliminacion.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mastererp-dev-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    if: inputs.confirmation == 'DELETE_NON_DATABASE_RESOURCES'
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: us-west-2
+      ARTIFACTS_BUCKET: mastererp-dev-cfn-277352717693
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Eliminar stacks de borde y marcadores
+        shell: bash
+        run: |
+          set -euo pipefail
+          delete_stack() {
+            if aws cloudformation describe-stacks --stack-name "$1" >/dev/null 2>&1; then
+              aws cloudformation delete-stack --stack-name "$1"
+              aws cloudformation wait stack-delete-complete --stack-name "$1"
+            fi
+          }
+          delete_stack mastererp-dev-edge
+          delete_stack mastererp-dev-webs
+          delete_stack mastererp-dev-modules
+
+      - name: Vaciar almacenamiento de documentos
+        shell: bash
+        run: |
+          set -euo pipefail
+          bucket=$(aws cloudformation describe-stacks --stack-name mastererp-dev-platform \
+            --query "Stacks[0].Outputs[?OutputKey=='DocumentsBucketName'].OutputValue | [0]" --output text || true)
+          if [ -n "$bucket" ] && [ "$bucket" != "None" ]; then
+            aws s3 rm "s3://$bucket" --recursive
+          fi
+
+      - name: Reducir red a dependencias de PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          aws cloudformation package \
+            --template-file environments/dev/foundation.yaml \
+            --s3-bucket "$ARTIFACTS_BUCKET" \
+            --s3-prefix database-only/foundation \
+            --output-template-file build/foundation.packaged.yaml
+          aws cloudformation deploy \
+            --stack-name mastererp-dev-foundation \
+            --template-file build/foundation.packaged.yaml \
+            --no-fail-on-empty-changeset \
+            --tags Project=mastererp Environment=dev
+
+      - name: Conservar solamente PostgreSQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          vpc=$(aws cloudformation describe-stacks --stack-name mastererp-dev-foundation --query "Stacks[0].Outputs[?OutputKey=='VpcId'].OutputValue | [0]" --output text)
+          subnet_a=$(aws cloudformation describe-stacks --stack-name mastererp-dev-foundation --query "Stacks[0].Outputs[?OutputKey=='PrivateSubnetA'].OutputValue | [0]" --output text)
+          subnet_b=$(aws cloudformation describe-stacks --stack-name mastererp-dev-foundation --query "Stacks[0].Outputs[?OutputKey=='PrivateSubnetB'].OutputValue | [0]" --output text)
+          clients_sg=$(aws cloudformation describe-stacks --stack-name mastererp-dev-foundation --query "Stacks[0].Outputs[?OutputKey=='AppSecurityGroupId'].OutputValue | [0]" --output text)
+          aws cloudformation package \
+            --template-file environments/dev/platform.yaml \
+            --s3-bucket "$ARTIFACTS_BUCKET" \
+            --s3-prefix database-only/platform \
+            --output-template-file build/platform.packaged.yaml
+          aws cloudformation deploy \
+            --stack-name mastererp-dev-platform \
+            --template-file build/platform.packaged.yaml \
+            --parameter-overrides VpcId="$vpc" PrivateSubnetA="$subnet_a" PrivateSubnetB="$subnet_b" AppSecurityGroupId="$clients_sg" \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --no-fail-on-empty-changeset \
+            --tags Project=mastererp Environment=dev

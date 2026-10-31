@@ -1,11 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Base de DEV. Compone la red, los certificados y la zona privada del MCP.
-
-Parameters:
-  HostedZoneId:
-    Type: String
-    Default: Z08167243FAUSDUW0Z2KP
-    Description: Zona pública uonify.com, usada para validar los certificados.
+Description: Base privada mínima de DEV para PostgreSQL.
 
 Resources:
   Network:
@@ -15,53 +9,12 @@ Resources:
       Parameters:
         Prefix: mastererp-dev
 
-  Certificates:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ../../templates/foundation/certificates/template.yaml
-      Parameters:
-        HostedZoneId: !Ref HostedZoneId
-        Prefix: mastererp-dev
-        EdgeDomain: dev.erp.uonify.com
-        EdgeWildcard: "*.dev.erp.uonify.com"
-        StoreWildcard: "*.store.dev.erp.uonify.com"
-
-  InternalDns:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ../../templates/foundation/internal-dns/template.yaml
-      Parameters:
-        VpcId: !GetAtt Network.Outputs.VpcId
-        ZoneName: mcp-internal-dev.erp.uonify.com
-
 Outputs:
   VpcId:
     Value: !GetAtt Network.Outputs.VpcId
-  PublicSubnetIds:
-    Value: !Join
-      - ","
-      - - !GetAtt Network.Outputs.PublicSubnetA
-        - !GetAtt Network.Outputs.PublicSubnetB
-  PrivateSubnetIds:
-    Value: !Join
-      - ","
-      - - !GetAtt Network.Outputs.PrivateSubnetA
-        - !GetAtt Network.Outputs.PrivateSubnetB
-  PublicSubnetA:
-    Value: !GetAtt Network.Outputs.PublicSubnetA
-  PublicSubnetB:
-    Value: !GetAtt Network.Outputs.PublicSubnetB
   PrivateSubnetA:
     Value: !GetAtt Network.Outputs.PrivateSubnetA
   PrivateSubnetB:
     Value: !GetAtt Network.Outputs.PrivateSubnetB
-  AlbSecurityGroupId:
-    Value: !GetAtt Network.Outputs.AlbSecurityGroupId
   AppSecurityGroupId:
     Value: !GetAtt Network.Outputs.AppSecurityGroupId
-  EdgeCertificateArn:
-    Value: !GetAtt Certificates.Outputs.EdgeCertificateArn
-  StoreCertificateArn:
-    Value: !GetAtt Certificates.Outputs.StoreCertificateArn
-  InternalMcpZoneId:
-    Value: !GetAtt InternalDns.Outputs.InternalMcpZoneId

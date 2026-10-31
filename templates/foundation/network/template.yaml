@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Red de un ambiente. VPC, subredes, NAT, salida a S3 y grupos del borde y de las aplicaciones.
+Description: Red privada mínima para PostgreSQL.
 
 Parameters:
   Prefix:
@@ -7,12 +7,6 @@ Parameters:
   VpcCidr:
     Type: String
     Default: 10.40.0.0/16
-  PublicSubnetACidr:
-    Type: String
-    Default: 10.40.0.0/24
-  PublicSubnetBCidr:
-    Type: String
-    Default: 10.40.1.0/24
   PrivateSubnetACidr:
     Type: String
     Default: 10.40.10.0/24
@@ -27,45 +21,6 @@ Resources:
       CidrBlock: !Ref VpcCidr
       EnableDnsSupport: true
       EnableDnsHostnames: true
-      Tags:
-        - Key: Name
-          Value: !Ref Prefix
-
-  InternetGateway:
-    Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Name
-          Value: !Ref Prefix
-
-  VpcGatewayAttachment:
-    Type: AWS::EC2::VPCGatewayAttachment
-    Properties:
-      VpcId: !Ref Vpc
-      InternetGatewayId: !Ref InternetGateway
-
-  PublicSubnetA:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref Vpc
-      CidrBlock: !Ref PublicSubnetACidr
-      AvailabilityZone: !Select [0, !GetAZs ""]
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-public-a
-
-  PublicSubnetB:
-    Type: AWS::EC2::Subnet
-    Properties:
-      VpcId: !Ref Vpc
-      CidrBlock: !Ref PublicSubnetBCidr
-      AvailabilityZone: !Select [1, !GetAZs ""]
-      MapPublicIpOnLaunch: true
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-public-b
-
   PrivateSubnetA:
     Type: AWS::EC2::Subnet
     Properties:
@@ -73,10 +28,6 @@ Resources:
       CidrBlock: !Ref PrivateSubnetACidr
       AvailabilityZone: !Select [0, !GetAZs ""]
       MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-private-a
-
   PrivateSubnetB:
     Type: AWS::EC2::Subnet
     Properties:
@@ -84,139 +35,19 @@ Resources:
       CidrBlock: !Ref PrivateSubnetBCidr
       AvailabilityZone: !Select [1, !GetAZs ""]
       MapPublicIpOnLaunch: false
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-private-b
-
-  PublicRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref Vpc
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-public
-
-  PublicRoute:
-    Type: AWS::EC2::Route
-    DependsOn: VpcGatewayAttachment
-    Properties:
-      RouteTableId: !Ref PublicRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref InternetGateway
-
-  PublicSubnetARouteAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnetA
-      RouteTableId: !Ref PublicRouteTable
-
-  PublicSubnetBRouteAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnetB
-      RouteTableId: !Ref PublicRouteTable
-
-  NatEip:
-    Type: AWS::EC2::EIP
-    DependsOn: VpcGatewayAttachment
-    Properties:
-      Domain: vpc
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-nat
-
-  NatGateway:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt NatEip.AllocationId
-      SubnetId: !Ref PublicSubnetA
-      Tags:
-        - Key: Name
-          Value: !Ref Prefix
-
-  PrivateRouteTable:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref Vpc
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-private
-
-  PrivateRoute:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway
-
-  PrivateSubnetARouteAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnetA
-      RouteTableId: !Ref PrivateRouteTable
-
-  PrivateSubnetBRouteAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnetB
-      RouteTableId: !Ref PrivateRouteTable
-
-  S3Endpoint:
-    Type: AWS::EC2::VPCEndpoint
-    Properties:
-      VpcId: !Ref Vpc
-      ServiceName: !Sub com.amazonaws.${AWS::Region}.s3
-      VpcEndpointType: Gateway
-      RouteTableIds:
-        - !Ref PrivateRouteTable
-        - !Ref PublicRouteTable
-
-  AlbSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupDescription: Entrada HTTPS publica
-      VpcId: !Ref Vpc
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          CidrIp: 0.0.0.0/0
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-alb
-
   AppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Aplicaciones, solo desde el balanceador
+      GroupDescription: Clientes autorizados de PostgreSQL; sin acceso por defecto.
       VpcId: !Ref Vpc
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 443
-          ToPort: 443
-          SourceSecurityGroupId: !Ref AlbSecurityGroup
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp: 0.0.0.0/0
-      Tags:
-        - Key: Name
-          Value: !Sub ${Prefix}-app
+      SecurityGroupEgress: []
 
 Outputs:
   VpcId:
     Value: !Ref Vpc
-  PublicSubnetA:
-    Value: !Ref PublicSubnetA
-  PublicSubnetB:
-    Value: !Ref PublicSubnetB
   PrivateSubnetA:
     Value: !Ref PrivateSubnetA
   PrivateSubnetB:
     Value: !Ref PrivateSubnetB
-  AlbSecurityGroupId:
-    Value: !Ref AlbSecurityGroup
   AppSecurityGroupId:
     Value: !Ref AppSecurityGroup

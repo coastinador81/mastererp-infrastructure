@@ -4,7 +4,7 @@ Infraestructura de MasterERP, alineada al diagrama funcional. Cada caja numerada
 
 ## Flujo
 
-Clientes entran por `gateways/api-clientes`. Admins entran por `gateways/api-admin`. Agentes IA entran por `gateways/gateway-mcp` y no llegan directo a la base. Debajo está la plataforma base y, por tenant, los módulos de negocio. Al final están las integraciones externas.
+El repositorio conserva el mapa funcional de módulos. En AWS, la única infraestructura permanente de este proyecto es PostgreSQL privado y sus dependencias de red mínimas.
 
 ## 1.0 Plataforma base
 
@@ -17,11 +17,11 @@ Clientes entran por `gateways/api-clientes`. Admins entran por `gateways/api-adm
 - `templates/1.0-plataforma-base/datos/seguridad/template.yaml` — roles reales
 - `templates/1.0-plataforma-base/datos/monitoreo/template.yaml`
 
-La red, los certificados y el cluster siguen en `templates/foundation`. El balanceador, en `templates/foundation/edge`, solo publica las cuatro APIs: `client-api`, `admin-api`, `agents-api` y `mcp`. Siguen en Fargate, en la misma red que PostgreSQL.
+La red mínima está en `templates/foundation/network`. No se mantienen servicios ECS/Fargate, balanceadores, almacenamiento S3, colas SQS, Lambda, Amplify ni despliegues automáticos de módulos.
 
-La publicación de `portal-web`, `super-admin-web`, `agents-web` y `storefront-web` se definirá por un mecanismo independiente. Este repositorio conserva la infraestructura de APIs y la estructura funcional de módulos.
+La publicación de `portal-web`, `super-admin-web`, `agents-web` y `storefront-web` se definirá por un mecanismo independiente.
 
-El despliegue automático de módulos está en `.github/workflows/deploy-dev.yml`. Usa un usuario IAM propio y corre en cada push a `dev`, creando o actualizando `mastererp-dev-modules`. No toca `mastererp-dev-foundation`, `mastererp-dev-edge` ni `mastererp-dev-platform`.
+`.github/workflows/cleanup-dev-to-database.yml` es un workflow manual y protegido por confirmación explícita para reducir el entorno DEV a la base de datos.
 
 ## 2.0 Módulos de negocio
 

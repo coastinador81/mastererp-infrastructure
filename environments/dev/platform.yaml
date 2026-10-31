@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: APIs DEV en Fargate, en la misma VPC que PostgreSQL. La publicación de webs se define por separado.
+Description: PostgreSQL privado de DEV, sin servicios de aplicación.
 
 Parameters:
   VpcId:
@@ -10,20 +10,8 @@ Parameters:
     Type: AWS::EC2::Subnet::Id
   AppSecurityGroupId:
     Type: AWS::EC2::SecurityGroup::Id
-  AlbSecurityGroupId:
-    Type: AWS::EC2::SecurityGroup::Id
 
 Resources:
-  AppFromAlbIngress:
-    Type: AWS::EC2::SecurityGroupIngress
-    Properties:
-      GroupId: !Ref AppSecurityGroupId
-      IpProtocol: tcp
-      FromPort: 8080
-      ToPort: 8080
-      SourceSecurityGroupId: !Ref AlbSecurityGroupId
-      Description: Trafico del balanceador hacia las tareas
-
   Database:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -35,121 +23,8 @@ Resources:
         PrivateSubnetB: !Ref PrivateSubnetB
         AppSecurityGroupId: !Ref AppSecurityGroupId
 
-  Documents:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ../../templates/1.0-plataforma-base/datos/almacenamiento/template.yaml
-      Parameters:
-        Prefix: mastererp-dev
-
-  Queues:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ../../templates/1.0-plataforma-base/datos/colas/template.yaml
-      Parameters:
-        Prefix: mastererp-dev
-
-  Identity:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ../../templates/1.0-plataforma-base/datos/seguridad/template.yaml
-      Parameters:
-        Prefix: mastererp-dev
-        DatabaseSecretArn: !GetAtt Database.Outputs.SecretArn
-        DocumentsBucketArn: !GetAtt Documents.Outputs.BucketArn
-        AgentQueueArn: !GetAtt Queues.Outputs.QueueArn
-
-  Cluster:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: ../../templates/foundation/cluster/template.yaml
-      Parameters:
-        Prefix: mastererp-dev
-
-  ClientApi:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: client-api
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
-        TaskRoleArn: !GetAtt Identity.Outputs.DataTaskRoleArn
-
-  AdminApi:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: admin-api
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
-        TaskRoleArn: !GetAtt Identity.Outputs.DataTaskRoleArn
-
-  AgentsApi:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: agents-api
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
-        TaskRoleArn: !GetAtt Identity.Outputs.AgentsTaskRoleArn
-
-  Mcp:
-    Type: AWS::CloudFormation::Stack
-    DependsOn: AppFromAlbIngress
-    Properties:
-      TemplateURL: ../../templates/shared/service/template.yaml
-      Parameters:
-        Name: mcp
-        Prefix: mastererp-dev
-        Scope: dev
-        VpcId: !Ref VpcId
-        PrivateSubnetA: !Ref PrivateSubnetA
-        PrivateSubnetB: !Ref PrivateSubnetB
-        AppSecurityGroupId: !Ref AppSecurityGroupId
-        ClusterName: !GetAtt Cluster.Outputs.ClusterName
-        ExecutionRoleArn: !GetAtt Identity.Outputs.ExecutionRoleArn
-        TaskRoleArn: !GetAtt Identity.Outputs.McpTaskRoleArn
-
 Outputs:
   DatabaseEndpoint:
     Value: !GetAtt Database.Outputs.Endpoint
   DatabaseSecretArn:
     Value: !GetAtt Database.Outputs.SecretArn
-  DocumentsBucketName:
-    Value: !GetAtt Documents.Outputs.BucketName
-  AgentQueueUrl:
-    Value: !GetAtt Queues.Outputs.QueueUrl
-  ClusterName:
-    Value: !GetAtt Cluster.Outputs.ClusterName
-  ClientApiTargetGroupArn:
-    Value: !GetAtt ClientApi.Outputs.TargetGroupArn
-  AdminApiTargetGroupArn:
-    Value: !GetAtt AdminApi.Outputs.TargetGroupArn
-  AgentsApiTargetGroupArn:
-    Value: !GetAtt AgentsApi.Outputs.TargetGroupArn
-  McpTargetGroupArn:
-    Value: !GetAtt Mcp.Outputs.TargetGroupArn
