@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "2.8.4.3 Drive."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/2.8-productividad/2.8.5-google-workspace/2.8.5.3-drive
+      Type: String
+      Value: pendiente
+      Description: "2.8.4.3 Drive."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module

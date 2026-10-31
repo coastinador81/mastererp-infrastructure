@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "2.8.5.6 Power Automate."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+
+Resources:
+  Module:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /mastererp/${Environment}/2.8-productividad/2.8.6-microsoft-365/2.8.6.6-power-automate
+      Type: String
+      Value: pendiente
+      Description: "2.8.5.6 Power Automate."
+
+Outputs:
+  ModuleParameter:
+    Value: !Ref Module
