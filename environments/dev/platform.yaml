@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: APIs DEV en Fargate, en la misma VPC que PostgreSQL. Las webs estan en templates/amplify/webs.
+Description: APIs DEV en Fargate, en la misma VPC que PostgreSQL. La publicación de webs se define por separado.
 
 Parameters:
   VpcId:

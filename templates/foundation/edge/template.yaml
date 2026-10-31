@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Borde HTTPS de las APIs. El balanceador solo enruta client-api, admin-api, agents-api y mcp. Las webs salen por Amplify.
+Description: Borde HTTPS de las APIs. El balanceador solo enruta client-api, admin-api, agents-api y mcp. La publicación de webs se define por separado.
 
 Parameters:
   PublicSubnetA:
