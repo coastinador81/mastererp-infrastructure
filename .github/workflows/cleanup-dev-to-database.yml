@@ -1,8 +1,6 @@
 name: Reducir DEV a PostgreSQL
 
 on:
-  push:
-    branches: [dev]
   workflow_dispatch:
     inputs:
       confirmation:
@@ -19,7 +17,7 @@ concurrency:
 
 jobs:
   cleanup:
-    if: github.event_name == 'push' || inputs.confirmation == 'DELETE_NON_DATABASE_RESOURCES'
+    if: inputs.confirmation == 'DELETE_NON_DATABASE_RESOURCES'
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-west-2
