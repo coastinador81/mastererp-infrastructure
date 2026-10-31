@@ -5,4 +5,4 @@
 - **Dependencias:** identidad y módulos.
 - **APIs futuras:** alta y configuración de tenant.
 - **Herramientas MCP futuras:** tenant.setup.
-- **Estado:** planned.
+- **Estado:** implementación local preparada (SAM + Lambdas en platform).

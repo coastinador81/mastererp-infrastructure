@@ -1,0 +1,273 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: "1.1 Tenant onboarding — Lambdas and Admin HTTP API."
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, qa, prod]
+  VpcSubnetIds:
+    Type: CommaDelimitedList
+  LambdaSecurityGroupIds:
+    Type: CommaDelimitedList
+  DatabaseHost:
+    Type: String
+  DatabaseSecretArn:
+    Type: String
+  DatabaseName:
+    Type: String
+    Default: mastererp
+  CognitoUserPoolId:
+    Type: String
+  CognitoAppClientId:
+    Type: String
+  AllowedOrigins:
+    Type: String
+    Default: https://admin.dev.mastererp.local
+  OnboardingCodeUri:
+    Type: String
+    Default: ../../../../../mastererp-platform/services/modules/1.0-platform-base/1.1-tenant-onboarding/
+  MigratorCodeUri:
+    Type: String
+    Default: ../../../../../mastererp-platform/services/platform-base/db-migrator/
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 512
+    Tracing: Active
+    VpcConfig:
+      SubnetIds: !Ref VpcSubnetIds
+      SecurityGroupIds: !Ref LambdaSecurityGroupIds
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        DATABASE_HOST: !Ref DatabaseHost
+        DATABASE_NAME: !Ref DatabaseName
+        DATABASE_SECRET_ARN: !Ref DatabaseSecretArn
+        DATABASE_SSLMODE: require
+        COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+        COGNITO_APP_CLIENT_ID: !Ref CognitoAppClientId
+        ALLOW_TENANT_SELF_REGISTRATION: "false"
+        AUTH_MODE: cognito
+
+Resources:
+  AdminHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name: !Sub mastererp-${Environment}-admin-api
+      CorsConfiguration:
+        AllowOrigins:
+          - !Ref AllowedOrigins
+        AllowMethods: [GET, POST, PUT, PATCH, OPTIONS]
+        AllowHeaders: [Authorization, Content-Type, Idempotency-Key]
+      Auth:
+        DefaultAuthorizer: CognitoJwt
+        Authorizers:
+          CognitoJwt:
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${CognitoUserPoolId}
+              audience: [!Ref CognitoAppClientId]
+            IdentitySource: $request.header.Authorization
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 100
+        ThrottlingRateLimit: 50
+
+  AdminApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/apigateway/mastererp-${Environment}-admin-api
+      RetentionInDays: 30
+
+  DbMigratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-db-migrator
+      CodeUri: !Ref MigratorCodeUri
+      Handler: handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+
+  OnboardingSessionManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-onboarding-session-manager
+      CodeUri: !Ref OnboardingCodeUri
+      Handler: lambdas/onboarding-session-manager/handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+      Events:
+        PostSession:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/onboarding/sessions
+            Method: POST
+        GetSession:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}
+            Method: GET
+        PatchSession:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}
+            Method: PATCH
+        CompleteSession:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}/complete
+            Method: POST
+
+  OnboardingProgressTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-onboarding-progress-tracker
+      CodeUri: !Ref OnboardingCodeUri
+      Handler: lambdas/onboarding-progress-tracker/handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+      Events:
+        GetProgress:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}/progress
+            Method: GET
+        PutStep:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}/steps/{stepId}
+            Method: PUT
+
+  TenantCreatorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-tenant-creator
+      CodeUri: !Ref OnboardingCodeUri
+      Handler: lambdas/tenant-creator/handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+      Events:
+        PostTenant:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/tenants
+            Method: POST
+
+  TenantConfigManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-tenant-config-manager
+      CodeUri: !Ref OnboardingCodeUri
+      Handler: lambdas/tenant-config-manager/handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+      Events:
+        GetConfig:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/tenants/{id}/config
+            Method: GET
+        PatchConfig:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/tenants/{id}/config
+            Method: PATCH
+
+  ModuleCatalogReaderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-module-catalog-reader
+      CodeUri: !Ref OnboardingCodeUri
+      Handler: lambdas/module-catalog-reader/handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+      Events:
+        GetModules:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/modules
+            Method: GET
+
+  TenantModuleManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-tenant-module-manager
+      CodeUri: !Ref OnboardingCodeUri
+      Handler: lambdas/tenant-module-manager/handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+      Events:
+        GetTenantModules:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/tenants/{id}/modules
+            Method: GET
+        PutTenantModule:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref AdminHttpApi
+            Path: /v1/tenants/{id}/modules/{moduleId}
+            Method: PUT
+
+  OnboardingProvisionerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub mastererp-${Environment}-onboarding-provisioner
+      CodeUri: !Ref OnboardingCodeUri
+      Handler: lambdas/onboarding-provisioner/handler.lambda_handler
+      Policies:
+        - AWSLambdaVPCAccessExecutionRole
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref DatabaseSecretArn
+
+Outputs:
+  AdminApiEndpoint:
+    Description: Admin HTTP API base URL
+    Value: !Sub https://${AdminHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+  DbMigratorFunctionName:
+    Value: !Ref DbMigratorFunction
+  OnboardingProvisionerFunctionName:
+    Value: !Ref OnboardingProvisionerFunction
