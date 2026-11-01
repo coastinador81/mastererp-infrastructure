@@ -1,5 +1,7 @@
 # MasterERP Infrastructure
 
+Entrada rápida: [START_HERE.md](START_HERE.md).
+
 ## Mapa físico y referencias
 
 ```text
