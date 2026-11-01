@@ -1,0 +1,63 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Shared MasterERP HTTP APIs; ownership migration required before deployment",
+  "Resources": {
+    "AdminHttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Name": "mastererp-dev-admin-api",
+        "ProtocolType": "HTTP"
+      }
+    },
+    "AdminStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "AdminHttpApi"
+        },
+        "StageName": "$default",
+        "AutoDeploy": true
+      }
+    },
+    "ClientHttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Name": "mastererp-dev-client-api",
+        "ProtocolType": "HTTP"
+      }
+    },
+    "ClientStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ClientHttpApi"
+        },
+        "StageName": "$default",
+        "AutoDeploy": true
+      }
+    },
+    "AgentHttpApi": {
+      "Type": "AWS::ApiGatewayV2::Api",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "Name": "mastererp-dev-api-agent",
+        "ProtocolType": "HTTP"
+      }
+    },
+    "AgentStage": {
+      "Type": "AWS::ApiGatewayV2::Stage",
+      "Properties": {
+        "ApiId": {
+          "Ref": "AgentHttpApi"
+        },
+        "StageName": "$default",
+        "AutoDeploy": true
+      }
+    }
+  }
+}

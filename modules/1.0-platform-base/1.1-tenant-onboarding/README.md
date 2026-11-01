@@ -5,4 +5,4 @@
 - **Dependencias:** identidad y módulos.
 - **APIs futuras:** alta y configuración de tenant.
 - **Herramientas MCP futuras:** tenant.setup.
-- **Estado:** implementación local preparada (SAM + Lambdas en platform).
+- **Estado:** tres Lambdas existentes en AWS; definición reorganizada en `lambdas.yml`, pendiente de completar equivalencia y migración de stack. Código en platform. API Gateway compartidos en `modules/api-gateways.yml`. RDS y migrador en database.
