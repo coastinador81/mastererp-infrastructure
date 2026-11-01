@@ -1,0 +1,73 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Transform": "AWS::Serverless-2016-10-31",
+  "Description": "MasterERP onboarding functions only",
+  "Parameters": {
+    "CodeBucket": {
+      "Type": "String"
+    },
+    "CodeKey": {
+      "Type": "String"
+    },
+    "ExecutionRoleArn": {
+      "Type": "String"
+    },
+    "DatabaseHost": {
+      "Type": "String"
+    },
+    "DatabaseSecretArn": {
+      "Type": "String"
+    },
+    "VpcSubnetIds": {
+      "Type": "CommaDelimitedList"
+    },
+    "LambdaSecurityGroupIds": {
+      "Type": "CommaDelimitedList"
+    }
+  },
+  "Resources": {
+    "OnboardingProvisionerFunction": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "FunctionName": "mastererp-dev-onboarding-provisioner",
+        "Runtime": "python3.12",
+        "MemorySize": 512,
+        "Timeout": 30,
+        "Handler": "lambdas/onboarding-provisioner/handler.lambda_handler",
+        "CodeUri": {
+          "Bucket": {
+            "Ref": "CodeBucket"
+          },
+          "Key": {
+            "Ref": "CodeKey"
+          }
+        },
+        "Role": {
+          "Ref": "ExecutionRoleArn"
+        },
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "VpcSubnetIds"
+          },
+          "SecurityGroupIds": {
+            "Ref": "LambdaSecurityGroupIds"
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "DATABASE_HOST": {
+              "Ref": "DatabaseHost"
+            },
+            "DATABASE_SECRET_ARN": {
+              "Ref": "DatabaseSecretArn"
+            },
+            "DATABASE_NAME": "mastererp",
+            "DATABASE_SSLMODE": "require",
+            "ENVIRONMENT": "dev",
+            "AUTH_MODE": "cognito"
+          }
+        }
+      }
+    }
+  }
+}
