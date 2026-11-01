@@ -7,7 +7,15 @@ Objetivo específico: Guiar el alta de tenants, conservar su progreso y aprovisi
 - **Dependencias:** identidad y módulos.
 - **APIs futuras:** alta y configuración de tenant.
 - **Herramientas MCP futuras:** tenant.setup.
-- **Estado:** tres Lambdas existentes en AWS; definición reorganizada en `lambdas.yml`, pendiente de completar equivalencia y migración de stack. Código en platform. API Gateway compartidos en `modules/api-gateways.yml`. RDS y migrador en database.
+- **Estado:** tres Lambdas reportadas en AWS; plantillas individuales enlazadas abajo, pendientes de completar equivalencia y transición de stacks. Código en platform. API Gateway compartidos en `modules/api-gateways.yml`. RDS y migrador en database.
+
+Plantillas actuales:
+
+- [Sesiones de onboarding](lambdas/onboarding-session-manager/resources.yml).
+- [Progreso de onboarding](lambdas/onboarding-progress-tracker/resources.yml).
+- [Aprovisionamiento de onboarding](lambdas/onboarding-provisioner/resources.yml).
+
+Estas ubicaciones no acreditan un despliegue consolidado resuelto; la equivalencia e integración con los stacks existentes siguen pendientes.
 
 ## Contrato y estado de esta capa
 
