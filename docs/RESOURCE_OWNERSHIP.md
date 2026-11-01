@@ -2,7 +2,7 @@
 
 - mastererp-database owns RDS, its networking, migration Lambda, SQL and migration workflows.
 - mastererp-infrastructure/modules/api-gateways.yml owns the shared API definitions.
-- mastererp-infrastructure/modules/1.0-platform-base/1.1-tenant-onboarding/lambdas.yml defines only the three retained onboarding functions.
+- mastererp-infrastructure/modules/1.0-platform-base/1.1-tenant-onboarding/lambdas/*/resources.yml defines only the three retained onboarding functions.
 - mastererp-platform owns the implementation code packaged for onboarding.
 
 Region: us-west-1. Database migrator remains in the database repository.
