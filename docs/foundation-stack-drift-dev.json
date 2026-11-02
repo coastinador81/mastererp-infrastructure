@@ -1,0 +1,78 @@
+{
+  "mastererp-dev-onboarding": {
+    "status": "DRIFTED",
+    "detection": "DETECTION_COMPLETE",
+    "differences": [
+      {
+        "logical": "DbMigratorFunction",
+        "type": "AWS::Lambda::Function",
+        "status": "DELETED"
+      },
+      {
+        "logical": "ModuleCatalogReaderFunction",
+        "type": "AWS::Lambda::Function",
+        "status": "DELETED"
+      },
+      {
+        "logical": "ModuleCatalogReaderFunctionGetModulesPermission",
+        "type": "AWS::Lambda::Permission",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantConfigManagerFunction",
+        "type": "AWS::Lambda::Function",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantConfigManagerFunctionGetConfigPermission",
+        "type": "AWS::Lambda::Permission",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantConfigManagerFunctionPatchConfigPermission",
+        "type": "AWS::Lambda::Permission",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantCreatorFunction",
+        "type": "AWS::Lambda::Function",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantCreatorFunctionPostTenantPermission",
+        "type": "AWS::Lambda::Permission",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantModuleManagerFunction",
+        "type": "AWS::Lambda::Function",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantModuleManagerFunctionGetTenantModulesPermission",
+        "type": "AWS::Lambda::Permission",
+        "status": "DELETED"
+      },
+      {
+        "logical": "TenantModuleManagerFunctionPutTenantModulePermission",
+        "type": "AWS::Lambda::Permission",
+        "status": "DELETED"
+      }
+    ]
+  },
+  "mastererp-dev-uonify-google-connection": {
+    "status": "IN_SYNC",
+    "detection": "DETECTION_COMPLETE",
+    "differences": []
+  },
+  "mastererp-dev-finance": {
+    "status": "IN_SYNC",
+    "detection": "DETECTION_COMPLETE",
+    "differences": []
+  },
+  "mastererp-dev-administration": {
+    "status": "IN_SYNC",
+    "detection": "DETECTION_COMPLETE",
+    "differences": []
+  }
+}

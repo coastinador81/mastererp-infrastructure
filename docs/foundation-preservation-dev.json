@@ -1,0 +1,61 @@
+{
+  "administration_physical_resources_preserved": 48,
+  "apis": {
+    "qx8nmypdhi": {
+      "routes_count": 20,
+      "routes_integrations_authorizers_cors_unchanged": true
+    },
+    "ebn01q74hh": {
+      "routes_count": 2,
+      "routes_integrations_authorizers_cors_unchanged": true
+    }
+  },
+  "health_regressions": [
+    {
+      "function": "mastererp-dev-adm-clientes",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    },
+    {
+      "function": "mastererp-dev-adm-ventas",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    },
+    {
+      "function": "mastererp-dev-adm-proveedores",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    },
+    {
+      "function": "mastererp-dev-adm-compras",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    },
+    {
+      "function": "mastererp-dev-adm-cartera",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    },
+    {
+      "function": "mastererp-dev-adm-tesoreria",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    },
+    {
+      "function": "mastererp-dev-adm-conciliacion",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    },
+    {
+      "function": "mastererp-dev-adm-gastos",
+      "http": 200,
+      "configuration_and_code_unchanged": true
+    }
+  ],
+  "scope": "technical preservation only, no Finance capabilities implemented",
+  "preexisting_blocked_route": {
+    "path": "GET /v1/modules",
+    "http": 500,
+    "cause": "integration targets removed module-catalog-reader Lambda; route preserved"
+  }
+}

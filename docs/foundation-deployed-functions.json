@@ -1,0 +1,68 @@
+{
+  "mastererp-dev-onboarding-session-manager": {
+    "FunctionArn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-onboarding-session-manager",
+    "CodeSha256": "glyIY3es0xLIM+lLI4LCGYSF09NjidXPzFJAgWCHzck=",
+    "State": "Active",
+    "LastUpdateStatus": "Successful",
+    "Role": "arn:aws:iam::277352717693:role/mastererp-dev-onboarding-OnboardingSessionManagerFu-m4LMJNTPhLrB",
+    "Runtime": "python3.12",
+    "MemorySize": 512,
+    "Timeout": 30,
+    "vpc": {
+      "VpcId": "vpc-048771aa5c0e121bd",
+      "SubnetIds": [
+        "subnet-03588dfad2cf9d1e1",
+        "subnet-06fc0b76f1e6167ad"
+      ],
+      "SecurityGroupIds": [
+        "sg-00d5917aa994d3753"
+      ]
+    },
+    "application_secret_configured": true,
+    "code_source_commit": "e5e657b"
+  },
+  "mastererp-dev-onboarding-progress-tracker": {
+    "FunctionArn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-onboarding-progress-tracker",
+    "CodeSha256": "glyIY3es0xLIM+lLI4LCGYSF09NjidXPzFJAgWCHzck=",
+    "State": "Active",
+    "LastUpdateStatus": "Successful",
+    "Role": "arn:aws:iam::277352717693:role/mastererp-dev-onboarding-OnboardingProgressTrackerF-64p7fBGwXcYG",
+    "Runtime": "python3.12",
+    "MemorySize": 512,
+    "Timeout": 30,
+    "vpc": {
+      "VpcId": "vpc-048771aa5c0e121bd",
+      "SubnetIds": [
+        "subnet-03588dfad2cf9d1e1",
+        "subnet-06fc0b76f1e6167ad"
+      ],
+      "SecurityGroupIds": [
+        "sg-00d5917aa994d3753"
+      ]
+    },
+    "application_secret_configured": true,
+    "code_source_commit": "e5e657b"
+  },
+  "mastererp-dev-uonify-google-connection-handler": {
+    "FunctionArn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-uonify-google-connection-handler",
+    "CodeSha256": "TmA4Mwq3faMxC9S1KPJN3+3Vqr4QyDSaz40Ty6NFnG4=",
+    "State": "Active",
+    "LastUpdateStatus": "Successful",
+    "Role": "arn:aws:iam::277352717693:role/mastererp-dev-uonify-google-connection-Role-Q1yWvhQwrV7F",
+    "Runtime": "python3.12",
+    "MemorySize": 256,
+    "Timeout": 15,
+    "vpc": {
+      "VpcId": "vpc-048771aa5c0e121bd",
+      "SubnetIds": [
+        "subnet-03588dfad2cf9d1e1",
+        "subnet-06fc0b76f1e6167ad"
+      ],
+      "SecurityGroupIds": [
+        "sg-00d5917aa994d3753"
+      ]
+    },
+    "application_secret_configured": true,
+    "code_source_commit": "cbef549"
+  }
+}
