@@ -1,0 +1,14 @@
+{
+  "provisioner": {
+    "State": "Active",
+    "CodeSha256": "x+gtWZli7bgxQQFIm/atMT2OCw4DPwhhOqNDvZpjiO4=",
+    "vpc_configured": false,
+    "application_secret_configured": false,
+    "cognito_configured": false,
+    "invoked": false
+  },
+  "sql_functions_compared": 6,
+  "sql_function_hashes_unchanged": true,
+  "branch_constraint_unchanged": true,
+  "model_application_invoked": false
+}

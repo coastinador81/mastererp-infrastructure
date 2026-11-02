@@ -1,0 +1,58 @@
+{
+  "owner": "mastererp-dev-onboarding",
+  "api_id": "qx8nmypdhi",
+  "routes": [
+    {
+      "route": "GET /v1/modules",
+      "route_id": "5kgov2s",
+      "integration_id": "aucfztl",
+      "target": "mastererp-dev-module-catalog-reader",
+      "exists": false,
+      "authorization": "NONE",
+      "http_without_token": 500
+    },
+    {
+      "route": "GET /v1/tenants/{id}/modules",
+      "route_id": "74vl9tj",
+      "integration_id": "g37vbgs",
+      "target": "mastererp-dev-tenant-module-manager",
+      "exists": false,
+      "authorization": "NONE",
+      "http_without_token": 500
+    },
+    {
+      "route": "GET /v1/tenants/{id}/config",
+      "route_id": "izm8rx1",
+      "integration_id": "1k6tr8c",
+      "target": "mastererp-dev-tenant-config-manager",
+      "exists": false,
+      "authorization": "NONE",
+      "http_without_token": 500
+    },
+    {
+      "route": "PUT /v1/tenants/{id}/modules/{moduleId}",
+      "route_id": "ovqv25s",
+      "integration_id": "b25wdz0",
+      "target": "mastererp-dev-tenant-module-manager",
+      "exists": false,
+      "authorization": "NONE"
+    },
+    {
+      "route": "POST /v1/tenants",
+      "route_id": "y527qv8",
+      "integration_id": "sq6dj93",
+      "target": "mastererp-dev-tenant-creator",
+      "exists": false,
+      "authorization": "NONE"
+    },
+    {
+      "route": "PATCH /v1/tenants/{id}/config",
+      "route_id": "zje4ylc",
+      "integration_id": "4per4hs",
+      "target": "mastererp-dev-tenant-config-manager",
+      "exists": false,
+      "authorization": "NONE"
+    }
+  ],
+  "destructive_or_ownership_changes_executed": false
+}
