@@ -6,7 +6,9 @@
       "Type": "String",
       "Default": "dev",
       "AllowedValues": [
-        "dev"
+        "dev",
+        "qa",
+        "prod"
       ]
     },
     "ArtifactBucket": {
@@ -17,10 +19,7 @@
     },
     "ExistingAdminApiId": {
       "Type": "String",
-      "Default": "qx8nmypdhi",
-      "AllowedValues": [
-        "qx8nmypdhi"
-      ]
+      "Default": "qx8nmypdhi"
     }
   },
   "Resources": {

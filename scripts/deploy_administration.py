@@ -10,6 +10,7 @@ from pathlib import Path
 import subprocess
 import sys
 import time
+import copy
 
 ROOT = Path(__file__).resolve().parents[1]
 STACK = 'mastererp-dev-administration'
@@ -19,9 +20,12 @@ ACCOUNT = '277352717693'
 
 def assemble():
     owners = json.loads((ROOT / 'scripts/administration_lambdas.json').read_text())
-    result = {'AWSTemplateFormatVersion': '2010-09-09',
-              'Description': 'MasterERP DEV Administration diagnostics using existing Admin API; no database',
-              'Parameters': {}, 'Resources': {}, 'Outputs': {}}
+    parent = ROOT / 'modules/2.2-finance/2.2.1-administration/resources.yml'
+    result = copy.deepcopy(json.loads(parent.read_text()))
+    declared = result['Metadata']['MasterERP']['Composition']
+    expected = [str(Path(owner).relative_to('2.2-finance/2.2.1-administration')).replace('\\', '/') + '/resources.yml'
+                for owner in owners.values()]
+    assert declared == expected, 'Composition must match functional ownership manifest'
     for capability, owner in owners.items():
         source = json.loads((ROOT / 'modules' / owner / 'resources.yml').read_text())
         for section in ('Parameters', 'Resources', 'Outputs'):
@@ -87,6 +91,8 @@ def main():
     block = aws('s3api', 'get-public-access-block', '--bucket', args.bucket)['PublicAccessBlockConfiguration']
     assert all(block.get(k) for k in ('BlockPublicAcls', 'IgnorePublicAcls', 'BlockPublicPolicy', 'RestrictPublicBuckets'))
     existing = aws('cloudformation', 'describe-stacks', '--stack-name', STACK, optional=True)
+    if existing and existing['Stacks'][0].get('ParentId'):
+        raise RuntimeError('Administration is nested: deploy through Finance with scripts/finance_hierarchy.py; direct child updates are disabled')
     current = aws('cloudformation', 'list-stack-resources', '--stack-name', STACK)['StackResourceSummaries'] if existing else []
     expected_names = {'mastererp-dev-adm-' + cap for cap in owners}
     owned_names = {r['PhysicalResourceId'] for r in current if r['ResourceType'] == 'AWS::Lambda::Function'}

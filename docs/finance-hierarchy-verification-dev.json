@@ -1,0 +1,576 @@
+{
+  "account": "277352717693",
+  "region": "us-west-1",
+  "date": "2026-11-02",
+  "hierarchy": [
+    {
+      "StackName": "mastererp-dev-finance",
+      "StackId": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-finance/53991a00-d6c5-11f1-be02-06fff4b3ccfd",
+      "StackStatus": "UPDATE_COMPLETE",
+      "ParentId": null,
+      "RootId": null,
+      "resource_count": 1,
+      "parameter_environment": {
+        "Type": "String",
+        "Default": "dev",
+        "AllowedValues": [
+          "dev",
+          "qa",
+          "prod"
+        ]
+      },
+      "outputs": [
+        {
+          "OutputKey": "AdministrationStackId",
+          "OutputValue": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-administration/0a3fc040-d6b9-11f1-9902-06ffc4ae6443"
+        },
+        {
+          "OutputKey": "ConciliacionFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-conciliacion"
+        },
+        {
+          "OutputKey": "VentasFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-ventas"
+        },
+        {
+          "OutputKey": "TesoreriaFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-tesoreria"
+        },
+        {
+          "OutputKey": "GastosFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-gastos"
+        },
+        {
+          "OutputKey": "AdminApiEndpoint",
+          "OutputValue": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com"
+        },
+        {
+          "OutputKey": "CarteraFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-cartera"
+        },
+        {
+          "OutputKey": "ClientesFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-clientes"
+        },
+        {
+          "OutputKey": "ComprasFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-compras"
+        },
+        {
+          "OutputKey": "AdminApiId",
+          "OutputValue": "qx8nmypdhi"
+        },
+        {
+          "OutputKey": "ProveedoresFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-proveedores"
+        }
+      ],
+      "StackDriftDetectionId": "c0a1b300-d6c5-11f1-8357-06ffc10a0b8b",
+      "ResponseMetadata": {
+        "RequestId": "1a240fd9-154c-41e1-8083-4fdc59e704aa",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+          "x-amzn-requestid": "1a240fd9-154c-41e1-8083-4fdc59e704aa",
+          "strict-transport-security": "max-age=47304000; includeSubDomains",
+          "cache-control": "no-store, no-cache",
+          "date": "Mon, 02 Nov 2026 14:00:25 GMT",
+          "content-type": "text/xml",
+          "content-length": "365",
+          "connection": "keep-alive"
+        },
+        "RetryAttempts": 0
+      }
+    },
+    {
+      "StackName": "mastererp-dev-administration",
+      "StackId": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-administration/0a3fc040-d6b9-11f1-9902-06ffc4ae6443",
+      "StackStatus": "UPDATE_COMPLETE",
+      "ParentId": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-finance/53991a00-d6c5-11f1-be02-06fff4b3ccfd",
+      "RootId": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-finance/53991a00-d6c5-11f1-be02-06fff4b3ccfd",
+      "resource_count": 48,
+      "parameter_environment": {
+        "Type": "String",
+        "Default": "dev",
+        "AllowedValues": [
+          "dev"
+        ]
+      },
+      "outputs": [
+        {
+          "OutputKey": "ConciliacionFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-conciliacion"
+        },
+        {
+          "OutputKey": "VentasFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-ventas"
+        },
+        {
+          "OutputKey": "TesoreriaFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-tesoreria"
+        },
+        {
+          "OutputKey": "GastosFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-gastos"
+        },
+        {
+          "OutputKey": "CarteraFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-cartera"
+        },
+        {
+          "OutputKey": "ClientesFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-clientes"
+        },
+        {
+          "OutputKey": "ComprasFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-compras"
+        },
+        {
+          "OutputKey": "ProveedoresFunctionArn",
+          "OutputValue": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-proveedores"
+        }
+      ],
+      "StackDriftDetectionId": "c15bb430-d6c5-11f1-8357-06ffc10a0b8b",
+      "ResponseMetadata": {
+        "RequestId": "c649f166-a791-40b9-9ab6-8b251f8a3a24",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+          "x-amzn-requestid": "c649f166-a791-40b9-9ab6-8b251f8a3a24",
+          "strict-transport-security": "max-age=47304000; includeSubDomains",
+          "cache-control": "no-store, no-cache",
+          "date": "Mon, 02 Nov 2026 14:00:26 GMT",
+          "content-type": "text/xml",
+          "content-length": "365",
+          "connection": "keep-alive"
+        },
+        "RetryAttempts": 0
+      }
+    }
+  ],
+  "import": {
+    "change_set": "arn:aws:cloudformation:us-west-1:277352717693:changeSet/finance-import-1793627842133328200/e2721493-ef6e-4318-8c5a-4a1bb714f551",
+    "phase": "import",
+    "child_stack_id": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-administration/0a3fc040-d6b9-11f1-9902-06ffc4ae6443",
+    "child_template_sha256": "49c649848f451d1f92f6149aa1cbfe9a5eba6e78c921bdd0591a543b9d0227b4",
+    "template_url": "https://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez.s3.us-west-1.amazonaws.com/mastererp/dev/finance/templates/49c649848f451d1f92f6149aa1cbfe9a5eba6e78c921bdd0591a543b9d0227b4.json",
+    "changes": [
+      {
+        "Action": "Import",
+        "LogicalResourceId": "Administration",
+        "PhysicalResourceId": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-administration/0a3fc040-d6b9-11f1-9902-06ffc4ae6443",
+        "ResourceType": "AWS::CloudFormation::Stack",
+        "Scope": [],
+        "Details": []
+      }
+    ],
+    "nested_changes": [],
+    "parameters": [
+      {
+        "ParameterKey": "ArtifactBucket",
+        "ParameterValue": "aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez"
+      },
+      {
+        "ParameterKey": "GastosArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-gastos/63aa6df0379527e6897b6c58c5f545cefb8975b2bd3c8c94b50a81c3c4a4a737.zip"
+      },
+      {
+        "ParameterKey": "VentasArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-ventas/2695c9fc1c2696cfdb773143e5dc8f8c0875fc263ea7f01605be7b53b278f5f4.zip"
+      },
+      {
+        "ParameterKey": "TesoreriaArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-tesoreria/4babfa10843f54ca14dedfdf14beb624ee9f018f45a2f3d89190a5bddf1dda50.zip"
+      },
+      {
+        "ParameterKey": "ConciliacionArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-conciliacion/192b7fdd5d776167a175b6308e6ca39af31e9221319ff7ccf73c9dbf22416d6f.zip"
+      },
+      {
+        "ParameterKey": "ExistingAdminApiId",
+        "ParameterValue": "qx8nmypdhi"
+      },
+      {
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
+      },
+      {
+        "ParameterKey": "CarteraArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-cartera/4d3687e7e2e13ce2c5d7f2ad3a46fdc56cf2e62d595022e685ea80da85a21a56.zip"
+      },
+      {
+        "ParameterKey": "ClientesArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-clientes/03fea1b020411c46d19a5d8dee92e4edcf12204a5742b8aa32fadea97e570dee.zip"
+      },
+      {
+        "ParameterKey": "ProveedoresArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-proveedores/f84f512d375f0a3f6cc45365a8afacd5d2e82b658c3ce7f85123274aab6144a4.zip"
+      },
+      {
+        "ParameterKey": "ComprasArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-compras/f3dc5e60b6f820cb9e74e99568014e9c67fac60b8cbb2855b54fd4ef7c85f74a.zip"
+      },
+      {
+        "ParameterKey": "AdministrationTemplateUrl",
+        "ParameterValue": "https://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez.s3.us-west-1.amazonaws.com/mastererp/dev/finance/templates/49c649848f451d1f92f6149aa1cbfe9a5eba6e78c921bdd0591a543b9d0227b4.json"
+      }
+    ],
+    "status": "IMPORT_COMPLETE",
+    "parent_stack_id": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-finance/53991a00-d6c5-11f1-be02-06fff4b3ccfd",
+    "verified_parent_id": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-finance/53991a00-d6c5-11f1-be02-06fff4b3ccfd"
+  },
+  "update": {
+    "change_set": "arn:aws:cloudformation:us-west-1:277352717693:changeSet/finance-update-1793627962834605000/1e00a96d-c8f6-4ef2-af05-7b07f7e28b9b",
+    "phase": "update",
+    "child_stack_id": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-administration/0a3fc040-d6b9-11f1-9902-06ffc4ae6443",
+    "child_template_sha256": "28547949fa1557c1013848e6422a836ad2a3fb6cef48db09efd1a3726d148173",
+    "template_url": "https://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez.s3.us-west-1.amazonaws.com/mastererp/dev/finance/templates/28547949fa1557c1013848e6422a836ad2a3fb6cef48db09efd1a3726d148173.json",
+    "changes": [],
+    "nested_changes": [],
+    "parameters": [
+      {
+        "ParameterKey": "ArtifactBucket",
+        "ParameterValue": "aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez"
+      },
+      {
+        "ParameterKey": "GastosArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-gastos/63aa6df0379527e6897b6c58c5f545cefb8975b2bd3c8c94b50a81c3c4a4a737.zip"
+      },
+      {
+        "ParameterKey": "VentasArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-ventas/2695c9fc1c2696cfdb773143e5dc8f8c0875fc263ea7f01605be7b53b278f5f4.zip"
+      },
+      {
+        "ParameterKey": "TesoreriaArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-tesoreria/4babfa10843f54ca14dedfdf14beb624ee9f018f45a2f3d89190a5bddf1dda50.zip"
+      },
+      {
+        "ParameterKey": "ConciliacionArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-conciliacion/192b7fdd5d776167a175b6308e6ca39af31e9221319ff7ccf73c9dbf22416d6f.zip"
+      },
+      {
+        "ParameterKey": "ExistingAdminApiId",
+        "ParameterValue": "qx8nmypdhi"
+      },
+      {
+        "ParameterKey": "Environment",
+        "ParameterValue": "dev"
+      },
+      {
+        "ParameterKey": "CarteraArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-cartera/4d3687e7e2e13ce2c5d7f2ad3a46fdc56cf2e62d595022e685ea80da85a21a56.zip"
+      },
+      {
+        "ParameterKey": "ClientesArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-clientes/03fea1b020411c46d19a5d8dee92e4edcf12204a5742b8aa32fadea97e570dee.zip"
+      },
+      {
+        "ParameterKey": "ProveedoresArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-proveedores/f84f512d375f0a3f6cc45365a8afacd5d2e82b658c3ce7f85123274aab6144a4.zip"
+      },
+      {
+        "ParameterKey": "ComprasArtifactKey",
+        "ParameterValue": "mastererp/dev/administration/mastererp-dev-adm-compras/f3dc5e60b6f820cb9e74e99568014e9c67fac60b8cbb2855b54fd4ef7c85f74a.zip"
+      },
+      {
+        "ParameterKey": "AdministrationTemplateUrl",
+        "ParameterValue": "https://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez.s3.us-west-1.amazonaws.com/mastererp/dev/finance/templates/28547949fa1557c1013848e6422a836ad2a3fb6cef48db09efd1a3726d148173.json"
+      }
+    ],
+    "status": "UPDATE_COMPLETE",
+    "parent_stack_id": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-finance/53991a00-d6c5-11f1-be02-06fff4b3ccfd",
+    "verified_parent_id": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-finance/53991a00-d6c5-11f1-be02-06fff4b3ccfd"
+  },
+  "drift_before": [
+    {
+      "stack": "mastererp-dev-administration",
+      "status": "DETECTION_COMPLETE",
+      "drift": "IN_SYNC"
+    },
+    {
+      "stack": "mastererp-dev-identity",
+      "status": "DETECTION_COMPLETE",
+      "drift": "IN_SYNC"
+    },
+    {
+      "stack": "mastererp-dev-http-apis",
+      "status": "DETECTION_COMPLETE",
+      "drift": "IN_SYNC"
+    },
+    {
+      "stack": "mastererp-dev-onboarding",
+      "status": "DETECTION_COMPLETE",
+      "drift": "DRIFTED"
+    },
+    {
+      "stack": "mastererp-dev-data",
+      "status": "DETECTION_COMPLETE",
+      "drift": "DRIFTED"
+    },
+    {
+      "stack": "mastererp-dev-application-data-access",
+      "status": "DETECTION_COMPLETE",
+      "drift": "IN_SYNC"
+    },
+    {
+      "stack": "mastererp-dev-uonify-google-connection",
+      "status": "DETECTION_COMPLETE",
+      "drift": "IN_SYNC"
+    }
+  ],
+  "drift_after": [
+    {
+      "stack": "mastererp-dev-finance",
+      "detection_status": "DETECTION_COMPLETE",
+      "drift": "IN_SYNC",
+      "drifted_resources": 0
+    },
+    {
+      "stack": "mastererp-dev-administration",
+      "detection_status": "DETECTION_COMPLETE",
+      "drift": "IN_SYNC",
+      "drifted_resources": 0
+    }
+  ],
+  "preservation_checks": {
+    "before": {
+      "apis": 3,
+      "functions": 13,
+      "administration_resources": 48,
+      "http": [
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/clientes/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-clientes"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/ventas/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-ventas"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/proveedores/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-proveedores"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/compras/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-compras"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/cartera/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-cartera"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/tesoreria/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-tesoreria"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/conciliacion/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-conciliacion"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/gastos/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-gastos"
+          }
+        },
+        {
+          "url": "https://ebn01q74hh.execute-api.us-west-1.amazonaws.com/v1/uonify/spaces",
+          "without_token": 401
+        },
+        {
+          "url": "https://ebn01q74hh.execute-api.us-west-1.amazonaws.com/v1/uonify/google/connection/status",
+          "without_token": 401
+        }
+      ]
+    },
+    "after-import": {
+      "apis": 3,
+      "functions": 13,
+      "administration_resources": 48,
+      "http": [
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/clientes/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-clientes"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/ventas/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-ventas"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/proveedores/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-proveedores"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/compras/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-compras"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/cartera/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-cartera"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/tesoreria/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-tesoreria"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/conciliacion/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-conciliacion"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/gastos/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-gastos"
+          }
+        },
+        {
+          "url": "https://ebn01q74hh.execute-api.us-west-1.amazonaws.com/v1/uonify/spaces",
+          "without_token": 401
+        },
+        {
+          "url": "https://ebn01q74hh.execute-api.us-west-1.amazonaws.com/v1/uonify/google/connection/status",
+          "without_token": 401
+        }
+      ]
+    },
+    "after-update": {
+      "apis": 3,
+      "functions": 13,
+      "administration_resources": 48,
+      "http": [
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/clientes/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-clientes"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/ventas/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-ventas"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/proveedores/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-proveedores"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/compras/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-compras"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/cartera/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-cartera"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/tesoreria/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-tesoreria"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/conciliacion/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-conciliacion"
+          }
+        },
+        {
+          "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/gastos/health",
+          "http": 200,
+          "body": {
+            "status": "ok",
+            "lambda": "mastererp-dev-adm-gastos"
+          }
+        },
+        {
+          "url": "https://ebn01q74hh.execute-api.us-west-1.amazonaws.com/v1/uonify/spaces",
+          "without_token": 401
+        },
+        {
+          "url": "https://ebn01q74hh.execute-api.us-west-1.amazonaws.com/v1/uonify/google/connection/status",
+          "without_token": 401
+        }
+      ]
+    }
+  },
+  "existing_resource_properties_changed": false,
+  "sql_executed": false,
+  "obsolete_routes_deleted": false,
+  "qa_prod_created": false
+}

@@ -1,0 +1,22 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "MasterERP Administration functional composition; build before deploying",
+  "Metadata": {
+    "MasterERP": {
+      "Composition": [
+        "2.2.1.1-gestion-comercial/2.2.1.1.1-clientes/resources.yml",
+        "2.2.1.1-gestion-comercial/2.2.1.1.3-ventas/resources.yml",
+        "2.2.1.2-gestion-compras/2.2.1.2.1-proveedores/resources.yml",
+        "2.2.1.2-gestion-compras/resources.yml",
+        "2.2.1.3-cartera-obligaciones/resources.yml",
+        "2.2.1.4-tesoreria/resources.yml",
+        "2.2.1.4-tesoreria/2.2.1.4.6-conciliacion/resources.yml",
+        "2.2.1.5-gastos-fondos-menores/resources.yml"
+      ],
+      "SharedResources": "API ID is received; identity/database remain external and are not used by technical health handlers"
+    }
+  },
+  "Parameters": {},
+  "Resources": {},
+  "Outputs": {}
+}

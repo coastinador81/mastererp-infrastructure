@@ -1,0 +1,194 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "MasterERP Finance parent; Administration nested, Accounting and BI documentary reserves",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": [
+        "dev",
+        "qa",
+        "prod"
+      ]
+    },
+    "AdministrationTemplateUrl": {
+      "Type": "String",
+      "Description": "Versioned S3 URL of assembled Administration template"
+    },
+    "ExistingAdminApiId": {
+      "Type": "String",
+      "Description": "Explicit output from current API owner"
+    },
+    "ArtifactBucket": {
+      "Type": "String"
+    },
+    "ClientesArtifactKey": {
+      "Type": "String"
+    },
+    "VentasArtifactKey": {
+      "Type": "String"
+    },
+    "ProveedoresArtifactKey": {
+      "Type": "String"
+    },
+    "ComprasArtifactKey": {
+      "Type": "String"
+    },
+    "CarteraArtifactKey": {
+      "Type": "String"
+    },
+    "TesoreriaArtifactKey": {
+      "Type": "String"
+    },
+    "ConciliacionArtifactKey": {
+      "Type": "String"
+    },
+    "GastosArtifactKey": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "Administration": {
+      "Type": "AWS::CloudFormation::Stack",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "TemplateURL": {
+          "Ref": "AdministrationTemplateUrl"
+        },
+        "Parameters": {
+          "Environment": {
+            "Ref": "Environment"
+          },
+          "ExistingAdminApiId": {
+            "Ref": "ExistingAdminApiId"
+          },
+          "ArtifactBucket": {
+            "Ref": "ArtifactBucket"
+          },
+          "ClientesArtifactKey": {
+            "Ref": "ClientesArtifactKey"
+          },
+          "VentasArtifactKey": {
+            "Ref": "VentasArtifactKey"
+          },
+          "ProveedoresArtifactKey": {
+            "Ref": "ProveedoresArtifactKey"
+          },
+          "ComprasArtifactKey": {
+            "Ref": "ComprasArtifactKey"
+          },
+          "CarteraArtifactKey": {
+            "Ref": "CarteraArtifactKey"
+          },
+          "TesoreriaArtifactKey": {
+            "Ref": "TesoreriaArtifactKey"
+          },
+          "ConciliacionArtifactKey": {
+            "Ref": "ConciliacionArtifactKey"
+          },
+          "GastosArtifactKey": {
+            "Ref": "GastosArtifactKey"
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "MasterERP"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Component",
+            "Value": "administration-health"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "AdministrationStackId": {
+      "Value": {
+        "Ref": "Administration"
+      }
+    },
+    "AdminApiId": {
+      "Value": {
+        "Ref": "ExistingAdminApiId"
+      }
+    },
+    "AdminApiEndpoint": {
+      "Value": {
+        "Fn::Sub": "https://${ExistingAdminApiId}.execute-api.${AWS::Region}.amazonaws.com"
+      }
+    },
+    "ClientesFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.ClientesFunctionArn"
+        ]
+      }
+    },
+    "VentasFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.VentasFunctionArn"
+        ]
+      }
+    },
+    "ProveedoresFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.ProveedoresFunctionArn"
+        ]
+      }
+    },
+    "ComprasFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.ComprasFunctionArn"
+        ]
+      }
+    },
+    "CarteraFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.CarteraFunctionArn"
+        ]
+      }
+    },
+    "TesoreriaFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.TesoreriaFunctionArn"
+        ]
+      }
+    },
+    "ConciliacionFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.ConciliacionFunctionArn"
+        ]
+      }
+    },
+    "GastosFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "Administration",
+          "Outputs.GastosFunctionArn"
+        ]
+      }
+    }
+  }
+}

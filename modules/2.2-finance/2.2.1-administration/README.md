@@ -33,3 +33,7 @@ Clientes y Proveedores consumen maestros existentes sin duplicarlos. Proveedores
 ## Lambdas de diagnóstico DEV
 
 [Procedimiento y límites](ADMINISTRATION_LAMBDAS_DEV.md): ocho handlers mínimos de Administración. No son capacidades de negocio ni rutas API implementadas.
+
+## Jerarquía de infraestructura
+
+Se conserva la ruta y responsabilidad funcional. La composición Finanzas → Administración y las reservas de Contabilidad/BI se documentan en [docs/FINANCE_HIERARCHY.md](../../../docs/FINANCE_HIERARCHY.md). En Infrastructure, cada recurso permanece en el YAML raíz de su carpeta propietaria; una carpeta no obliga a crear un stack. El resultado AWS se informa por separado en el mapa y evidencia de Infrastructure.
