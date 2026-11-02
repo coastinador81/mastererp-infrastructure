@@ -1,6 +1,6 @@
 # Lambdas técnicas de Administración DEV
 
-Estado de esta entrega: integración de las ocho rutas públicas de diagnóstico en preparación; ver sección Integración HTTP. La sección Resultado comprobado de la fase inicial describe el despliegue anterior sin API.
+Estado de esta entrega: integración de las ocho rutas públicas de diagnóstico desplegada y verificada; ver sección Integración HTTP. La sección Resultado comprobado de la fase inicial describe el despliegue anterior sin API.
 
 Ocho diagnósticos mínimos, sin capacidades de negocio, base de datos, secretos, llamadas de red, API Gateway o Function URL. Región us-west-1; cuenta 277352717693. Invocación directa exclusivamente mediante identidad IAM autorizada. El statusCode 200 del handler no es evidencia HTTP de una API.
 
@@ -71,3 +71,11 @@ py scripts/validate_administration_http.py --output "$env:TEMP/mastererp-adminis
 El validador no obtiene contraseñas ni tokens: exige 200 y JSON exacto en las ocho rutas sin autenticación, y comprueba preflight del origen legítimo existente. CORS permanece a cargo de la API y Lambda no añade cabeceras CORS. No se añade app-dev.uonify.com ni otro origen por esta entrega. Comparar las rutas/integraciones originales y configuración CORS antes y después; los IDs nuevos se admiten solo para estas ocho capacidades.
 
 Recuperación: inspeccionar eventos del stack y preparar un change set que retire únicamente los 24 recursos de esta integración si se requiere revertirla; conservar las ocho funciones y las rutas ajenas. No ejecutar eliminaciones o restauraciones automáticamente. Antes de añadir lógica o datos de negocio, definir e implementar JWT y autorización funcional de tenant; estos diagnósticos no acreditan esas capacidades.
+
+## Resultado HTTP comprobado — 2026-11-02
+
+Las ocho rutas GET públicas respondieron HTTP 200 SIN token, cuerpo exacto status=ok y nombre de su Lambda, con Cache-Control no-store. Los ocho preflight del origen legítimo existente respondieron 204. No se obtuvieron, imprimieron ni guardaron tokens para estas pruebas. JWT y rechazo sin token no se probaron como controles porque fueron excluidos explícitamente por el propietario.
+
+API qx8nmypdhi conservada en mastererp-dev-onboarding; CORS y autorizadores sin cambios. Las 12 rutas y 12 integraciones previas se conservaron por ID y configuración; las otras dos API permanecen iguales. Change set de mastererp-dev-administration: exactamente 24 altas de rutas, integraciones y permisos, sin modificar o eliminar los recursos previos; estado UPDATE_COMPLETE. Código de handlers sin cambios.
+
+Commits: Platform 9e8a57f (documentación); Infrastructure 92e967a (integraciones y procedimiento). Los validadores locales y los de GitHub aprobaron. [Resultados HTTP y comparación de preservación](administration-api-verification.json). Estas rutas son pruebas técnicas públicas, no capacidades funcionales ni evidencia de autorización multi-tenant. Database no se modificó.

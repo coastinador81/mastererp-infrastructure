@@ -1,0 +1,166 @@
+{
+  "http": {
+    "api_id": "qx8nmypdhi",
+    "api_owner_stack": "mastererp-dev-onboarding",
+    "integration_stack": "mastererp-dev-administration",
+    "authentication": "NONE",
+    "decision": "Owner requested public technical health routes; JWT deferred",
+    "business_capabilities_implemented": false,
+    "results": [
+      {
+        "capability": "clientes",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/clientes/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "capability": "ventas",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/ventas/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "capability": "proveedores",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/proveedores/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "capability": "compras",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/compras/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "capability": "cartera",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/cartera/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "capability": "tesoreria",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/tesoreria/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "capability": "conciliacion",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/conciliacion/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      },
+      {
+        "capability": "gastos",
+        "url": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com/v1/administration/gastos/health",
+        "checks": [
+          {
+            "case": "public_no_token",
+            "http": 200,
+            "passed": true
+          },
+          {
+            "case": "existing_cors_preflight",
+            "http": 204,
+            "passed": true
+          }
+        ]
+      }
+    ]
+  },
+  "preservation": {
+    "apis": {
+      "btqqku792c": {
+        "old_routes_preserved": 0,
+        "old_integrations_preserved": 0,
+        "cors_unchanged": true,
+        "authorizers_unchanged": true
+      },
+      "ebn01q74hh": {
+        "old_routes_preserved": 2,
+        "old_integrations_preserved": 1,
+        "cors_unchanged": true,
+        "authorizers_unchanged": true
+      },
+      "qx8nmypdhi": {
+        "old_routes_preserved": 12,
+        "old_integrations_preserved": 12,
+        "cors_unchanged": true,
+        "authorizers_unchanged": true
+      }
+    },
+    "api_owner_unchanged": true,
+    "change_set_additions": 24,
+    "existing_resources_modified": 0,
+    "stack_status": "UPDATE_COMPLETE"
+  }
+}
