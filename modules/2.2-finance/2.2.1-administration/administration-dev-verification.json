@@ -1,0 +1,147 @@
+{
+  "stack": "mastererp-dev-administration",
+  "region": "us-west-1",
+  "account": "277352717693",
+  "stack_status": "CREATE_COMPLETE",
+  "unchanged_existing_apis": 3,
+  "unchanged_existing_functions": 5,
+  "functions": [
+    {
+      "name": "mastererp-dev-adm-clientes",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-clientes",
+      "state": "Active",
+      "code_sha256": "A/6hsCBBHEbRml2N7pLk7c8SIEpXQriqMvreqX5XDe4=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-clientes"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-ClientesRole-l7p1SwfU55i8",
+      "log_retention_days": 14
+    },
+    {
+      "name": "mastererp-dev-adm-ventas",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-ventas",
+      "state": "Active",
+      "code_sha256": "JpXJ/Bwmls/bdzFD5dyPjAh1/CY+p/AWBb57U7J49fQ=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-ventas"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-VentasRole-dg694RhlPRH7",
+      "log_retention_days": 14
+    },
+    {
+      "name": "mastererp-dev-adm-proveedores",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-proveedores",
+      "state": "Active",
+      "code_sha256": "+E9RLTdfCj9sxFNlqK+s1dLoK2WMPOf4USMnSqthRKQ=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-proveedores"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-ProveedoresRole-787c8NMCZJWP",
+      "log_retention_days": 14
+    },
+    {
+      "name": "mastererp-dev-adm-compras",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-compras",
+      "state": "Active",
+      "code_sha256": "89xeYLb4IMuedOmVaAFOnGf6xguMuyhVtU/U73yF90o=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-compras"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-ComprasRole-uXVDtzn7MAXL",
+      "log_retention_days": 14
+    },
+    {
+      "name": "mastererp-dev-adm-cartera",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-cartera",
+      "state": "Active",
+      "code_sha256": "TTaH5+LhPOLF1/KtOkb9xWzy5i1ZUCLmheqA2oWiGlY=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-cartera"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-CarteraRole-XzBwjwJrdGwT",
+      "log_retention_days": 14
+    },
+    {
+      "name": "mastererp-dev-adm-tesoreria",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-tesoreria",
+      "state": "Active",
+      "code_sha256": "S6v6EIQ/VMoU3t/fFL62JO6fAY9FovPYkZClvd8d2lA=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-tesoreria"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-TesoreriaRole-IWfh5zauliih",
+      "log_retention_days": 14
+    },
+    {
+      "name": "mastererp-dev-adm-conciliacion",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-conciliacion",
+      "state": "Active",
+      "code_sha256": "GSt/3V13YWehdbYwjmyjmvMekiExn/fM9zydvyJBbW8=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-conciliacion"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-ConciliacionRole-gaqrMlQev56e",
+      "log_retention_days": 14
+    },
+    {
+      "name": "mastererp-dev-adm-gastos",
+      "arn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-gastos",
+      "state": "Active",
+      "code_sha256": "Y6pt8DeVJ+aJe2xYxfVFzvuJdbK9PIyUtQqBw8Skpzc=",
+      "invocation_status": 200,
+      "handler_status": 200,
+      "body": {
+        "status": "ok",
+        "lambda": "mastererp-dev-adm-gastos"
+      },
+      "last_update_status": "Successful",
+      "public_url": false,
+      "resource_policy": false,
+      "role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-GastosRole-40BwV3AQarii",
+      "log_retention_days": 14
+    }
+  ],
+  "verification_type": "direct_iam_invocation_not_http_api"
+}

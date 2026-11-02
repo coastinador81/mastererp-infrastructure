@@ -41,3 +41,11 @@ Conservar changeset.json, manifest.json y verification.json del directorio tempo
 Si falla, inspeccionar aws cloudformation describe-stack-events --stack-name mastererp-dev-administration --profile mastererp-admin --region us-west-1; no ampliar permisos de aplicación para hacerlo pasar. CloudFormation revierte su propio stack al fallar. Para una actualización posterior, recuperar los commits/artefactos anteriores y preparar otro change set sin reemplazos. No borrar automáticamente el stack, logs ni artefactos; una eliminación requiere petición explícita. El bucket reutilizado no pertenece a este stack y no se elimina al revertirlo.
 
 Clientes y Proveedores no crean maestros nuevos. Sin modificaciones de Database, SQL ni frontend. Las rutas HTTP y su autenticación se implementarán en una entrega posterior autorizada.
+
+## Resultado comprobado — 2026-11-02
+
+Stack mastererp-dev-administration: CREATE_COMPLETE. Ocho funciones Active y LastUpdateStatus Successful. Las ocho invocaciones directas IAM devolvieron statusCode 200 y JSON status=ok con el nombre exacto; sin FunctionError. Código publicado: Platform 37ed114; plantillas y procedimiento: Infrastructure 4336144. Validadores locales y de GitHub aprobados. CloudFormation validó las ocho plantillas y el ensamblado; change set de 24 altas, sin modificaciones ni eliminaciones.
+
+Se verificaron roles limitados al Log Group propio, retención de 14 días, ausencia de Function URL y política de invocación pública, sin VPC ni variables de credenciales. Comparación antes/después: tres API Gateway (configuración, rutas, integraciones y autorizadores) y cinco Lambdas preexistentes sin cambios. No se ejecutó SQL ni se modificó Database o frontend.
+
+[Evidencia sanitizada y ARN de las ocho funciones](administration-dev-verification.json). Son pruebas técnicas mediante invocación directa, no pruebas HTTP ni capacidades funcionales implementadas. API Gateway queda fuera de esta entrega por instrucción del propietario.
