@@ -28,3 +28,11 @@ Estado verificable: parcial: plantillas individuales en lambdas; migración de s
 Validaciones: estructura local mediante scripts/validate_structure.py. Pendientes: contratos específicos, responsable nominal y pruebas funcionales antes de habilitar esta capacidad.
 
 Convención vigente: las Lambdas exclusivas de onboarding deberán declararse en el resources.yml raíz del módulo cuando se prepare y autorice su transición. Los enlaces anteriores reflejan ubicaciones reales heredadas; esta corrección documental no mueve recursos ni cambia stacks.
+
+## Reparación selectiva DEV de la base compartida
+
+[resources.yml](resources.yml) recoge la plantilla real del stack propietario mastererp-dev-onboarding y limita la reparación a sesiones y progreso. Conserva declaraciones históricas de cinco funciones físicamente ausentes para no cambiar otros recursos. NO usar como CREATE ni desplegar sin el guard de [repair_onboarding.py](../../../scripts/repair_onboarding.py). Este script solo permite Modify sin reemplazo de las dos funciones/roles; verifica equivalencia de la definición procesada del API ante la predicción dinámica de SAM por referencias ARN.
+
+No se declara completada la transición de stacks ni la reparación de las seis rutas hacia funciones retiradas. Las plantillas por Lambda enlazadas arriba siguen siendo históricas, excluidas de este despliegue. Aprovisionamiento interno y alta/configuración/módulos HTTP requieren reparación separada y evidencia funcional; no se recrean funciones.
+
+Procedimiento y recuperación: [reparación de la base DEV](../../../docs/FOUNDATION_REPAIR_DEV.md).

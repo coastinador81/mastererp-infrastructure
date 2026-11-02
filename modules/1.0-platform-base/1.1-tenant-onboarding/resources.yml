@@ -1,0 +1,427 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: 1.1 Tenant onboarding — Lambdas y mastererp-{env}-admin-api.
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+    - dev
+    - qa
+    - prod
+  DatabaseHost:
+    Type: String
+    Default: pending
+  DatabaseSecretArn:
+    Type: String
+    Default: ''
+  DatabaseName:
+    Type: String
+    Default: mastererp
+  CognitoUserPoolId:
+    Type: String
+    Default: ''
+  CognitoAppClientId:
+    Type: String
+    Default: ''
+  EnableLambdaVpc:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+    - 'true'
+    - 'false'
+  AllowedOrigins:
+    Type: String
+    Default: https://admin.dev.mastererp.local
+  OnboardingCodeUri:
+    Type: String
+    Default: ../../../../mastererp-platform/services/modules/1.0-platform-base/1.1-tenant-onboarding/
+  MigratorCodeUri:
+    Type: String
+    Default: ../../../../mastererp-platform/services/platform-base/db-migrator/
+  VpcSubnetIds:
+    Type: CommaDelimitedList
+  LambdaSecurityGroupIds:
+    Type: CommaDelimitedList
+  ReviewedArtifactBucket:
+    Type: String
+  ReviewedArtifactKey:
+    Type: String
+Conditions:
+  UseLambdaVpc:
+    Fn::Equals:
+    - Ref: EnableLambdaVpc
+    - 'true'
+  UseCognitoAuth:
+    Fn::And:
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: CognitoUserPoolId
+        - ''
+    - Fn::Not:
+      - Fn::Equals:
+        - Ref: CognitoAppClientId
+        - ''
+  UseDatabaseSecret:
+    Fn::Not:
+    - Fn::Equals:
+      - Ref: DatabaseSecretArn
+      - ''
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 512
+    Tracing: Active
+    VpcConfig:
+      Fn::If:
+      - UseLambdaVpc
+      - SubnetIds:
+          Ref: VpcSubnetIds
+        SecurityGroupIds:
+          Ref: LambdaSecurityGroupIds
+      - Ref: AWS::NoValue
+    Environment:
+      Variables:
+        ENVIRONMENT:
+          Ref: Environment
+        DATABASE_HOST:
+          Ref: DatabaseHost
+        DATABASE_NAME:
+          Ref: DatabaseName
+        DATABASE_SECRET_ARN:
+          Ref: DatabaseSecretArn
+        DATABASE_SSLMODE: require
+        COGNITO_USER_POOL_ID:
+          Ref: CognitoUserPoolId
+        COGNITO_APP_CLIENT_ID:
+          Ref: CognitoAppClientId
+        ALLOW_TENANT_SELF_REGISTRATION: 'false'
+        AUTH_MODE: cognito
+Resources:
+  AdminHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Name:
+        Fn::Sub: mastererp-${Environment}-admin-api
+      Description: Administración interna, onboarding y operaciones de plataforma.
+      CorsConfiguration:
+        AllowOrigins:
+        - Ref: AllowedOrigins
+        AllowMethods:
+        - GET
+        - POST
+        - PUT
+        - PATCH
+        - DELETE
+        - OPTIONS
+        AllowHeaders:
+        - Authorization
+        - Content-Type
+        - Idempotency-Key
+        - X-Correlation-Id
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 100
+        ThrottlingRateLimit: 50
+    Metadata:
+      SamResourceId: AdminHttpApi
+  AdminApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName:
+        Fn::Sub: /aws/apigateway/mastererp-${Environment}-admin-api
+      RetentionInDays: 30
+    Metadata:
+      SamResourceId: AdminApiLogGroup
+  SsmAdminApiId:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name:
+        Fn::Sub: /mastererp/${Environment}/gateways/admin-api-id
+      Type: String
+      Value:
+        Ref: AdminHttpApi
+    Metadata:
+      SamResourceId: SsmAdminApiId
+  DbMigratorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-db-migrator
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez/mastererp-dev-onboarding/70f040437eee3c1075eca8c940587d57
+      Handler: handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource:
+            Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mastererp/*
+    Metadata:
+      SamResourceId: DbMigratorFunction
+  OnboardingSessionManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-onboarding-session-manager
+      CodeUri:
+        Bucket:
+          Ref: ReviewedArtifactBucket
+        Key:
+          Ref: ReviewedArtifactKey
+      Handler: lambdas/onboarding-session-manager/handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - AWSLambdaVPCAccessExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource: arn:aws:secretsmanager:us-west-1:277352717693:secret:mastererp/dev/database/application-kXansa
+      Events:
+        PostSession:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/onboarding/sessions
+            Method: POST
+        GetSession:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}
+            Method: GET
+        PatchSession:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}
+            Method: PATCH
+        CompleteSession:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}/complete
+            Method: POST
+      Environment:
+        Variables:
+          DATABASE_SECRET_ARN: arn:aws:secretsmanager:us-west-1:277352717693:secret:mastererp/dev/database/application-kXansa
+          DATABASE_HOST: mastererp-dev-data.ctoq2s2gkhm8.us-west-1.rds.amazonaws.com
+          DATABASE_NAME: mastererp
+          COGNITO_ISSUER: https://cognito-idp.us-west-1.amazonaws.com/us-west-1_oCn3VipDO
+          COGNITO_APP_CLIENT_ID: 56psiha6rtmsu8qklace85k8m0
+          ENVIRONMENT: dev
+          AUTH_MODE: cognito
+          ALLOW_TENANT_SELF_REGISTRATION: 'false'
+      VpcConfig:
+        SubnetIds:
+        - subnet-03588dfad2cf9d1e1
+        - subnet-06fc0b76f1e6167ad
+        SecurityGroupIds:
+        - sg-00d5917aa994d3753
+    Metadata:
+      SamResourceId: OnboardingSessionManagerFunction
+  OnboardingProgressTrackerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-onboarding-progress-tracker
+      CodeUri:
+        Bucket:
+          Ref: ReviewedArtifactBucket
+        Key:
+          Ref: ReviewedArtifactKey
+      Handler: lambdas/onboarding-progress-tracker/handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - AWSLambdaVPCAccessExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource: arn:aws:secretsmanager:us-west-1:277352717693:secret:mastererp/dev/database/application-kXansa
+      Events:
+        GetProgress:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}/progress
+            Method: GET
+        PutStep:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/onboarding/sessions/{id}/steps/{stepId}
+            Method: PUT
+      Environment:
+        Variables:
+          DATABASE_SECRET_ARN: arn:aws:secretsmanager:us-west-1:277352717693:secret:mastererp/dev/database/application-kXansa
+          DATABASE_HOST: mastererp-dev-data.ctoq2s2gkhm8.us-west-1.rds.amazonaws.com
+          DATABASE_NAME: mastererp
+          COGNITO_ISSUER: https://cognito-idp.us-west-1.amazonaws.com/us-west-1_oCn3VipDO
+          COGNITO_APP_CLIENT_ID: 56psiha6rtmsu8qklace85k8m0
+          ENVIRONMENT: dev
+          AUTH_MODE: cognito
+          ALLOW_TENANT_SELF_REGISTRATION: 'false'
+      VpcConfig:
+        SubnetIds:
+        - subnet-03588dfad2cf9d1e1
+        - subnet-06fc0b76f1e6167ad
+        SecurityGroupIds:
+        - sg-00d5917aa994d3753
+    Metadata:
+      SamResourceId: OnboardingProgressTrackerFunction
+  TenantCreatorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-tenant-creator
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez/mastererp-dev-onboarding/f011d5204089951f5d514239e4ead9f2
+      Handler: lambdas/tenant-creator/handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource:
+            Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mastererp/*
+      Events:
+        PostTenant:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/tenants
+            Method: POST
+    Metadata:
+      SamResourceId: TenantCreatorFunction
+  TenantConfigManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-tenant-config-manager
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez/mastererp-dev-onboarding/f011d5204089951f5d514239e4ead9f2
+      Handler: lambdas/tenant-config-manager/handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource:
+            Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mastererp/*
+      Events:
+        GetConfig:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/tenants/{id}/config
+            Method: GET
+        PatchConfig:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/tenants/{id}/config
+            Method: PATCH
+    Metadata:
+      SamResourceId: TenantConfigManagerFunction
+  ModuleCatalogReaderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-module-catalog-reader
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez/mastererp-dev-onboarding/f011d5204089951f5d514239e4ead9f2
+      Handler: lambdas/module-catalog-reader/handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource:
+            Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mastererp/*
+      Events:
+        GetModules:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/modules
+            Method: GET
+    Metadata:
+      SamResourceId: ModuleCatalogReaderFunction
+  TenantModuleManagerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-tenant-module-manager
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez/mastererp-dev-onboarding/f011d5204089951f5d514239e4ead9f2
+      Handler: lambdas/tenant-module-manager/handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource:
+            Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mastererp/*
+      Events:
+        GetTenantModules:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/tenants/{id}/modules
+            Method: GET
+        PutTenantModule:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: AdminHttpApi
+            Path: /v1/tenants/{id}/modules/{moduleId}
+            Method: PUT
+    Metadata:
+      SamResourceId: TenantModuleManagerFunction
+  OnboardingProvisionerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: mastererp-${Environment}-onboarding-provisioner
+      CodeUri: s3://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez/mastererp-dev-onboarding/f011d5204089951f5d514239e4ead9f2
+      Handler: lambdas/onboarding-provisioner/handler.lambda_handler
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - Statement:
+        - Effect: Allow
+          Action: secretsmanager:GetSecretValue
+          Resource:
+            Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mastererp/*
+    Metadata:
+      SamResourceId: OnboardingProvisionerFunction
+Outputs:
+  AdminApiEndpoint:
+    Description: Admin HTTP API base URL
+    Value:
+      Fn::Sub: https://${AdminHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+  AdminApiName:
+    Value:
+      Fn::Sub: mastererp-${Environment}-admin-api
+  AdminApiId:
+    Value:
+      Ref: AdminHttpApi
+  DbMigratorFunctionName:
+    Value:
+      Ref: DbMigratorFunction
+  OnboardingProvisionerFunctionName:
+    Value:
+      Ref: OnboardingProvisionerFunction
+Metadata:
+  MasterERP:
+    Purpose: Selective repair of two active Onboarding functions only; legacy API
+      and deleted function declarations preserved unchanged. Never CREATE this historical
+      stack template.
+    Owner: mastererp-dev-onboarding
+    Deployment: scripts/repair_onboarding.py with strict change-set allowlist
