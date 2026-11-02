@@ -1,0 +1,171 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "MasterERP DEV technical Lambda: tesoreria; no API or database.",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": [
+        "dev"
+      ]
+    },
+    "ArtifactBucket": {
+      "Type": "String"
+    },
+    "TesoreriaArtifactKey": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "TesoreriaLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/lambda/mastererp-${Environment}-adm-tesoreria"
+        },
+        "RetentionInDays": 14,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "MasterERP"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Component",
+            "Value": "administration-health"
+          },
+          {
+            "Key": "ManagedBy",
+            "Value": "cloudformation"
+          }
+        ]
+      }
+    },
+    "TesoreriaRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "WriteOwnLogs",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "TesoreriaLogs",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "MasterERP"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Component",
+            "Value": "administration-health"
+          },
+          {
+            "Key": "ManagedBy",
+            "Value": "cloudformation"
+          }
+        ]
+      }
+    },
+    "TesoreriaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "TesoreriaLogs",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "mastererp-${Environment}-adm-tesoreria"
+        },
+        "Description": "Prueba tecnica; capacidad de negocio no implementada",
+        "Runtime": "python3.12",
+        "Handler": "handler.lambda_handler",
+        "Architectures": [
+          "arm64"
+        ],
+        "MemorySize": 128,
+        "Timeout": 5,
+        "Role": {
+          "Fn::GetAtt": [
+            "TesoreriaRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ArtifactBucket"
+          },
+          "S3Key": {
+            "Ref": "TesoreriaArtifactKey"
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "MasterERP"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Component",
+            "Value": "administration-health"
+          },
+          {
+            "Key": "ManagedBy",
+            "Value": "cloudformation"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "TesoreriaFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "TesoreriaFunction",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

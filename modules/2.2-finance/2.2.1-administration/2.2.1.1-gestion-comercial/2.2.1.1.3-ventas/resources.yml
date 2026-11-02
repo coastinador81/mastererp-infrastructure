@@ -1,0 +1,171 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "MasterERP DEV technical Lambda: ventas; no API or database.",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": [
+        "dev"
+      ]
+    },
+    "ArtifactBucket": {
+      "Type": "String"
+    },
+    "VentasArtifactKey": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "VentasLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": {
+          "Fn::Sub": "/aws/lambda/mastererp-${Environment}-adm-ventas"
+        },
+        "RetentionInDays": 14,
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "MasterERP"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Component",
+            "Value": "administration-health"
+          },
+          {
+            "Key": "ManagedBy",
+            "Value": "cloudformation"
+          }
+        ]
+      }
+    },
+    "VentasRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "sts:AssumeRole"
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "WriteOwnLogs",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "VentasLogs",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "MasterERP"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Component",
+            "Value": "administration-health"
+          },
+          {
+            "Key": "ManagedBy",
+            "Value": "cloudformation"
+          }
+        ]
+      }
+    },
+    "VentasFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "VentasLogs",
+      "Properties": {
+        "FunctionName": {
+          "Fn::Sub": "mastererp-${Environment}-adm-ventas"
+        },
+        "Description": "Prueba tecnica; capacidad de negocio no implementada",
+        "Runtime": "python3.12",
+        "Handler": "handler.lambda_handler",
+        "Architectures": [
+          "arm64"
+        ],
+        "MemorySize": 128,
+        "Timeout": 5,
+        "Role": {
+          "Fn::GetAtt": [
+            "VentasRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ArtifactBucket"
+          },
+          "S3Key": {
+            "Ref": "VentasArtifactKey"
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Project",
+            "Value": "MasterERP"
+          },
+          {
+            "Key": "Environment",
+            "Value": {
+              "Ref": "Environment"
+            }
+          },
+          {
+            "Key": "Component",
+            "Value": "administration-health"
+          },
+          {
+            "Key": "ManagedBy",
+            "Value": "cloudformation"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "VentasFunctionArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "VentasFunction",
+          "Arn"
+        ]
+      }
+    }
+  }
+}

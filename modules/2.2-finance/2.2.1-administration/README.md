@@ -29,3 +29,7 @@ Estructura documental; todas las áreas y sus submódulos están pendientes de i
 - [2.2.1.5 Gastos y fondos menores](2.2.1.5-gastos-fondos-menores/README.md)
 
 Clientes y Proveedores consumen maestros existentes sin duplicarlos. Proveedores referencia Catálogo; la ubicación y el contrato del maestro de Clientes quedan pendientes de identificación antes de implementar. No se definen aquí reglas contables, fiscales ni contratos nuevos.
+
+## Lambdas de diagnóstico DEV
+
+[Procedimiento y límites](ADMINISTRATION_LAMBDAS_DEV.md): ocho handlers mínimos de Administración. No son capacidades de negocio ni rutas API implementadas.
