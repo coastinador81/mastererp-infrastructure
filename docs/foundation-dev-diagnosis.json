@@ -1,0 +1,127 @@
+{
+  "date": "2026-11-02",
+  "region": "us-west-1",
+  "closed": false,
+  "http": {
+    "region": "us-west-1",
+    "validation": "real_http_existing_routes",
+    "results": [
+      {
+        "case": "uonify_spaces_authorized",
+        "http": 200,
+        "status": null
+      },
+      {
+        "case": "uonify_status_authorized",
+        "http": 200,
+        "status": "not_configured"
+      },
+      {
+        "case": "uonify_missing_token",
+        "http": 401,
+        "status": null
+      },
+      {
+        "case": "uonify_foreign_tenant",
+        "http": 403,
+        "status": null
+      },
+      {
+        "case": "onboarding_without_token",
+        "http": 500
+      },
+      {
+        "case": "onboarding_with_access_token",
+        "http": 500
+      },
+      {
+        "case": "legacy_catalog_deleted_destination",
+        "http": 500
+      }
+    ],
+    "fixture_mutations": false,
+    "tokens_printed_or_persisted": false,
+    "closure": false
+  },
+  "deployed_code": [
+    {
+      "name": "mastererp-dev-onboarding-session-manager",
+      "handler": "lambdas/onboarding-session-manager/handler.lambda_handler",
+      "files": [
+        "tenant_security/auth.py"
+      ],
+      "schema006": false,
+      "issuer_sub": false,
+      "email_autolink": true,
+      "size": 27396067
+    },
+    {
+      "name": "mastererp-dev-uonify-google-connection-handler",
+      "handler": "handler.lambda_handler",
+      "files": [
+        "handler.py",
+        "tenant_security/identity_access.py"
+      ],
+      "schema006": false,
+      "issuer_sub": true,
+      "email_autolink": false,
+      "size": 426482
+    },
+    {
+      "name": "mastererp-dev-database-migrator",
+      "handler": "handler.lambda_handler",
+      "files": [
+        "handler.py"
+      ],
+      "schema006": true,
+      "issuer_sub": false,
+      "email_autolink": false,
+      "size": 438128
+    }
+  ],
+  "onboarding_configuration": [
+    {
+      "function": "mastererp-dev-onboarding-session-manager",
+      "host_configured": true,
+      "secret_configured": false,
+      "uses_rds_master_secret": false,
+      "cognito_configured": false,
+      "api_permission_count": 4,
+      "log_group_exists": true
+    },
+    {
+      "function": "mastererp-dev-onboarding-progress-tracker",
+      "host_configured": true,
+      "secret_configured": false,
+      "uses_rds_master_secret": false,
+      "cognito_configured": false,
+      "api_permission_count": 2,
+      "log_group_exists": false
+    },
+    {
+      "function": "mastererp-dev-onboarding-provisioner",
+      "host_configured": true,
+      "secret_configured": false,
+      "uses_rds_master_secret": false,
+      "cognito_configured": false,
+      "policy_lookup": "ResourceNotFoundException",
+      "log_group_exists": false
+    }
+  ],
+  "publication_blocker": "DEV deploy includes 006 and three SQL tests, but Git dev manifest ends at 005 and model test still expects 14 tables. Local baseline files are pre-existing team work and cannot be published by this task.",
+  "product_decision": "Any active internal Cognito-authenticated user may register their own tenant; no Cognito group authorization.",
+  "remote_migrations_applied": [],
+  "readonly_migrator_verification": {
+    "action": "verify_dev_identity",
+    "identity_tables": 3,
+    "application_role_flags": [
+      false,
+      false,
+      false,
+      false
+    ],
+    "application_role_memberships": []
+  },
+  "finance_runtime_modified": false,
+  "obsolete_functions_recreated": false
+}
