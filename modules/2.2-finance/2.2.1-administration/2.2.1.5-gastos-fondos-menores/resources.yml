@@ -14,6 +14,13 @@
     },
     "GastosArtifactKey": {
       "Type": "String"
+    },
+    "ExistingAdminApiId": {
+      "Type": "String",
+      "Default": "qx8nmypdhi",
+      "AllowedValues": [
+        "qx8nmypdhi"
+      ]
     }
   },
   "Resources": {
@@ -155,6 +162,61 @@
             "Value": "cloudformation"
           }
         ]
+      }
+    },
+    "GastosIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationMethod": "POST",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "GastosFunction",
+            "Arn"
+          ]
+        },
+        "PayloadFormatVersion": "2.0",
+        "TimeoutInMillis": 5000
+      }
+    },
+    "GastosHealthRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/gastos/health",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "GastosIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "GastosApiPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GastosFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/gastos/health"
+        }
       }
     }
   },

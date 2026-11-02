@@ -14,6 +14,13 @@
     },
     "TesoreriaArtifactKey": {
       "Type": "String"
+    },
+    "ExistingAdminApiId": {
+      "Type": "String",
+      "Default": "qx8nmypdhi",
+      "AllowedValues": [
+        "qx8nmypdhi"
+      ]
     }
   },
   "Resources": {
@@ -155,6 +162,61 @@
             "Value": "cloudformation"
           }
         ]
+      }
+    },
+    "TesoreriaIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "IntegrationType": "AWS_PROXY",
+        "IntegrationMethod": "POST",
+        "IntegrationUri": {
+          "Fn::GetAtt": [
+            "TesoreriaFunction",
+            "Arn"
+          ]
+        },
+        "PayloadFormatVersion": "2.0",
+        "TimeoutInMillis": 5000
+      }
+    },
+    "TesoreriaHealthRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/tesoreria/health",
+        "AuthorizationType": "NONE",
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "TesoreriaIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "TesoreriaApiPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "TesoreriaFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/tesoreria/health"
+        }
       }
     }
   },

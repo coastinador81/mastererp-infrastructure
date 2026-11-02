@@ -1,6 +1,6 @@
 """Assemble functional owner templates, deploy one DEV stack and verify by IAM invocation.
 
-Requires Python standard library and existing AWS CLI. No API Gateway or SQL operations.
+Requires Python standard library and existing AWS CLI. Reuses the Admin API; no SQL.
 """
 import argparse
 import base64
@@ -20,7 +20,7 @@ ACCOUNT = '277352717693'
 def assemble():
     owners = json.loads((ROOT / 'scripts/administration_lambdas.json').read_text())
     result = {'AWSTemplateFormatVersion': '2010-09-09',
-              'Description': 'MasterERP DEV Administration technical Lambdas; no API or database',
+              'Description': 'MasterERP DEV Administration diagnostics using existing Admin API; no database',
               'Parameters': {}, 'Resources': {}, 'Outputs': {}}
     for capability, owner in owners.items():
         source = json.loads((ROOT / 'modules' / owner / 'resources.yml').read_text())
@@ -31,9 +31,11 @@ def assemble():
                 result[section][key] = value
         function = source['Resources'][capability.title() + 'Function']['Properties']
         assert function['FunctionName']['Fn::Sub'] == 'mastererp-${Environment}-adm-' + capability
-    assert len(owners) == 8 and len(result['Resources']) == 24
+    assert len(owners) == 8 and len(result['Resources']) == 48
     assert {x['Type'] for x in result['Resources'].values()} == {
-        'AWS::Lambda::Function', 'AWS::IAM::Role', 'AWS::Logs::LogGroup'}
+        'AWS::Lambda::Function', 'AWS::IAM::Role', 'AWS::Logs::LogGroup',
+        'AWS::ApiGatewayV2::Integration',
+        'AWS::ApiGatewayV2::Route', 'AWS::Lambda::Permission'}
     return owners, result
 
 
@@ -73,6 +75,13 @@ def main():
         return json.loads(run.stdout) if run.stdout.strip() else {}
 
     assert aws('sts', 'get-caller-identity')['Account'] == ACCOUNT
+    api_id = template['Parameters']['ExistingAdminApiId']['Default']
+    api = aws('apigatewayv2', 'get-api', '--api-id', api_id)
+    assert api['Name'] == 'mastererp-dev-admin-api'
+    owner = aws('cloudformation', 'describe-stack-resource', '--stack-name',
+                'mastererp-dev-onboarding', '--logical-resource-id', 'AdminHttpApi')
+    assert owner['StackResourceDetail']['PhysicalResourceId'] == api_id
+    assert aws('apigatewayv2', 'get-stage', '--api-id', api_id, '--stage-name', '$default')['AutoDeploy']
     location = aws('s3api', 'get-bucket-location', '--bucket', args.bucket)['LocationConstraint']
     assert location == REGION, 'Artifact bucket must be in us-west-1'
     block = aws('s3api', 'get-public-access-block', '--bucket', args.bucket)['PublicAccessBlockConfiguration']
@@ -86,7 +95,12 @@ def main():
         if found and name not in owned_names:
             raise RuntimeError('Existing function owned outside this stack: ' + name)
     if current:
-        assert {r['LogicalResourceId'] for r in current} == set(template['Resources']), 'Unexpected existing resources'
+        assert {r['LogicalResourceId'] for r in current} <= set(template['Resources']), 'Unexpected existing resources'
+    current_ids = {r['LogicalResourceId'] for r in current}
+    routes = aws('apigatewayv2', 'get-routes', '--api-id', api_id)['Items']
+    for cap in owners:
+        if cap.title() + 'HealthRoute' not in current_ids:
+            assert not any(r['RouteKey'] == 'GET /v1/administration/' + cap + '/health' for r in routes), 'Route owned elsewhere'
     aws('cloudformation', 'validate-template', '--template-body', 'file://' + str(template_path))
     parameters = [{'ParameterKey': 'Environment', 'ParameterValue': 'dev'},
                   {'ParameterKey': 'ArtifactBucket', 'ParameterValue': args.bucket}]

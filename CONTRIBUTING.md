@@ -2,7 +2,7 @@
 
 1. Leer AGENTS.md y docs/FOLDER_STANDARD.md.
 2. Revisar dev y cambios locales. Conservar archivos existentes.
-3. Identificar módulo y propietario antes de implementar. Recursos funcionales AWS en modules/. Cada carpeta funcional tiene README.md y resources.yml; cada Lambda tiene su propia carpeta. API Gateway compartidos en modules/api-gateways.yml. No introducir SQL ni implementación de negocio.
+3. Identificar módulo y propietario antes de implementar. Recursos funcionales AWS en modules/. Cada carpeta funcional tiene README.md y resources.yml; las Lambdas y sus recursos exclusivos se declaran en el resources.yml raíz de su carpeta funcional propietaria. API Gateway compartidos en modules/api-gateways.yml. No introducir SQL ni implementación de negocio.
 4. Al crear submódulos o pantallas, replicar ruta y README en frontend, backend, database e infrastructure. Documentar las correspondencias pendientes si no se dispone de todos los repositorios.
 5. Definir recursos compartidos una sola vez en el padre común. Completar plantillas vacías solo cuando existan recursos reales.
 6. Ejecutar `python scripts/validate_structure.py` y las pruebas de la implementación.
