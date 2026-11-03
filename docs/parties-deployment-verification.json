@@ -1,0 +1,724 @@
+{
+  "preserved_original_physical_resources": [
+    "CarteraApiPermission",
+    "CarteraFunction",
+    "CarteraLogs",
+    "CarteraRole",
+    "ClientesApiPermission",
+    "ClientesFunction",
+    "ClientesLogs",
+    "ClientesRole",
+    "ComprasApiPermission",
+    "ComprasFunction",
+    "ComprasLogs",
+    "ComprasRole",
+    "ConciliacionApiPermission",
+    "ConciliacionFunction",
+    "ConciliacionLogs",
+    "ConciliacionRole",
+    "GastosApiPermission",
+    "GastosFunction",
+    "GastosLogs",
+    "GastosRole",
+    "ProveedoresApiPermission",
+    "ProveedoresFunction",
+    "ProveedoresLogs",
+    "ProveedoresRole",
+    "TesoreriaApiPermission",
+    "TesoreriaFunction",
+    "TesoreriaLogs",
+    "TesoreriaRole",
+    "VentasApiPermission",
+    "VentasFunction",
+    "VentasLogs",
+    "VentasRole"
+  ],
+  "health": [
+    {
+      "capability": "clientes",
+      "http": 200
+    },
+    {
+      "capability": "ventas",
+      "http": 200
+    },
+    {
+      "capability": "proveedores",
+      "http": 200
+    },
+    {
+      "capability": "compras",
+      "http": 200
+    },
+    {
+      "capability": "cartera",
+      "http": 200
+    },
+    {
+      "capability": "tesoreria",
+      "http": 200
+    },
+    {
+      "capability": "conciliacion",
+      "http": 200
+    },
+    {
+      "capability": "gastos",
+      "http": 200
+    }
+  ],
+  "six_unrelated_function_code_hashes_unchanged": true,
+  "api_reimport_incident": "8 integrations and 8 health routes recreated; old IDs lost",
+  "finance_status": "UPDATE_COMPLETE",
+  "administration_status": "UPDATE_COMPLETE",
+  "resources_in_child": 64,
+  "resources": [
+    {
+      "LogicalResourceId": "CarteraApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-CarteraApiPermission-VtMxiAENVmel",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "CarteraFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-cartera",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "CarteraHealthRouteRecovered",
+      "PhysicalResourceId": "gho4rip",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "CarteraIntegrationRecovered",
+      "PhysicalResourceId": "oytrbi5",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "CarteraLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-cartera",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "CarteraRole",
+      "PhysicalResourceId": "mastererp-dev-administration-CarteraRole-XzBwjwJrdGwT",
+      "ResourceType": "AWS::IAM::Role"
+    },
+    {
+      "LogicalResourceId": "ClientesApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ClientesApiPermission-uKxxLrx3rgi7",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ClientesCreateRoute",
+      "PhysicalResourceId": "knybpep",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ClientesDetailRoute",
+      "PhysicalResourceId": "8mki4bd",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ClientesFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-clientes",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "ClientesGETListPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ClientesGETListPermission-zpsL6mF3rBDV",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ClientesGETPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ClientesGETPermission-uk7xVEC6YfYf",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ClientesHealthRouteRecovered",
+      "PhysicalResourceId": "8xnhokd",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ClientesIntegrationRecovered",
+      "PhysicalResourceId": "ie1m8ce",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "ClientesListRoute",
+      "PhysicalResourceId": "42qvl2r",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ClientesLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-clientes",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "ClientesPATCHPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ClientesPATCHPermission-Yq7Jeha1QjDG",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ClientesPOSTPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ClientesPOSTPermission-J5hPs6aRbtAL",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ClientesRole",
+      "PhysicalResourceId": "mastererp-dev-administration-ClientesRole-l7p1SwfU55i8",
+      "ResourceType": "AWS::IAM::Role"
+    },
+    {
+      "LogicalResourceId": "ClientesUpdateRoute",
+      "PhysicalResourceId": "hsjrip7",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ComprasApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ComprasApiPermission-uCe7Ual8XWYY",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ComprasFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-compras",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "ComprasHealthRouteRecovered",
+      "PhysicalResourceId": "l6u354f",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ComprasIntegrationRecovered",
+      "PhysicalResourceId": "8h8xxe1",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "ComprasLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-compras",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "ComprasRole",
+      "PhysicalResourceId": "mastererp-dev-administration-ComprasRole-uXVDtzn7MAXL",
+      "ResourceType": "AWS::IAM::Role"
+    },
+    {
+      "LogicalResourceId": "ConciliacionApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ConciliacionApiPermission-GyhnNm02XMdL",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ConciliacionFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-conciliacion",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "ConciliacionHealthRouteRecovered",
+      "PhysicalResourceId": "cyx331s",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ConciliacionIntegrationRecovered",
+      "PhysicalResourceId": "5twsxg7",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "ConciliacionLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-conciliacion",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "ConciliacionRole",
+      "PhysicalResourceId": "mastererp-dev-administration-ConciliacionRole-gaqrMlQev56e",
+      "ResourceType": "AWS::IAM::Role"
+    },
+    {
+      "LogicalResourceId": "GastosApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-GastosApiPermission-yZrr87Ndkqdo",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "GastosFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-gastos",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "GastosHealthRouteRecovered",
+      "PhysicalResourceId": "v55ikt1",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "GastosIntegrationRecovered",
+      "PhysicalResourceId": "8heu4y5",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "GastosLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-gastos",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "GastosRole",
+      "PhysicalResourceId": "mastererp-dev-administration-GastosRole-40BwV3AQarii",
+      "ResourceType": "AWS::IAM::Role"
+    },
+    {
+      "LogicalResourceId": "ProveedoresApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ProveedoresApiPermission-5HXYou7FTIyI",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ProveedoresCreateRoute",
+      "PhysicalResourceId": "zrtijep",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ProveedoresDetailRoute",
+      "PhysicalResourceId": "w4opc73",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ProveedoresFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-proveedores",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "ProveedoresGETListPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ProveedoresGETListPermission-tC05wljymLKy",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ProveedoresGETPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ProveedoresGETPermission-hFjSZobtCuwZ",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ProveedoresHealthRouteRecovered",
+      "PhysicalResourceId": "mzsbdn2",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ProveedoresIntegrationRecovered",
+      "PhysicalResourceId": "g2c8kka",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "ProveedoresListRoute",
+      "PhysicalResourceId": "ktqfumt",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "ProveedoresLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-proveedores",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "ProveedoresPATCHPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ProveedoresPATCHPermission-YqhnDpnr1DFx",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ProveedoresPOSTPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-ProveedoresPOSTPermission-45pB5YFfXR47",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "ProveedoresRole",
+      "PhysicalResourceId": "mastererp-dev-administration-ProveedoresRole-787c8NMCZJWP",
+      "ResourceType": "AWS::IAM::Role"
+    },
+    {
+      "LogicalResourceId": "ProveedoresUpdateRoute",
+      "PhysicalResourceId": "roiuki3",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "TesoreriaApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-TesoreriaApiPermission-sP0iP2XOvkDd",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "TesoreriaFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-tesoreria",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "TesoreriaHealthRouteRecovered",
+      "PhysicalResourceId": "wpty5i3",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "TesoreriaIntegrationRecovered",
+      "PhysicalResourceId": "ntn73t9",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "TesoreriaLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-tesoreria",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "TesoreriaRole",
+      "PhysicalResourceId": "mastererp-dev-administration-TesoreriaRole-IWfh5zauliih",
+      "ResourceType": "AWS::IAM::Role"
+    },
+    {
+      "LogicalResourceId": "VentasApiPermission",
+      "PhysicalResourceId": "mastererp-dev-administration-VentasApiPermission-qGLmKiTyTM8B",
+      "ResourceType": "AWS::Lambda::Permission"
+    },
+    {
+      "LogicalResourceId": "VentasFunction",
+      "PhysicalResourceId": "mastererp-dev-adm-ventas",
+      "ResourceType": "AWS::Lambda::Function"
+    },
+    {
+      "LogicalResourceId": "VentasHealthRouteRecovered",
+      "PhysicalResourceId": "kaxem5a",
+      "ResourceType": "AWS::ApiGatewayV2::Route"
+    },
+    {
+      "LogicalResourceId": "VentasIntegrationRecovered",
+      "PhysicalResourceId": "keysq0r",
+      "ResourceType": "AWS::ApiGatewayV2::Integration"
+    },
+    {
+      "LogicalResourceId": "VentasLogs",
+      "PhysicalResourceId": "/aws/lambda/mastererp-dev-adm-ventas",
+      "ResourceType": "AWS::Logs::LogGroup"
+    },
+    {
+      "LogicalResourceId": "VentasRole",
+      "PhysicalResourceId": "mastererp-dev-administration-VentasRole-dg694RhlPRH7",
+      "ResourceType": "AWS::IAM::Role"
+    }
+  ],
+  "api_id": "qx8nmypdhi",
+  "api_owner": "mastererp-dev-onboarding",
+  "authorizers": [
+    {
+      "id": "49et65",
+      "name": "mastererp-dev-admin-jwt",
+      "type": "JWT"
+    }
+  ],
+  "functional_routes": [
+    {
+      "RouteKey": "GET /v1/administration/clientes",
+      "RouteId": "42qvl2r",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    },
+    {
+      "RouteKey": "GET /v1/administration/clientes/{id}",
+      "RouteId": "8mki4bd",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    },
+    {
+      "RouteKey": "PATCH /v1/administration/clientes/{id}",
+      "RouteId": "hsjrip7",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    },
+    {
+      "RouteKey": "POST /v1/administration/clientes",
+      "RouteId": "knybpep",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    },
+    {
+      "RouteKey": "GET /v1/administration/proveedores",
+      "RouteId": "ktqfumt",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    },
+    {
+      "RouteKey": "PATCH /v1/administration/proveedores/{id}",
+      "RouteId": "roiuki3",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    },
+    {
+      "RouteKey": "GET /v1/administration/proveedores/{id}",
+      "RouteId": "w4opc73",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    },
+    {
+      "RouteKey": "POST /v1/administration/proveedores",
+      "RouteId": "zrtijep",
+      "AuthorizationType": "JWT",
+      "AuthorizerId": "49et65",
+      "AuthorizationScopes": [
+        "mastererp-dev/identity.spaces.read"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "FunctionArn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-clientes",
+      "State": "Active",
+      "LastUpdateStatus": "Successful",
+      "Runtime": "python3.12",
+      "MemorySize": 256,
+      "Timeout": 15,
+      "Role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-ClientesRole-l7p1SwfU55i8",
+      "VpcConfig": {
+        "SubnetIds": [
+          "subnet-03588dfad2cf9d1e1",
+          "subnet-06fc0b76f1e6167ad"
+        ],
+        "SecurityGroupIds": [
+          "sg-00d5917aa994d3753"
+        ],
+        "VpcId": "vpc-048771aa5c0e121bd",
+        "Ipv6AllowedForDualStack": false
+      },
+      "CodeSha256": "9DEIC0xyD/bL2aSUQ9SoAyDbC8B30OFtoQz43o5fSno="
+    },
+    {
+      "FunctionArn": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-adm-proveedores",
+      "State": "Active",
+      "LastUpdateStatus": "Successful",
+      "Runtime": "python3.12",
+      "MemorySize": 256,
+      "Timeout": 15,
+      "Role": "arn:aws:iam::277352717693:role/mastererp-dev-administration-ProveedoresRole-787c8NMCZJWP",
+      "VpcConfig": {
+        "SubnetIds": [
+          "subnet-03588dfad2cf9d1e1",
+          "subnet-06fc0b76f1e6167ad"
+        ],
+        "SecurityGroupIds": [
+          "sg-00d5917aa994d3753"
+        ],
+        "VpcId": "vpc-048771aa5c0e121bd",
+        "Ipv6AllowedForDualStack": false
+      },
+      "CodeSha256": "oXNxOCg6+mbPbAK9eO5SOT19gtsYgcrCLMB/Z37GbvQ="
+    }
+  ],
+  "api_plan": {
+    "stack": "mastererp-dev-onboarding",
+    "change_set": "parties-1793670310",
+    "review": [
+      {
+        "Action": "Add",
+        "LogicalResourceId": "AdminCognitoJwtAuthorizer",
+        "Replacement": null
+      },
+      {
+        "Action": "Modify",
+        "LogicalResourceId": "AdminHttpApi",
+        "Replacement": "False"
+      }
+    ],
+    "allowed": [
+      "AdminCognitoJwtAuthorizer",
+      "AdminHttpApi"
+    ],
+    "additions": [
+      "AdminCognitoJwtAuthorizer"
+    ]
+  },
+  "finance_plan": {
+    "stack": "mastererp-dev-finance",
+    "change_set": "parties-1793671519",
+    "review": [
+      {
+        "Action": "Modify",
+        "LogicalResourceId": "Administration",
+        "Replacement": "False"
+      }
+    ],
+    "allowed": [
+      "Administration"
+    ],
+    "additions": []
+  },
+  "recovery_missing_before_execution": [
+    {
+      "LogicalResourceId": "CarteraHealthRoute",
+      "PhysicalResourceId": "768ouce",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:32.062000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "CarteraIntegration",
+      "PhysicalResourceId": "y2mekds",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:30.414000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    },
+    {
+      "LogicalResourceId": "ClientesHealthRoute",
+      "PhysicalResourceId": "44p7w7h",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:27.768000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "ClientesIntegration",
+      "PhysicalResourceId": "u40oikf",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:26.115000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    },
+    {
+      "LogicalResourceId": "ComprasHealthRoute",
+      "PhysicalResourceId": "3vfcl09",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:27.552000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "ComprasIntegration",
+      "PhysicalResourceId": "ifdz25r",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:25.948000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    },
+    {
+      "LogicalResourceId": "ConciliacionHealthRoute",
+      "PhysicalResourceId": "1dk025g",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:32.154000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "ConciliacionIntegration",
+      "PhysicalResourceId": "i5rkryr",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:30.434000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    },
+    {
+      "LogicalResourceId": "GastosHealthRoute",
+      "PhysicalResourceId": "b0wth89",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:28.022000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "GastosIntegration",
+      "PhysicalResourceId": "ejajkug",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:26.277000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    },
+    {
+      "LogicalResourceId": "ProveedoresHealthRoute",
+      "PhysicalResourceId": "onbcxbd",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:27.881000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "ProveedoresIntegration",
+      "PhysicalResourceId": "nh5hkzl",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:26.145000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    },
+    {
+      "LogicalResourceId": "TesoreriaHealthRoute",
+      "PhysicalResourceId": "fgyn03m",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:31.805000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "TesoreriaIntegration",
+      "PhysicalResourceId": "4kiq2xh",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:25.939000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    },
+    {
+      "LogicalResourceId": "VentasHealthRoute",
+      "PhysicalResourceId": "ulap09o",
+      "ResourceType": "AWS::ApiGatewayV2::Route",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:27.548000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "IN_SYNC"
+      }
+    },
+    {
+      "LogicalResourceId": "VentasIntegration",
+      "PhysicalResourceId": "8v281qs",
+      "ResourceType": "AWS::ApiGatewayV2::Integration",
+      "LastUpdatedTimestamp": "2026-11-02 12:49:25.909000+00:00",
+      "ResourceStatus": "CREATE_COMPLETE",
+      "DriftInformation": {
+        "StackResourceDriftStatus": "NOT_CHECKED"
+      }
+    }
+  ]
+}

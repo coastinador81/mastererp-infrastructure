@@ -174,3 +174,7 @@ Este mapa precede la ejecución de F1/F2. El resultado real se añadirá al info
 ## Resultado posterior
 
 F1 ejecutado: el mismo stack Administración quedó como hijo de mastererp-dev-finance, sin mover o recrear sus 48 recursos individualmente. F2 ejecutado: padre UPDATE_COMPLETE, 11 outputs, sin cambios de recursos. Drift posterior IN_SYNC en padre e hijo. Ver [informe y recuperación](FINANCE_HIERARCHY_DEV.md) y [evidencia](finance-hierarchy-verification-dev.json). Los registros anteriores describen el origen previo; las filas fuera de F1/F2 no cambiaron de propietario.
+
+## Actualización Clientes/Proveedores 2026-11-03
+
+El inventario anterior es histórico. El hijo conserva su StackId y contiene 64 recursos; ocho rutas JWT nuevas y ocho permisos, con dos funciones funcionales. Una reimportación SAM del API eliminó las ocho integraciones/rutas health externas: se recuperaron por su propietario con logical IDs *Recovered y nuevos IDs físicos. Lambdas, roles, logs y permisos originales conservan sus IDs; las otras seis Lambdas su código. Inventario vigente e incidencia: [evidencia](parties-deployment-verification.json) y [procedimiento](ADMINISTRATION_PARTIES.md).

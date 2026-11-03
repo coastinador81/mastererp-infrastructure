@@ -90,3 +90,7 @@ Mantener las URLs de plantilla por hash y los registros de change sets. Ante un 
 Admin API sigue siendo propiedad de mastererp-dev-onboarding; JWT de agentes permanece en Identidad. La separación de rutas SAM embebidas exige su lote específico. Cinco funciones antiguas ausentes no se recrearon y seis rutas obsoletas no se borraron. Database, migrador, Cognito, hosting y certificado Uonify no se recrearon. El drift previo de Onboarding/Database queda al equipo DevOps, separado de esta adopción.
 
 [Importar un stack existente como hijo](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resource-import-nested-stacks.html) y [limitaciones de stack refactor](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stack-refactoring.html): referencias del mecanismo, no sustituyen la evidencia real adjunta.
+
+## Actualización Clientes/Proveedores 2026-11-03
+
+El inventario anterior es histórico. El hijo conserva su StackId y contiene 64 recursos; ocho rutas JWT nuevas y ocho permisos, con dos funciones funcionales. Una reimportación SAM del API eliminó las ocho integraciones/rutas health externas: se recuperaron por su propietario con logical IDs *Recovered y nuevos IDs físicos. Lambdas, roles, logs y permisos originales conservan sus IDs; las otras seis Lambdas su código. Inventario vigente e incidencia: [evidencia](parties-deployment-verification.json) y [procedimiento](ADMINISTRATION_PARTIES.md).

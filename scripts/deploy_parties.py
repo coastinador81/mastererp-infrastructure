@@ -26,6 +26,9 @@ def main():
     c, api, lam, store = (s.client(x) for x in ('cloudformation','apigatewayv2','lambda','s3'))
     assert api.get_api(ApiId='qx8nmypdhi')['Name'] == 'mastererp-dev-admin-api'
     assert c.describe_stack_resource(StackName=API_OWNER, LogicalResourceId='AdminHttpApi')['StackResourceDetail']['PhysicalResourceId'] == 'qx8nmypdhi'
+    def api_items(operation):
+        return [item for page in api.get_paginator(operation).paginate(ApiId='qx8nmypdhi') for item in page['Items']]
+
     is_api = args.phase.endswith('api')
     stack = API_OWNER if is_api else FINANCE
     record = args.output/('api-plan.json' if is_api else 'finance-plan.json')
@@ -69,18 +72,20 @@ def main():
             assert child['ParentId'] == state['StackId']
             owners, assembled = assemble()
             actual = template(CHILD)
-            mutable = {cap.title()+suffix for cap in ('clientes','proveedores') for suffix in ('Function','Role','Integration')}
+            mutable = {cap.title()+suffix for cap in ('clientes','proveedores') for suffix in ('Function','Role','Integration','IntegrationRecovered')}
             changed = {k for k in actual['Resources'] if actual['Resources'][k] != assembled['Resources'].get(k)}
             removed = set(actual['Resources'])-set(assembled['Resources'])
             lost_file = args.output/'api-reimport-loss.json'
             lost = json.loads(lost_file.read_text()) if lost_file.exists() else []
+            lost = [x for x in lost if x['LogicalResourceId'] in actual['Resources']]
             assert removed == {x['LogicalResourceId'] for x in lost}
-            live_integrations={x['IntegrationId'] for x in api.get_integrations(ApiId='qx8nmypdhi')['Items']}
-            live_routes={x['RouteId'] for x in api.get_routes(ApiId='qx8nmypdhi')['Items']}
+            live_integrations={x['IntegrationId'] for x in api_items('get_integrations')}
+            live_routes={x['RouteId'] for x in api_items('get_routes')}
             assert all(x['PhysicalResourceId'] not in (live_integrations if x['ResourceType'].endswith('Integration') else live_routes) for x in lost)
             assert changed <= mutable | removed
             additions = set(assembled['Resources'])-set(actual['Resources'])
-            assert len(additions) == 16+len(removed) and all(assembled['Resources'][x]['Type'] in ('AWS::ApiGatewayV2::Route','AWS::Lambda::Permission','AWS::ApiGatewayV2::Integration') for x in additions)
+            functional_present = all(cap.title()+'CreateRoute' in actual['Resources'] for cap in ('clientes','proveedores'))
+            assert len(additions) == (0 if functional_present else 16)+len(removed) and all(assembled['Resources'][x]['Type'] in ('AWS::ApiGatewayV2::Route','AWS::Lambda::Permission','AWS::ApiGatewayV2::Integration') for x in additions)
             bucket = previous['ArtifactBucket']
             assert store.get_bucket_location(Bucket=bucket)['LocationConstraint'] == 'us-west-1'
             assert all(store.get_public_access_block(Bucket=bucket)['PublicAccessBlockConfiguration'].values())
@@ -126,8 +131,8 @@ def main():
                 lost_file=args.output/'api-reimport-loss.json'
                 lost=json.loads(lost_file.read_text()) if lost_file.exists() else []
                 missing={x['LogicalResourceId']:x['PhysicalResourceId'] for x in lost}
-                live_integrations={x['IntegrationId'] for x in api.get_integrations(ApiId='qx8nmypdhi')['Items']}
-                live_routes={x['RouteId'] for x in api.get_routes(ApiId='qx8nmypdhi')['Items']}
+                live_integrations={x['IntegrationId'] for x in api_items('get_integrations')}
+                live_routes={x['RouteId'] for x in api_items('get_routes')}
                 for y in changes:
                     assert y.get('Replacement','False')=='False'
                     if y['Action']=='Remove':
