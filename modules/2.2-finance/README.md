@@ -26,3 +26,7 @@ Se conserva la ruta y responsabilidad funcional. La composición Finanzas → Ad
 ## Hosting del frontend financiero
 
 [Procedimiento y evidencia DEV](HOSTING.md). Recursos exclusivos declarados una sola vez en `resources.yml`, IDs FinanceFrontend*. El script extrae esa composición explícita para el stack independiente mastererp-dev-finance-frontend; no despliega ni actualiza el padre backend mastererp-dev-finance. El certificado regional auxiliar está en certificate.yml y usa us-east-1. No hay un frontend propio de Administración ni nuevos recursos en sus carpetas.
+
+## Experiencia integrada y alcance del hosting
+
+La entrada general DEV es app-dev.uonify.com. Las pantallas de Finanzas (Administración, Contabilidad, BI y capacidades asociadas) deben presentarse dentro del espacio de Uonify con navegación, identidad y contexto comunes. Finanzas conserva componentes, build, pipeline y despliegue propios. El hosting finanzas-dev.uonify.com se conserva como acceso independiente de desarrollo y pruebas; no es la navegación objetivo del usuario final y no obliga a crear finanzas.uonify.com en producción. Integración técnica y rutas internas pendientes, sin imponer `/finanzas` ni una tecnología. Ver [contrato oficial](../../docs/FRONTEND_ARCHITECTURE.md). Esta actualización es solo documental y no cambia stacks ni recursos.

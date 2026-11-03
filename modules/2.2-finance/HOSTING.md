@@ -2,6 +2,12 @@
 
 Página pública inicial en https://finanzas-dev.uonify.com: Finanzas — MasterERP, Desarrollo y Hola mundo. Sin login, datos, APIs u operaciones. Autenticación y navegación/contexto con Uonify son otra entrega. No modificar app-dev.uonify.com.
 
+## Papel del acceso independiente
+
+La entrada general DEV de MasterERP es app-dev.uonify.com. La experiencia objetivo presenta las pantallas de Finanzas dentro del espacio de Uonify con navegación, identidad y contexto comunes, mediante menú o chat opcional. finanzas-dev.uonify.com se conserva como acceso independiente de desarrollo y pruebas; no es la navegación objetivo del usuario final ni obliga a crear finanzas.uonify.com en producción.
+
+Finanzas conserva componentes, build, pipeline, despliegue y rollback propios. Su integración técnica en el front general y sus rutas internas/enlaces directos siguen pendientes; no se impone `/finanzas`, iframe, Module Federation u otra solución. El hosting y las pruebas que se documentan abajo acreditan solo la página independiente ya publicada. La decisión de experiencia no elimina hosting ni cambia DNS, stacks o recursos. Ver [contrato oficial](../../docs/FRONTEND_ARCHITECTURE.md).
+
 ## Propiedad y composición explícita
 
 - `resources.yml`: única declaración de bucket privado versionado/cifrado, OAC, distribución, política restringida a su ARN, DNS A/AAAA y rol OIDC exclusivo de publicación.
