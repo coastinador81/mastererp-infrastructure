@@ -71,9 +71,16 @@ def main():
             actual = template(CHILD)
             mutable = {cap.title()+suffix for cap in ('clientes','proveedores') for suffix in ('Function','Role','Integration')}
             changed = {k for k in actual['Resources'] if actual['Resources'][k] != assembled['Resources'].get(k)}
-            assert changed <= mutable and set(actual['Resources']) <= set(assembled['Resources'])
+            removed = set(actual['Resources'])-set(assembled['Resources'])
+            lost_file = args.output/'api-reimport-loss.json'
+            lost = json.loads(lost_file.read_text()) if lost_file.exists() else []
+            assert removed == {x['LogicalResourceId'] for x in lost}
+            live_integrations={x['IntegrationId'] for x in api.get_integrations(ApiId='qx8nmypdhi')['Items']}
+            live_routes={x['RouteId'] for x in api.get_routes(ApiId='qx8nmypdhi')['Items']}
+            assert all(x['PhysicalResourceId'] not in (live_integrations if x['ResourceType'].endswith('Integration') else live_routes) for x in lost)
+            assert changed <= mutable | removed
             additions = set(assembled['Resources'])-set(actual['Resources'])
-            assert len(additions) == 16 and all(assembled['Resources'][x]['Type'] in ('AWS::ApiGatewayV2::Route','AWS::Lambda::Permission') for x in additions)
+            assert len(additions) == 16+len(removed) and all(assembled['Resources'][x]['Type'] in ('AWS::ApiGatewayV2::Route','AWS::Lambda::Permission','AWS::ApiGatewayV2::Integration') for x in additions)
             bucket = previous['ArtifactBucket']
             assert store.get_bucket_location(Bucket=bucket)['LocationConstraint'] == 'us-west-1'
             assert all(store.get_public_access_block(Bucket=bucket)['PublicAccessBlockConfiguration'].values())
@@ -116,7 +123,17 @@ def main():
             if x.get('ChangeSetId'):
                 child_plan=c.describe_change_set(ChangeSetName=x['ChangeSetId'])
                 changes=[y['ResourceChange'] for y in child_plan.get('Changes',[])]
-                assert all(y['Action'] in ('Add','Modify') and y.get('Replacement','False')=='False' for y in changes)
+                lost_file=args.output/'api-reimport-loss.json'
+                lost=json.loads(lost_file.read_text()) if lost_file.exists() else []
+                missing={x['LogicalResourceId']:x['PhysicalResourceId'] for x in lost}
+                live_integrations={x['IntegrationId'] for x in api.get_integrations(ApiId='qx8nmypdhi')['Items']}
+                live_routes={x['RouteId'] for x in api.get_routes(ApiId='qx8nmypdhi')['Items']}
+                for y in changes:
+                    assert y.get('Replacement','False')=='False'
+                    if y['Action']=='Remove':
+                        assert y['LogicalResourceId'] in missing
+                        assert missing[y['LogicalResourceId']] not in live_integrations | live_routes
+                    else:assert y['Action'] in ('Add','Modify')
                 (args.output/'nested-change-set.json').write_text(json.dumps(child_plan,default=str,indent=2))
         c.execute_change_set(StackName=saved['stack'],ChangeSetName=saved['change_set'])
         c.get_waiter('stack_update_complete').wait(StackName=saved['stack'])

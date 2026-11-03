@@ -250,7 +250,7 @@
         }
       }
     },
-    "ProveedoresIntegration": {
+    "ProveedoresIntegrationRecovered": {
       "Type": "AWS::ApiGatewayV2::Integration",
       "Properties": {
         "ApiId": {
@@ -268,7 +268,7 @@
         "TimeoutInMillis": 15000
       }
     },
-    "ProveedoresHealthRoute": {
+    "ProveedoresHealthRouteRecovered": {
       "Type": "AWS::ApiGatewayV2::Route",
       "Properties": {
         "ApiId": {
@@ -282,7 +282,7 @@
             [
               "integrations",
               {
-                "Ref": "ProveedoresIntegration"
+                "Ref": "ProveedoresIntegrationRecovered"
               }
             ]
           ]
@@ -327,7 +327,7 @@
             [
               "integrations",
               {
-                "Ref": "ProveedoresIntegration"
+                "Ref": "ProveedoresIntegrationRecovered"
               }
             ]
           ]
@@ -356,7 +356,7 @@
             [
               "integrations",
               {
-                "Ref": "ProveedoresIntegration"
+                "Ref": "ProveedoresIntegrationRecovered"
               }
             ]
           ]
@@ -385,7 +385,7 @@
             [
               "integrations",
               {
-                "Ref": "ProveedoresIntegration"
+                "Ref": "ProveedoresIntegrationRecovered"
               }
             ]
           ]
@@ -414,7 +414,7 @@
             [
               "integrations",
               {
-                "Ref": "ProveedoresIntegration"
+                "Ref": "ProveedoresIntegrationRecovered"
               }
             ]
           ]
@@ -495,5 +495,8 @@
         ]
       }
     }
+  },
+  "Metadata": {
+    "Recovery": "API SAM Body reimport deleted the former integration/health route. Recreated by this owner; Lambda/role/log/permission physical IDs preserved."
   }
 }

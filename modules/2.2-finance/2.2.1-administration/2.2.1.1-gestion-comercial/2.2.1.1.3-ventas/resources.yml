@@ -163,7 +163,7 @@
         ]
       }
     },
-    "VentasIntegration": {
+    "VentasIntegrationRecovered": {
       "Type": "AWS::ApiGatewayV2::Integration",
       "Properties": {
         "ApiId": {
@@ -181,7 +181,7 @@
         "TimeoutInMillis": 5000
       }
     },
-    "VentasHealthRoute": {
+    "VentasHealthRouteRecovered": {
       "Type": "AWS::ApiGatewayV2::Route",
       "Properties": {
         "ApiId": {
@@ -195,7 +195,7 @@
             [
               "integrations",
               {
-                "Ref": "VentasIntegration"
+                "Ref": "VentasIntegrationRecovered"
               }
             ]
           ]
@@ -228,5 +228,8 @@
         ]
       }
     }
+  },
+  "Metadata": {
+    "Recovery": "API SAM Body reimport deleted the former integration/health route. Recreated by this owner; Lambda/role/log/permission physical IDs preserved."
   }
 }

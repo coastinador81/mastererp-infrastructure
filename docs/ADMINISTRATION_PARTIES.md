@@ -18,3 +18,11 @@ py scripts/deploy_parties.py --phase execute-finance --output <mismo-directorio>
 Preparación y ejecución separadas, revisión de change sets padre e hijo; se rechazan eliminaciones/reemplazos. Plantillas y ZIP anteriores se conservan en el bucket privado existente y en el plan local. No se recrean funciones retiradas ni se actualiza directamente el hijo. Para recuperar, preparar un change set inverso revisado con las referencias anteriores; no borrar stacks ni asumir que revertir código revierte datos.
 
 Las rutas nuevas GET base/detalle, POST base y PATCH detalle usan JWT y scope existente mastererp-dev/identity.spaces.read. Permisos PostgreSQL siguen siendo la autoridad funcional. /health conserva su comportamiento técnico. La evidencia HTTP y SQL vive en Database/docs/parties-*.json; no se afirma capacidad funcional por un health 200.
+
+## Incidencia de reimportación y recuperación
+
+Al actualizar CORS mediante el propietario SAM, CloudFormation reimportó Body y eliminó las ocho integraciones/rutas health externas, además de cambiar IDs internos de rutas/integraciones de Onboarding. Se detectó por inventario antes de ejecutar el cambio funcional y se retiró el change set pendiente. Los API/endpoints, funciones, roles, logs y permisos existentes se conservaron. No hubo cambios en datos.
+
+Se confirmó por AWS la ausencia de los 16 recursos físicos del hijo. Las plantillas propietarias declaran IntegrationRecovered y HealthRouteRecovered y se actualiza el mismo stack anidado. La recuperación retira del estado solo las declaraciones cuyos recursos físicos ya no existen y crea reemplazos con URLs/destinos equivalentes. Los IDs antiguos no son recuperables y no se afirma preservación de ellos. La revisión del plan permite esas retiradas exclusivamente tras comprobar otra vez su ausencia en AWS; no permite borrar recursos vivos. Se conservan los nombres/IDs de Lambdas, roles, logs y permisos.
+
+Advertencia para DevOps: mientras Admin API permanezca definido por Body de SAM y existan rutas externas, NO actualizar ese Body/CORS sin inventario y plan de preservación. La separación definitiva de propiedad requiere otra entrega; no se hace una migración global aquí. Esta entrega incorpora una incidencia real y su recuperación, no solo los cambios inicialmente previstos.
