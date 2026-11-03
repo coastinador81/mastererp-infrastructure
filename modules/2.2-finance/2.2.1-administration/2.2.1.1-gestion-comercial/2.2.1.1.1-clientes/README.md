@@ -18,3 +18,7 @@ Función: `mastererp-dev-adm-clientes`. Estado funcional: pendiente de implement
 ## Ruta de diagnóstico pública
 
 GET /v1/administration/clientes/health en mastererp-dev-admin-api (qx8nmypdhi). Por decisión explícita del propietario, esta ruta técnica es pública (AuthorizationType NONE), sin datos ni operaciones de tenant. La autenticación queda pendiente antes de implementar capacidades de negocio. La API sigue en mastererp-dev-onboarding; esta carpeta declara su integración, ruta y permiso exclusivo. CORS se conserva en el propietario de la API. No se crea ni modifica ningún autorizador JWT. No desplegar las definiciones heredadas de APIs.
+
+## Recursos funcionales de terceros
+
+El resources.yml raíz declara también las rutas JWT y los permisos exclusivos de esta capacidad, con conexión privada y secreto de aplicación explícitos. Se conserva /health. Procedimiento vigente: docs/ADMINISTRATION_PARTIES.md en la raíz de Infrastructure; composición mediante Finanzas → Administración.

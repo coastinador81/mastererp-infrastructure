@@ -35,7 +35,7 @@ def assemble():
                 result[section][key] = value
         function = source['Resources'][capability.title() + 'Function']['Properties']
         assert function['FunctionName']['Fn::Sub'] == 'mastererp-${Environment}-adm-' + capability
-    assert len(owners) == 8 and len(result['Resources']) == 48
+    assert len(owners) == 8 and len(result['Resources']) == 64
     assert {x['Type'] for x in result['Resources'].values()} == {
         'AWS::Lambda::Function', 'AWS::IAM::Role', 'AWS::Logs::LogGroup',
         'AWS::ApiGatewayV2::Integration',

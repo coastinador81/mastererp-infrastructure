@@ -47,6 +47,10 @@ Parameters:
     Type: String
   ReviewedArtifactKey:
     Type: String
+  AdminJwtIssuer:
+    Type: String
+  AdminJwtAudience:
+    Type: String
 Conditions:
   UseLambdaVpc:
     Fn::Equals:
@@ -108,6 +112,7 @@ Resources:
       CorsConfiguration:
         AllowOrigins:
         - Ref: AllowedOrigins
+        - https://app-dev.uonify.com
         AllowMethods:
         - GET
         - POST
@@ -120,6 +125,7 @@ Resources:
         - Content-Type
         - Idempotency-Key
         - X-Correlation-Id
+        - X-MasterERP-Tenant-Id
       DefaultRouteSettings:
         ThrottlingBurstLimit: 100
         ThrottlingRateLimit: 50
@@ -401,6 +407,21 @@ Resources:
             Fn::Sub: arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:mastererp/*
     Metadata:
       SamResourceId: OnboardingProvisionerFunction
+  AdminCognitoJwtAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId:
+        Ref: AdminHttpApi
+      AuthorizerType: JWT
+      Name:
+        Fn::Sub: mastererp-${Environment}-admin-jwt
+      IdentitySource:
+      - $request.header.Authorization
+      JwtConfiguration:
+        Issuer:
+          Ref: AdminJwtIssuer
+        Audience:
+        - Ref: AdminJwtAudience
 Outputs:
   AdminApiEndpoint:
     Description: Admin HTTP API base URL
@@ -418,6 +439,9 @@ Outputs:
   OnboardingProvisionerFunctionName:
     Value:
       Ref: OnboardingProvisionerFunction
+  AdminJwtAuthorizerId:
+    Value:
+      Ref: AdminCognitoJwtAuthorizer
 Metadata:
   MasterERP:
     Purpose: Selective repair of two active Onboarding functions only; legacy API

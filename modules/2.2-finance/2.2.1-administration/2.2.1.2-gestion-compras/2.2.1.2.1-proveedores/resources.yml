@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "MasterERP DEV technical Lambda: proveedores; no API or database.",
+  "Description": "MasterERP company-scoped proveedores over canonical tenant parties",
   "Parameters": {
     "Environment": {
       "Type": "String",
@@ -20,6 +20,27 @@
     "ExistingAdminApiId": {
       "Type": "String",
       "Default": "qx8nmypdhi"
+    },
+    "PartyDatabaseHost": {
+      "Type": "String"
+    },
+    "PartyDatabaseSecretArn": {
+      "Type": "String"
+    },
+    "PartySubnetIds": {
+      "Type": "CommaDelimitedList"
+    },
+    "PartySecurityGroupIds": {
+      "Type": "CommaDelimitedList"
+    },
+    "PartyCognitoIssuer": {
+      "Type": "String"
+    },
+    "PartyClientId": {
+      "Type": "String"
+    },
+    "AdminJwtAuthorizerId": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -88,6 +109,41 @@
                 }
               ]
             }
+          },
+          {
+            "PolicyName": "ReadApplicationSecret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "PartyDatabaseSecretArn"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "LambdaPrivateNetwork",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
           }
         ],
         "Tags": [
@@ -119,14 +175,14 @@
         "FunctionName": {
           "Fn::Sub": "mastererp-${Environment}-adm-proveedores"
         },
-        "Description": "Prueba tecnica; capacidad de negocio no implementada",
+        "Description": "Functional company parties via application-role SQL commands",
         "Runtime": "python3.12",
         "Handler": "handler.lambda_handler",
         "Architectures": [
           "arm64"
         ],
-        "MemorySize": 128,
-        "Timeout": 5,
+        "MemorySize": 256,
+        "Timeout": 15,
         "Role": {
           "Fn::GetAtt": [
             "ProveedoresRole",
@@ -160,7 +216,38 @@
             "Key": "ManagedBy",
             "Value": "cloudformation"
           }
-        ]
+        ],
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "PartySubnetIds"
+          },
+          "SecurityGroupIds": {
+            "Ref": "PartySecurityGroupIds"
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "ENVIRONMENT": {
+              "Ref": "Environment"
+            },
+            "COGNITO_ISSUER": {
+              "Ref": "PartyCognitoIssuer"
+            },
+            "COGNITO_APP_CLIENT_ID": {
+              "Ref": "PartyClientId"
+            },
+            "DATABASE_HOST": {
+              "Ref": "PartyDatabaseHost"
+            },
+            "DATABASE_SECRET_ARN": {
+              "Ref": "PartyDatabaseSecretArn"
+            },
+            "IDENTITY_DB_ENABLED": "true",
+            "REQUIRED_API_SCOPE": {
+              "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+            }
+          }
+        }
       }
     },
     "ProveedoresIntegration": {
@@ -178,7 +265,7 @@
           ]
         },
         "PayloadFormatVersion": "2.0",
-        "TimeoutInMillis": 5000
+        "TimeoutInMillis": 15000
       }
     },
     "ProveedoresHealthRoute": {
@@ -215,6 +302,186 @@
         },
         "SourceArn": {
           "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/proveedores/health"
+        }
+      }
+    },
+    "ProveedoresListRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/proveedores",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ProveedoresIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "ProveedoresDetailRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/proveedores/{id}",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ProveedoresIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "ProveedoresCreateRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "POST /v1/administration/proveedores",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ProveedoresIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "ProveedoresUpdateRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "PATCH /v1/administration/proveedores/{id}",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ProveedoresIntegration"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "ProveedoresGETPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ProveedoresFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/proveedores/*"
+        }
+      }
+    },
+    "ProveedoresPOSTPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ProveedoresFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/POST/v1/administration/proveedores"
+        }
+      }
+    },
+    "ProveedoresPATCHPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ProveedoresFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/PATCH/v1/administration/proveedores/*"
+        }
+      }
+    },
+    "ProveedoresGETListPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ProveedoresFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/proveedores"
         }
       }
     }

@@ -45,6 +45,27 @@
     },
     "GastosArtifactKey": {
       "Type": "String"
+    },
+    "PartyDatabaseHost": {
+      "Type": "String"
+    },
+    "PartyDatabaseSecretArn": {
+      "Type": "String"
+    },
+    "PartySubnetIds": {
+      "Type": "CommaDelimitedList"
+    },
+    "PartySecurityGroupIds": {
+      "Type": "CommaDelimitedList"
+    },
+    "PartyCognitoIssuer": {
+      "Type": "String"
+    },
+    "PartyClientId": {
+      "Type": "String"
+    },
+    "AdminJwtAuthorizerId": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -89,6 +110,37 @@
           },
           "GastosArtifactKey": {
             "Ref": "GastosArtifactKey"
+          },
+          "PartyDatabaseHost": {
+            "Ref": "PartyDatabaseHost"
+          },
+          "PartyDatabaseSecretArn": {
+            "Ref": "PartyDatabaseSecretArn"
+          },
+          "PartySubnetIds": {
+            "Fn::Join": [
+              ",",
+              {
+                "Ref": "PartySubnetIds"
+              }
+            ]
+          },
+          "PartySecurityGroupIds": {
+            "Fn::Join": [
+              ",",
+              {
+                "Ref": "PartySecurityGroupIds"
+              }
+            ]
+          },
+          "PartyCognitoIssuer": {
+            "Ref": "PartyCognitoIssuer"
+          },
+          "PartyClientId": {
+            "Ref": "PartyClientId"
+          },
+          "AdminJwtAuthorizerId": {
+            "Ref": "AdminJwtAuthorizerId"
           }
         },
         "Tags": [
