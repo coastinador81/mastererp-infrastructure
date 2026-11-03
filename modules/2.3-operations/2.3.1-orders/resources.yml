@@ -1,0 +1,65 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "MasterERP canonical company-scoped Orders API",
+  "Parameters": {
+    "Environment": {"Type": "String", "Default": "dev", "AllowedValues": ["dev", "qa", "prod"]},
+    "ArtifactBucket": {"Type": "String"},
+    "OrdersArtifactKey": {"Type": "String"},
+    "ExistingAdminApiId": {"Type": "String"},
+    "AdminJwtAuthorizerId": {"Type": "String"},
+    "DatabaseHost": {"Type": "String"},
+    "DatabaseSecretArn": {"Type": "String"},
+    "PrivateSubnetIds": {"Type": "CommaDelimitedList"},
+    "SecurityGroupIds": {"Type": "CommaDelimitedList"},
+    "CognitoIssuer": {"Type": "String"},
+    "CognitoClientId": {"Type": "String"}
+  },
+  "Resources": {
+    "OrdersLogs": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {"LogGroupName": {"Fn::Sub": "/aws/lambda/mastererp-${Environment}-orders"}, "RetentionInDays": 14}
+    },
+    "OrdersRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]},
+        "Policies": [
+          {"PolicyName": "OrdersLogs", "PolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["logs:CreateLogStream", "logs:PutLogEvents"], "Resource": {"Fn::GetAtt": ["OrdersLogs", "Arn"]}}]}},
+          {"PolicyName": "ApplicationDatabaseSecret", "PolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": "secretsmanager:GetSecretValue", "Resource": {"Ref": "DatabaseSecretArn"}}]}},
+          {"PolicyName": "PrivateNetwork", "PolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["ec2:CreateNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:DescribeSubnets", "ec2:DeleteNetworkInterface", "ec2:AssignPrivateIpAddresses", "ec2:UnassignPrivateIpAddresses"], "Resource": "*"}]}}
+        ]
+      }
+    },
+    "OrdersFunction": {
+      "Type": "AWS::Lambda::Function",
+      "DependsOn": "OrdersLogs",
+      "Properties": {
+        "FunctionName": {"Fn::Sub": "mastererp-${Environment}-orders"},
+        "Description": "Canonical Orders HTTP adapter over controlled PostgreSQL functions",
+        "Runtime": "python3.12", "Architectures": ["arm64"], "Handler": "handler.lambda_handler",
+        "MemorySize": 256, "Timeout": 15,
+        "Role": {"Fn::GetAtt": ["OrdersRole", "Arn"]},
+        "Code": {"S3Bucket": {"Ref": "ArtifactBucket"}, "S3Key": {"Ref": "OrdersArtifactKey"}},
+        "VpcConfig": {"SubnetIds": {"Ref": "PrivateSubnetIds"}, "SecurityGroupIds": {"Ref": "SecurityGroupIds"}},
+        "Environment": {"Variables": {
+          "ENVIRONMENT": {"Ref": "Environment"}, "DATABASE_HOST": {"Ref": "DatabaseHost"},
+          "DATABASE_SECRET_ARN": {"Ref": "DatabaseSecretArn"}, "COGNITO_ISSUER": {"Ref": "CognitoIssuer"},
+          "COGNITO_APP_CLIENT_ID": {"Ref": "CognitoClientId"}
+        }}
+      }
+    },
+    "OrdersIntegration": {
+      "Type": "AWS::ApiGatewayV2::Integration",
+      "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "IntegrationType": "AWS_PROXY", "IntegrationMethod": "POST", "IntegrationUri": {"Fn::GetAtt": ["OrdersFunction", "Arn"]}, "PayloadFormatVersion": "2.0", "TimeoutInMillis": 15000}
+    },
+    "OrdersListRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "GET /v1/companies/{company_id}/orders", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "OrdersIntegration"}]]}}},
+    "OrdersDetailRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "GET /v1/companies/{company_id}/orders/{order_id}", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "OrdersIntegration"}]]}}},
+    "OrdersCreateRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "POST /v1/companies/{company_id}/orders", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "OrdersIntegration"}]]}}},
+    "OrdersTransitionRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "POST /v1/companies/{company_id}/orders/{order_id}/transitions", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "OrdersIntegration"}]]}}},
+    "OrdersApiPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {"FunctionName": {"Ref": "OrdersFunction"}, "Action": "lambda:InvokeFunction", "Principal": "apigateway.amazonaws.com", "SourceAccount": {"Ref": "AWS::AccountId"}, "SourceArn": {"Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/*/v1/companies/*/orders*"}}
+    }
+  },
+  "Outputs": {"OrdersFunctionArn": {"Value": {"Fn::GetAtt": ["OrdersFunction", "Arn"]}}}
+}

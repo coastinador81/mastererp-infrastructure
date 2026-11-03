@@ -1,0 +1,36 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "MasterERP canonical tenant-scoped Products API",
+  "Parameters": {
+    "Environment": {"Type": "String", "Default": "dev", "AllowedValues": ["dev", "qa", "prod"]},
+    "ArtifactBucket": {"Type": "String"}, "ProductsArtifactKey": {"Type": "String"},
+    "ExistingAdminApiId": {"Type": "String"}, "AdminJwtAuthorizerId": {"Type": "String"},
+    "DatabaseHost": {"Type": "String"}, "DatabaseSecretArn": {"Type": "String"},
+    "PrivateSubnetIds": {"Type": "CommaDelimitedList"}, "SecurityGroupIds": {"Type": "CommaDelimitedList"},
+    "CognitoIssuer": {"Type": "String"}, "CognitoClientId": {"Type": "String"}
+  },
+  "Resources": {
+    "ProductsLogs": {"Type": "AWS::Logs::LogGroup", "Properties": {"LogGroupName": {"Fn::Sub": "/aws/lambda/mastererp-${Environment}-products"}, "RetentionInDays": 14}},
+    "ProductsRole": {"Type": "AWS::IAM::Role", "Properties": {
+      "AssumeRolePolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": {"Service": "lambda.amazonaws.com"}, "Action": "sts:AssumeRole"}]},
+      "Policies": [
+        {"PolicyName": "ProductsLogs", "PolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["logs:CreateLogStream", "logs:PutLogEvents"], "Resource": {"Fn::GetAtt": ["ProductsLogs", "Arn"]}}]}},
+        {"PolicyName": "ApplicationDatabaseSecret", "PolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": "secretsmanager:GetSecretValue", "Resource": {"Ref": "DatabaseSecretArn"}}]}},
+        {"PolicyName": "PrivateNetwork", "PolicyDocument": {"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Action": ["ec2:CreateNetworkInterface", "ec2:DescribeNetworkInterfaces", "ec2:DescribeSubnets", "ec2:DeleteNetworkInterface", "ec2:AssignPrivateIpAddresses", "ec2:UnassignPrivateIpAddresses"], "Resource": "*"}]}}
+      ]}},
+    "ProductsFunction": {"Type": "AWS::Lambda::Function", "DependsOn": "ProductsLogs", "Properties": {
+      "FunctionName": {"Fn::Sub": "mastererp-${Environment}-products"}, "Description": "Canonical product master; excludes inventory",
+      "Runtime": "python3.12", "Architectures": ["arm64"], "Handler": "handler.lambda_handler", "MemorySize": 256, "Timeout": 15,
+      "Role": {"Fn::GetAtt": ["ProductsRole", "Arn"]}, "Code": {"S3Bucket": {"Ref": "ArtifactBucket"}, "S3Key": {"Ref": "ProductsArtifactKey"}},
+      "VpcConfig": {"SubnetIds": {"Ref": "PrivateSubnetIds"}, "SecurityGroupIds": {"Ref": "SecurityGroupIds"}},
+      "Environment": {"Variables": {"ENVIRONMENT": {"Ref": "Environment"}, "DATABASE_HOST": {"Ref": "DatabaseHost"}, "DATABASE_SECRET_ARN": {"Ref": "DatabaseSecretArn"}, "COGNITO_ISSUER": {"Ref": "CognitoIssuer"}, "COGNITO_APP_CLIENT_ID": {"Ref": "CognitoClientId"}}}
+    }},
+    "ProductsIntegration": {"Type": "AWS::ApiGatewayV2::Integration", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "IntegrationType": "AWS_PROXY", "IntegrationMethod": "POST", "IntegrationUri": {"Fn::GetAtt": ["ProductsFunction", "Arn"]}, "PayloadFormatVersion": "2.0", "TimeoutInMillis": 15000}},
+    "ProductsListRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "GET /v1/products", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "ProductsIntegration"}]]}}},
+    "ProductsDetailRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "GET /v1/products/{product_id}", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "ProductsIntegration"}]]}}},
+    "ProductsCreateRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "POST /v1/products", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "ProductsIntegration"}]]}}},
+    "ProductsUpdateRoute": {"Type": "AWS::ApiGatewayV2::Route", "Properties": {"ApiId": {"Ref": "ExistingAdminApiId"}, "RouteKey": "PATCH /v1/products/{product_id}", "AuthorizationType": "JWT", "AuthorizerId": {"Ref": "AdminJwtAuthorizerId"}, "Target": {"Fn::Join": ["/", ["integrations", {"Ref": "ProductsIntegration"}]]}}},
+    "ProductsApiPermission": {"Type": "AWS::Lambda::Permission", "Properties": {"FunctionName": {"Ref": "ProductsFunction"}, "Action": "lambda:InvokeFunction", "Principal": "apigateway.amazonaws.com", "SourceAccount": {"Ref": "AWS::AccountId"}, "SourceArn": {"Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/*/v1/products*"}}}
+  },
+  "Outputs": {"ProductsFunctionArn": {"Value": {"Fn::GetAtt": ["ProductsFunction", "Arn"]}}}
+}
