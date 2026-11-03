@@ -22,3 +22,7 @@ Validaciones: estructura local mediante scripts/validate_structure.py. Pendiente
 ## Jerarquía de infraestructura
 
 Se conserva la ruta y responsabilidad funcional. La composición Finanzas → Administración y las reservas de Contabilidad/BI se documentan en [docs/FINANCE_HIERARCHY.md](../../docs/FINANCE_HIERARCHY.md). En Infrastructure, cada recurso permanece en el YAML raíz de su carpeta propietaria; una carpeta no obliga a crear un stack. El resultado AWS se informa por separado en el mapa y evidencia de Infrastructure.
+
+## Hosting del frontend financiero
+
+[Procedimiento y evidencia DEV](HOSTING.md). Recursos exclusivos declarados una sola vez en `resources.yml`, IDs FinanceFrontend*. El script extrae esa composición explícita para el stack independiente mastererp-dev-finance-frontend; no despliega ni actualiza el padre backend mastererp-dev-finance. El certificado regional auxiliar está en certificate.yml y usa us-east-1. No hay un frontend propio de Administración ni nuevos recursos en sus carpetas.
