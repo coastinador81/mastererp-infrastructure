@@ -178,3 +178,7 @@ F1 ejecutado: el mismo stack Administración quedó como hijo de mastererp-dev-f
 ## Actualización Clientes/Proveedores 2026-11-03
 
 El inventario anterior es histórico. El hijo conserva su StackId y contiene 64 recursos; ocho rutas JWT nuevas y ocho permisos, con dos funciones funcionales. Una reimportación SAM del API eliminó las ocho integraciones/rutas health externas: se recuperaron por su propietario con logical IDs *Recovered y nuevos IDs físicos. Lambdas, roles, logs y permisos originales conservan sus IDs; las otras seis Lambdas su código. Inventario vigente e incidencia: [evidencia](parties-deployment-verification.json) y [procedimiento](ADMINISTRATION_PARTIES.md).
+
+## Conservación tras retirar SAM/OpenAPI del API compartido
+
+Los IDs de las 16 rutas y ocho integraciones de Administración permanecen iguales. El propietario del API adoptó además doce rutas y doce integraciones de Onboarding por sus IDs existentes. Mapa completo y huellas antes/después: [estabilización nativa](api-native-verification.json).

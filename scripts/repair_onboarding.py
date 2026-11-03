@@ -4,6 +4,8 @@ Never creates a stack or changes API definitions or the five missing functions.
 import argparse,base64,hashlib,json,time
 from pathlib import Path
 import boto3,yaml
+from admin_api_model import assemble, guard, fingerprint
+from stabilize_admin_api import inventory
 ROOT=Path(__file__).resolve().parents[1]
 STACK='mastererp-dev-onboarding'
 ALLOWED={'OnboardingSessionManagerFunction','OnboardingSessionManagerFunctionRole',
@@ -23,7 +25,8 @@ def main():
     assert stack['StackStatus'] in ('CREATE_COMPLETE','UPDATE_COMPLETE','UPDATE_ROLLBACK_COMPLETE')
     original=c.get_template(StackName=STACK,TemplateStage='Original')['TemplateBody']
     original=yaml.safe_load(original) if isinstance(original,str) else original
-    candidate=yaml.safe_load((ROOT/'modules/1.0-platform-base/1.1-tenant-onboarding/resources.yml').read_text(encoding='utf-8'))
+    candidate=assemble()
+    guard(original);guard(candidate)
     changed={k for k in original['Resources'] if original['Resources'][k]!=candidate['Resources'].get(k)}
     assert changed.issubset(FUNCTIONS) and set(original['Resources'])==set(candidate['Resources'])
     for k in original:
@@ -35,10 +38,10 @@ def main():
         assert config['Runtime']=='python3.12' and config['Architectures']==['x86_64']
     api_id=c.describe_stack_resource(StackName=STACK,LogicalResourceId='AdminHttpApi')['StackResourceDetail']['PhysicalResourceId']
     assert api_id=='qx8nmypdhi' and a.get_api(ApiId=api_id)['Name']=='mastererp-dev-admin-api'
-    routes=a.get_routes(ApiId=api_id)['Items'];integrations=a.get_integrations(ApiId=api_id)['Items'];api=a.get_api(ApiId=api_id)
+    baseline=inventory(a)
     (args.output/'original.json').write_text(json.dumps(original,indent=2))
-    uri=original['Resources']['OnboardingSessionManagerFunction']['Properties']['CodeUri']
-    bucket=uri.removeprefix('s3://').split('/')[0]
+    previous={x['ParameterKey']:x['ParameterValue'] for x in stack['Parameters']}
+    bucket=previous.get('ReviewedArtifactBucket') or previous['OnboardingCodeUri'].removeprefix('s3://').split('/')[0]
     assert s3.get_bucket_location(Bucket=bucket)['LocationConstraint']=='us-west-1'
     raw=args.artifact.read_bytes();sha=hashlib.sha256(raw).hexdigest();key='mastererp-dev-onboarding/reviewed/'+sha+'.zip'
     s3.put_object(Bucket=bucket,Key=key,Body=raw,ContentType='application/zip',ServerSideEncryption='AES256')
@@ -52,9 +55,9 @@ def main():
     (args.output/'change-set.json').write_text(json.dumps(plan,default=str,indent=2))
     changes=[x['ResourceChange'] for x in plan['Changes']]
     print(json.dumps([{'action':x['Action'],'logical':x['LogicalResourceId'],'replacement':x.get('Replacement')} for x in changes],indent=2))
-    # SAM predicts a dynamic Body update because its integrations reference the
-    # two function ARNs. Code/config changes cannot change these ARNs. Permit only
-    # this dependency prediction, with byte-equivalent processed API definitions.
+    # Native API resources cannot regenerate routes on a function-code update.
+    # Existing integration URI references may be predicted dynamically, but their
+    # declarations and all API properties must remain identical.
     before=c.get_template(StackName=STACK,TemplateStage='Processed')['TemplateBody']
     after=c.get_template(StackName=STACK,ChangeSetName=change,TemplateStage='Processed')['TemplateBody']
     before=yaml.safe_load(before) if isinstance(before,str) else before
@@ -62,21 +65,20 @@ def main():
     assert before['Resources']['AdminHttpApi']==after['Resources']['AdminHttpApi'],'API definition changed'
     for item in changes:
         assert item['Action']=='Modify' and item.get('Replacement','False')=='False','Unsafe replacement/add/delete'
-        if item['LogicalResourceId']=='AdminHttpApi':
-            assert item['Details'] and all(detail['Evaluation']=='Dynamic' and detail['ChangeSource']=='ResourceAttribute'
-                and detail['CausingEntity'] in {key+'.Arn' for key in FUNCTIONS}
-                and detail['Target']['Name']=='Body' for detail in item['Details']),'Unexpected API modification'
+        name=item['LogicalResourceId']
+        if item['ResourceType']=='AWS::ApiGatewayV2::Integration':
+            assert original['Resources'][name]==candidate['Resources'][name]
+            assert item['Details'] and all(detail['Evaluation']=='Dynamic'
+                and detail.get('CausingEntity') in {key+'.Arn' for key in FUNCTIONS}
+                and detail['Target']['Name']=='IntegrationUri' for detail in item['Details'])
         else:
-            assert item['LogicalResourceId'] in ALLOWED,'Unexpected resource change'
-    assert changes,'Empty change set'
+            assert name in ALLOWED,'Unexpected resource change'
 
     if not args.execute:
         print('Reviewed change set prepared, not executed: '+change);return
     c.execute_change_set(StackName=STACK,ChangeSetName=change)
     c.get_waiter('stack_update_complete').wait(StackName=STACK)
-    assert a.get_routes(ApiId=api_id)['Items']==routes
-    assert a.get_integrations(ApiId=api_id)['Items']==integrations
-    assert a.get_api(ApiId=api_id).get('CorsConfiguration')==api.get('CorsConfiguration')
+    assert fingerprint(inventory(a))==fingerprint(baseline), 'API graph/configuration changed'
     for name in FUNCTIONS.values():
         conf=l.get_function_configuration(FunctionName=name)
         assert conf['State']=='Active' and conf['LastUpdateStatus']=='Successful'

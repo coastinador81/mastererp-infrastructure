@@ -1,0 +1,448 @@
+{
+  "status": "passed",
+  "region": "us-west-1",
+  "account": "277352717693",
+  "api_id": "qx8nmypdhi",
+  "endpoint": "https://qx8nmypdhi.execute-api.us-west-1.amazonaws.com",
+  "source_matches_deployed_native_template": true,
+  "api_definition_mode": "native_resources_no_body_no_SAM",
+  "existing_protocol_type": "HTTP; immutable attribute preserved, UPDATE-only template",
+  "routing_identity_fingerprint_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+  "routes": 28,
+  "integrations": 20,
+  "authorizers": 1,
+  "original_owner_resources_preserved": 33,
+  "owner_resources_after_import": 57,
+  "administration_resources_preserved": 64,
+  "lambda_configurations_unchanged": 11,
+  "previously_absent_functions_still_absent": 5,
+  "stack_status": "UPDATE_COMPLETE",
+  "stack_id_preserved": true,
+  "import_mapping": [
+    {
+      "logical": "OnboardingSessionManagerFunctionPostSessionIntegration",
+      "type": "Integration",
+      "physical": "vq3oii6",
+      "route": "POST /v1/onboarding/sessions"
+    },
+    {
+      "logical": "OnboardingSessionManagerFunctionPostSessionRoute",
+      "type": "Route",
+      "physical": "czqixj2",
+      "route": "POST /v1/onboarding/sessions"
+    },
+    {
+      "logical": "OnboardingSessionManagerFunctionGetSessionIntegration",
+      "type": "Integration",
+      "physical": "k4drl9i",
+      "route": "GET /v1/onboarding/sessions/{id}"
+    },
+    {
+      "logical": "OnboardingSessionManagerFunctionGetSessionRoute",
+      "type": "Route",
+      "physical": "x546dqh",
+      "route": "GET /v1/onboarding/sessions/{id}"
+    },
+    {
+      "logical": "OnboardingSessionManagerFunctionPatchSessionIntegration",
+      "type": "Integration",
+      "physical": "2c7r82e",
+      "route": "PATCH /v1/onboarding/sessions/{id}"
+    },
+    {
+      "logical": "OnboardingSessionManagerFunctionPatchSessionRoute",
+      "type": "Route",
+      "physical": "llfkoo3",
+      "route": "PATCH /v1/onboarding/sessions/{id}"
+    },
+    {
+      "logical": "OnboardingSessionManagerFunctionCompleteSessionIntegration",
+      "type": "Integration",
+      "physical": "dwcur6j",
+      "route": "POST /v1/onboarding/sessions/{id}/complete"
+    },
+    {
+      "logical": "OnboardingSessionManagerFunctionCompleteSessionRoute",
+      "type": "Route",
+      "physical": "1gbsolb",
+      "route": "POST /v1/onboarding/sessions/{id}/complete"
+    },
+    {
+      "logical": "OnboardingProgressTrackerFunctionGetProgressIntegration",
+      "type": "Integration",
+      "physical": "pkqlwxa",
+      "route": "GET /v1/onboarding/sessions/{id}/progress"
+    },
+    {
+      "logical": "OnboardingProgressTrackerFunctionGetProgressRoute",
+      "type": "Route",
+      "physical": "f9j3fjv",
+      "route": "GET /v1/onboarding/sessions/{id}/progress"
+    },
+    {
+      "logical": "OnboardingProgressTrackerFunctionPutStepIntegration",
+      "type": "Integration",
+      "physical": "6de0jf9",
+      "route": "PUT /v1/onboarding/sessions/{id}/steps/{stepId}"
+    },
+    {
+      "logical": "OnboardingProgressTrackerFunctionPutStepRoute",
+      "type": "Route",
+      "physical": "l2gncq1",
+      "route": "PUT /v1/onboarding/sessions/{id}/steps/{stepId}"
+    },
+    {
+      "logical": "TenantCreatorFunctionPostTenantIntegration",
+      "type": "Integration",
+      "physical": "sq6dj93",
+      "route": "POST /v1/tenants"
+    },
+    {
+      "logical": "TenantCreatorFunctionPostTenantRoute",
+      "type": "Route",
+      "physical": "y527qv8",
+      "route": "POST /v1/tenants"
+    },
+    {
+      "logical": "TenantConfigManagerFunctionGetConfigIntegration",
+      "type": "Integration",
+      "physical": "1k6tr8c",
+      "route": "GET /v1/tenants/{id}/config"
+    },
+    {
+      "logical": "TenantConfigManagerFunctionGetConfigRoute",
+      "type": "Route",
+      "physical": "izm8rx1",
+      "route": "GET /v1/tenants/{id}/config"
+    },
+    {
+      "logical": "TenantConfigManagerFunctionPatchConfigIntegration",
+      "type": "Integration",
+      "physical": "4per4hs",
+      "route": "PATCH /v1/tenants/{id}/config"
+    },
+    {
+      "logical": "TenantConfigManagerFunctionPatchConfigRoute",
+      "type": "Route",
+      "physical": "zje4ylc",
+      "route": "PATCH /v1/tenants/{id}/config"
+    },
+    {
+      "logical": "ModuleCatalogReaderFunctionGetModulesIntegration",
+      "type": "Integration",
+      "physical": "aucfztl",
+      "route": "GET /v1/modules"
+    },
+    {
+      "logical": "ModuleCatalogReaderFunctionGetModulesRoute",
+      "type": "Route",
+      "physical": "5kgov2s",
+      "route": "GET /v1/modules"
+    },
+    {
+      "logical": "TenantModuleManagerFunctionGetTenantModulesIntegration",
+      "type": "Integration",
+      "physical": "g37vbgs",
+      "route": "GET /v1/tenants/{id}/modules"
+    },
+    {
+      "logical": "TenantModuleManagerFunctionGetTenantModulesRoute",
+      "type": "Route",
+      "physical": "74vl9tj",
+      "route": "GET /v1/tenants/{id}/modules"
+    },
+    {
+      "logical": "TenantModuleManagerFunctionPutTenantModuleIntegration",
+      "type": "Integration",
+      "physical": "b25wdz0",
+      "route": "PUT /v1/tenants/{id}/modules/{moduleId}"
+    },
+    {
+      "logical": "TenantModuleManagerFunctionPutTenantModuleRoute",
+      "type": "Route",
+      "physical": "ovqv25s",
+      "route": "PUT /v1/tenants/{id}/modules/{moduleId}"
+    }
+  ],
+  "checkpoints": [
+    {
+      "snapshot": "after-import-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "qp4nj7"
+    },
+    {
+      "snapshot": "after-noop-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "gkja3t"
+    },
+    {
+      "snapshot": "after-repeat-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "gkja3t"
+    },
+    {
+      "snapshot": "baseline-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "qp4nj7"
+    },
+    {
+      "snapshot": "before-native-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "qp4nj7"
+    },
+    {
+      "snapshot": "before-noop-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "gkja3t"
+    },
+    {
+      "snapshot": "before-repeat-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "5mwx8x"
+    },
+    {
+      "snapshot": "final-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "5mwx8x"
+    },
+    {
+      "snapshot": "immediately-before-import-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "qp4nj7"
+    },
+    {
+      "snapshot": "immediately-before-native-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "qp4nj7"
+    },
+    {
+      "snapshot": "immediately-before-repeat-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "5mwx8x"
+    },
+    {
+      "snapshot": "reprepare-import-inventory.json",
+      "resource_graph_v2": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109",
+      "matches_baseline": true,
+      "automatic_deployment_id": "qp4nj7"
+    }
+  ],
+  "transition_plans": {
+    "import": {
+      "change_set": "admin-native-import-1793674620",
+      "changes": [
+        {
+          "Action": "Import",
+          "LogicalResourceId": "ModuleCatalogReaderFunctionGetModulesIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "ModuleCatalogReaderFunctionGetModulesRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingProgressTrackerFunctionGetProgressIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingProgressTrackerFunctionGetProgressRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingProgressTrackerFunctionPutStepIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingProgressTrackerFunctionPutStepRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionCompleteSessionIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionCompleteSessionRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionGetSessionIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionGetSessionRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionPatchSessionIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionPatchSessionRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionPostSessionIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "OnboardingSessionManagerFunctionPostSessionRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantConfigManagerFunctionGetConfigIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantConfigManagerFunctionGetConfigRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantConfigManagerFunctionPatchConfigIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantConfigManagerFunctionPatchConfigRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantCreatorFunctionPostTenantIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantCreatorFunctionPostTenantRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantModuleManagerFunctionGetTenantModulesIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantModuleManagerFunctionGetTenantModulesRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantModuleManagerFunctionPutTenantModuleIntegration",
+          "ResourceType": "AWS::ApiGatewayV2::Integration",
+          "Replacement": null
+        },
+        {
+          "Action": "Import",
+          "LogicalResourceId": "TenantModuleManagerFunctionPutTenantModuleRoute",
+          "ResourceType": "AWS::ApiGatewayV2::Route",
+          "Replacement": null
+        }
+      ],
+      "template": "https://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez.s3.us-west-1.amazonaws.com/mastererp/dev/admin-api/native/c5c235e2da2be9ce4366376cd12b7154aa185b5ab34c5b2f024f68a5a2c8fa25.json"
+    },
+    "native": {
+      "change_set": "admin-native-native-1793675210",
+      "changes": [
+        {
+          "Action": "Modify",
+          "LogicalResourceId": "AdminHttpApi",
+          "ResourceType": "AWS::ApiGatewayV2::Api",
+          "Replacement": "False"
+        }
+      ],
+      "template": "https://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez.s3.us-west-1.amazonaws.com/mastererp/dev/admin-api/native/91cfa42ca74208c25d87db45720b9178555df23e84fa0203b7b64f6bdb6b9491.json"
+    },
+    "repeat": {
+      "change_set": "admin-native-repeat-1793675822",
+      "changes": [
+        {
+          "Action": "Modify",
+          "LogicalResourceId": "AdminHttpApi",
+          "ResourceType": "AWS::ApiGatewayV2::Api",
+          "Replacement": "False"
+        }
+      ],
+      "template": "https://aws-sam-cli-managed-default-samclisourcebucket-sxnqlc5ufsez.s3.us-west-1.amazonaws.com/mastererp/dev/admin-api/native/b23d2df52b7d4f8584bb6adc5e405011d6b5ec4699b939664696268de5c47eac.json"
+    },
+    "noop": {
+      "change_set": "admin-native-noop-1793676106",
+      "status": "NO_CHANGES",
+      "reason": "The submitted information didn't contain changes. Submit different information to create a change set."
+    }
+  },
+  "normal_repeat": {
+    "status": "NO_CHANGES",
+    "change_set": "admin-api-native-1793676117",
+    "fingerprint": "4bf1ac2950da86bbfa96686b46ba6c0ce77b0d7665f5ccdaa326bead2fb68109"
+  },
+  "http_before": {
+    "cases": 33,
+    "status": "passed"
+  },
+  "http_after": {
+    "cases": 33,
+    "status": "passed"
+  },
+  "health_auth_cors": {
+    "cases": 18,
+    "status": "passed"
+  },
+  "sql_migrations_executed": false,
+  "fixture_preparation_cleanup": "official migrator explicit party_fixture action only; both runs cleaned",
+  "volatile_fields_excluded": [
+    "stage.CreatedDate",
+    "stage.LastUpdatedDate",
+    "stage.DeploymentId",
+    "stage.LastDeploymentStatusMessage"
+  ],
+  "known_prior_issues": "Five absent legacy functions and their existing obsolete routes not recreated or removed. No full Onboarding repair in this batch."
+}

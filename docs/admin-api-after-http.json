@@ -1,0 +1,252 @@
+{
+  "run": "qa-parties-76c8384fba16",
+  "environment": "AWS DEV us-west-1",
+  "results": [
+    {
+      "case": "clientes_health_preserved",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "proveedores_health_preserved",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "missing_token",
+      "http": 401,
+      "expected": 401,
+      "result": "passed"
+    },
+    {
+      "case": "preflight_no_token",
+      "http": 204,
+      "expected": 204,
+      "result": "passed"
+    },
+    {
+      "case": "create_customer_persisted",
+      "http": 201,
+      "expected": 201,
+      "result": "passed"
+    },
+    {
+      "case": "detail_persisted",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "idempotent_replay",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "idempotent_content_conflict",
+      "http": 409,
+      "expected": 409,
+      "result": "passed"
+    },
+    {
+      "case": "supplier_same_party",
+      "http": 201,
+      "expected": 201,
+      "result": "passed"
+    },
+    {
+      "case": "supplier_detail",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "supplier_list",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "company_without_profile_hidden",
+      "http": 404,
+      "expected": 404,
+      "result": "passed"
+    },
+    {
+      "case": "company_list_isolated",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "second_customer",
+      "http": 201,
+      "expected": 201,
+      "result": "passed"
+    },
+    {
+      "case": "pagination_first",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "pagination_next",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "same_party_second_company",
+      "http": 201,
+      "expected": 201,
+      "result": "passed"
+    },
+    {
+      "case": "customer_update",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "shared_name_supplier",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "stale_update",
+      "http": 409,
+      "expected": 409,
+      "result": "passed"
+    },
+    {
+      "case": "supplier_update",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "real_concurrent_update",
+      "http": [
+        200,
+        409
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "real_concurrent_idempotent_create",
+      "http": [
+        200,
+        201
+      ],
+      "result": "passed"
+    },
+    {
+      "case": "member_without_permission",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "foreign_tenant",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "foreign_company",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "tenant_b_valid_empty",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "return_to_tenant_a",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "module_disabled",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "membership_inactive",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "tenant_inactive",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "override_write_denied",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "read_survives_write_deny",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    }
+  ],
+  "fixture_ids": {
+    "tenant_a": "6a701cd2-7921-5b28-9a87-0c5a5fbf103b",
+    "tenant_b": "de9f3356-8136-54b8-ba8f-899adaf6f56c",
+    "company_a": "2b9d4194-9928-52c4-9a08-0b8dd57ba534",
+    "company_a2": "8d6ecb0e-6c56-5b91-b6b0-138e0ba08e16",
+    "company_b": "42f220a6-2a53-561b-bf96-1280f1617bd2",
+    "role": "03a9c31d-32e5-5119-8baf-dc0373373d52"
+  },
+  "persisted_evidence": {
+    "status": "succeeded",
+    "ids": {
+      "tenant_a": "6a701cd2-7921-5b28-9a87-0c5a5fbf103b",
+      "tenant_b": "de9f3356-8136-54b8-ba8f-899adaf6f56c",
+      "company_a": "2b9d4194-9928-52c4-9a08-0b8dd57ba534",
+      "company_a2": "8d6ecb0e-6c56-5b91-b6b0-138e0ba08e16",
+      "company_b": "42f220a6-2a53-561b-bf96-1280f1617bd2",
+      "role": "03a9c31d-32e5-5119-8baf-dc0373373d52"
+    },
+    "counts": {
+      "catalogo.terceros": 3,
+      "administracion.perfiles_tercero": 5,
+      "plataforma.idempotency_keys": 5,
+      "auditoria.events": 13
+    },
+    "valid_party_audit_events": 8
+  },
+  "status": "passed",
+  "cleanup": {
+    "status": "succeeded",
+    "operation": "cleanup",
+    "ids": {
+      "tenant_a": "6a701cd2-7921-5b28-9a87-0c5a5fbf103b",
+      "tenant_b": "de9f3356-8136-54b8-ba8f-899adaf6f56c",
+      "company_a": "2b9d4194-9928-52c4-9a08-0b8dd57ba534",
+      "company_a2": "8d6ecb0e-6c56-5b91-b6b0-138e0ba08e16",
+      "company_b": "42f220a6-2a53-561b-bf96-1280f1617bd2",
+      "role": "03a9c31d-32e5-5119-8baf-dc0373373d52"
+    },
+    "actors": {
+      "admin_a": "6006934b-97d6-5c16-8b64-48568db19ef7",
+      "admin_b": "3675646f-6cc3-5c59-be0f-b64a301bafc9",
+      "member_a": "a80443b4-16df-5721-98a7-8bb217d55ea1"
+    }
+  }
+}

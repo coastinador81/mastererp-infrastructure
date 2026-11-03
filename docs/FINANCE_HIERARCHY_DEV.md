@@ -94,3 +94,7 @@ Admin API sigue siendo propiedad de mastererp-dev-onboarding; JWT de agentes per
 ## Actualización Clientes/Proveedores 2026-11-03
 
 El inventario anterior es histórico. El hijo conserva su StackId y contiene 64 recursos; ocho rutas JWT nuevas y ocho permisos, con dos funciones funcionales. Una reimportación SAM del API eliminó las ocho integraciones/rutas health externas: se recuperaron por su propietario con logical IDs *Recovered y nuevos IDs físicos. Lambdas, roles, logs y permisos originales conservan sus IDs; las otras seis Lambdas su código. Inventario vigente e incidencia: [evidencia](parties-deployment-verification.json) y [procedimiento](ADMINISTRATION_PARTIES.md).
+
+## Estabilización de routing del Admin API
+
+La actualización nativa del propietario compartido conservó los 64 recursos e IDs del hijo Administración, sus 16 rutas y ocho integraciones. Los despliegues ya no reimportan Body. Procedimiento y evidencia actual: [gestión nativa del API](ADMIN_API_DEPLOYMENT.md).

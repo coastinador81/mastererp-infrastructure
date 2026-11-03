@@ -1,0 +1,114 @@
+{
+  "environment": "DEV us-west-1",
+  "results": [
+    {
+      "case": "health_clientes",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "health_ventas",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "health_proveedores",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "health_compras",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "health_cartera",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "health_tesoreria",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "health_conciliacion",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "health_gastos",
+      "http": 200,
+      "expected": 200,
+      "result": "passed"
+    },
+    {
+      "case": "clientes_no_token",
+      "http": 401,
+      "expected": 401,
+      "result": "passed"
+    },
+    {
+      "case": "clientes_invalid_token",
+      "http": 401,
+      "expected": 401,
+      "result": "passed"
+    },
+    {
+      "case": "clientes_id_token_rejected",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "clientes_preflight",
+      "http": 204,
+      "expected": 204,
+      "result": "passed"
+    },
+    {
+      "case": "clientes_foreign_origin_not_allowed",
+      "http": 204,
+      "expected": 204,
+      "result": "passed"
+    },
+    {
+      "case": "proveedores_no_token",
+      "http": 401,
+      "expected": 401,
+      "result": "passed"
+    },
+    {
+      "case": "proveedores_invalid_token",
+      "http": 401,
+      "expected": 401,
+      "result": "passed"
+    },
+    {
+      "case": "proveedores_id_token_rejected",
+      "http": 403,
+      "expected": 403,
+      "result": "passed"
+    },
+    {
+      "case": "proveedores_preflight",
+      "http": 204,
+      "expected": 204,
+      "result": "passed"
+    },
+    {
+      "case": "proveedores_foreign_origin_not_allowed",
+      "http": 204,
+      "expected": 204,
+      "result": "passed"
+    }
+  ],
+  "status": "passed"
+}

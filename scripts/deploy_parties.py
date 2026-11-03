@@ -1,4 +1,4 @@
-"""Selective DEV change sets: current API owner, then Finance -> Administration."""
+"""Selective DEV Finance -> Administration updates. API configuration uses deploy_admin_api.py."""
 import argparse
 import hashlib
 import json
@@ -15,8 +15,8 @@ CHILD = 'mastererp-dev-administration'
 
 
 def main():
-    p = argparse.ArgumentParser()
-    p.add_argument('--phase', choices=['prepare-api','execute-api','prepare-finance','execute-finance'], required=True)
+    p = argparse.ArgumentParser(epilog='Shared API configuration: use deploy_admin_api.py; SAM reimport phases are retired.')
+    p.add_argument('--phase', choices=['prepare-finance','execute-finance'], required=True)
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--artifacts', type=Path)
     args = p.parse_args()
@@ -29,9 +29,8 @@ def main():
     def api_items(operation):
         return [item for page in api.get_paginator(operation).paginate(ApiId='qx8nmypdhi') for item in page['Items']]
 
-    is_api = args.phase.endswith('api')
-    stack = API_OWNER if is_api else FINANCE
-    record = args.output/('api-plan.json' if is_api else 'finance-plan.json')
+    stack = FINANCE
+    record = args.output/'finance-plan.json'
 
     def template(name):
         value = c.get_template(StackName=name, TemplateStage='Original')['TemplateBody']
@@ -54,64 +53,51 @@ def main():
         env = app['Environment']['Variables']
         previous = {x['ParameterKey']:x['ParameterValue'] for x in state['Parameters']}
         values = dict(previous)
-        if is_api:
-            candidate = yaml.safe_load((ROOT/'modules/1.0-platform-base/1.1-tenant-onboarding/resources.yml').read_text(encoding='utf-8'))
-            changed = {k for k in old['Resources'] if old['Resources'][k] != candidate['Resources'].get(k)}
-            added = set(candidate['Resources'])-set(old['Resources'])
-            assert changed == {'AdminHttpApi'} and added == {'AdminCognitoJwtAuthorizer'}
-            assert set(old['Resources']) <= set(candidate['Resources'])
-            a = old['Resources']['AdminHttpApi']['Properties']['CorsConfiguration']
-            b = candidate['Resources']['AdminHttpApi']['Properties']['CorsConfiguration']
-            for key in ('AllowOrigins','AllowHeaders','AllowMethods'):
-                assert all(x in b[key] for x in a[key]), 'CORS contraction'
-            values.update(AdminJwtIssuer=env['COGNITO_ISSUER'], AdminJwtAudience=env['COGNITO_APP_CLIENT_ID'])
-            allowed = {'AdminHttpApi','AdminCognitoJwtAuthorizer'}
-        else:
-            assert args.artifacts
-            child = c.describe_stacks(StackName=CHILD)['Stacks'][0]
-            assert child['ParentId'] == state['StackId']
-            owners, assembled = assemble()
-            actual = template(CHILD)
-            mutable = {cap.title()+suffix for cap in ('clientes','proveedores') for suffix in ('Function','Role','Integration','IntegrationRecovered')}
-            changed = {k for k in actual['Resources'] if actual['Resources'][k] != assembled['Resources'].get(k)}
-            removed = set(actual['Resources'])-set(assembled['Resources'])
-            lost_file = args.output/'api-reimport-loss.json'
-            lost = json.loads(lost_file.read_text()) if lost_file.exists() else []
-            lost = [x for x in lost if x['LogicalResourceId'] in actual['Resources']]
-            assert removed == {x['LogicalResourceId'] for x in lost}
-            live_integrations={x['IntegrationId'] for x in api_items('get_integrations')}
-            live_routes={x['RouteId'] for x in api_items('get_routes')}
-            assert all(x['PhysicalResourceId'] not in (live_integrations if x['ResourceType'].endswith('Integration') else live_routes) for x in lost)
-            assert changed <= mutable | removed
-            additions = set(assembled['Resources'])-set(actual['Resources'])
-            functional_present = all(cap.title()+'CreateRoute' in actual['Resources'] for cap in ('clientes','proveedores'))
-            assert len(additions) == (0 if functional_present else 16)+len(removed) and all(assembled['Resources'][x]['Type'] in ('AWS::ApiGatewayV2::Route','AWS::Lambda::Permission','AWS::ApiGatewayV2::Integration') for x in additions)
-            bucket = previous['ArtifactBucket']
-            assert store.get_bucket_location(Bucket=bucket)['LocationConstraint'] == 'us-west-1'
-            assert all(store.get_public_access_block(Bucket=bucket)['PublicAccessBlockConfiguration'].values())
-            for cap in ('clientes','proveedores'):
-                blob = (args.artifacts/('mastererp-dev-adm-'+cap+'.zip')).read_bytes()
-                key = 'mastererp/dev/administration/parties/'+cap+'/'+hashlib.sha256(blob).hexdigest()+'.zip'
-                store.put_object(Bucket=bucket,Key=key,Body=blob,ContentType='application/zip',ServerSideEncryption='AES256')
-                values[cap.title()+'ArtifactKey'] = key
-            blob = json.dumps(assembled,sort_keys=True,separators=(',',':')).encode()
-            key = 'mastererp/dev/finance/templates/'+hashlib.sha256(blob).hexdigest()+'.json'
-            store.put_object(Bucket=bucket,Key=key,Body=blob,ContentType='application/json',ServerSideEncryption='AES256')
-            values['AdministrationTemplateUrl'] = 'https://'+bucket+'.s3.us-west-1.amazonaws.com/'+key
-            authorizers = c.describe_stacks(StackName=API_OWNER)['Stacks'][0]['Outputs']
-            values.update(PartyDatabaseHost=env['DATABASE_HOST'],PartyDatabaseSecretArn=env['DATABASE_SECRET_ARN'],
-                          PartySubnetIds=','.join(app['VpcConfig']['SubnetIds']),PartySecurityGroupIds=','.join(app['VpcConfig']['SecurityGroupIds']),
-                          PartyCognitoIssuer=env['COGNITO_ISSUER'],PartyClientId=env['COGNITO_APP_CLIENT_ID'],
-                          AdminJwtAuthorizerId=next(x['OutputValue'] for x in authorizers if x['OutputKey']=='AdminJwtAuthorizerId'))
-            candidate = json.loads((ROOT/'modules/2.2-finance/resources.yml').read_text())
-            allowed, added = {'Administration'}, set()
-            (args.output/'assembled-child.json').write_text(json.dumps(assembled,indent=2))
-            (args.output/'child-review.json').write_text(json.dumps({'changed':sorted(changed),'added':sorted(additions)},indent=2))
-        (args.output/('api-before.json' if is_api else 'finance-before.json')).write_text(json.dumps(old,indent=2))
+        assert args.artifacts
+        child = c.describe_stacks(StackName=CHILD)['Stacks'][0]
+        assert child['ParentId'] == state['StackId']
+        owners, assembled = assemble()
+        actual = template(CHILD)
+        mutable = {cap.title()+suffix for cap in ('clientes','proveedores') for suffix in ('Function','Role','Integration','IntegrationRecovered')}
+        changed = {k for k in actual['Resources'] if actual['Resources'][k] != assembled['Resources'].get(k)}
+        removed = set(actual['Resources'])-set(assembled['Resources'])
+        lost_file = args.output/'api-reimport-loss.json'
+        lost = json.loads(lost_file.read_text()) if lost_file.exists() else []
+        lost = [x for x in lost if x['LogicalResourceId'] in actual['Resources']]
+        assert removed == {x['LogicalResourceId'] for x in lost}
+        live_integrations={x['IntegrationId'] for x in api_items('get_integrations')}
+        live_routes={x['RouteId'] for x in api_items('get_routes')}
+        assert all(x['PhysicalResourceId'] not in (live_integrations if x['ResourceType'].endswith('Integration') else live_routes) for x in lost)
+        assert changed <= mutable | removed
+        additions = set(assembled['Resources'])-set(actual['Resources'])
+        functional_present = all(cap.title()+'CreateRoute' in actual['Resources'] for cap in ('clientes','proveedores'))
+        assert len(additions) == (0 if functional_present else 16)+len(removed) and all(assembled['Resources'][x]['Type'] in ('AWS::ApiGatewayV2::Route','AWS::Lambda::Permission','AWS::ApiGatewayV2::Integration') for x in additions)
+        bucket = previous['ArtifactBucket']
+        assert store.get_bucket_location(Bucket=bucket)['LocationConstraint'] == 'us-west-1'
+        assert all(store.get_public_access_block(Bucket=bucket)['PublicAccessBlockConfiguration'].values())
+        for cap in ('clientes','proveedores'):
+            blob = (args.artifacts/('mastererp-dev-adm-'+cap+'.zip')).read_bytes()
+            key = 'mastererp/dev/administration/parties/'+cap+'/'+hashlib.sha256(blob).hexdigest()+'.zip'
+            store.put_object(Bucket=bucket,Key=key,Body=blob,ContentType='application/zip',ServerSideEncryption='AES256')
+            values[cap.title()+'ArtifactKey'] = key
+        blob = json.dumps(assembled,sort_keys=True,separators=(',',':')).encode()
+        key = 'mastererp/dev/finance/templates/'+hashlib.sha256(blob).hexdigest()+'.json'
+        store.put_object(Bucket=bucket,Key=key,Body=blob,ContentType='application/json',ServerSideEncryption='AES256')
+        values['AdministrationTemplateUrl'] = 'https://'+bucket+'.s3.us-west-1.amazonaws.com/'+key
+        authorizers = c.describe_stacks(StackName=API_OWNER)['Stacks'][0]['Outputs']
+        values.update(PartyDatabaseHost=env['DATABASE_HOST'],PartyDatabaseSecretArn=env['DATABASE_SECRET_ARN'],
+                      PartySubnetIds=','.join(app['VpcConfig']['SubnetIds']),PartySecurityGroupIds=','.join(app['VpcConfig']['SecurityGroupIds']),
+                      PartyCognitoIssuer=env['COGNITO_ISSUER'],PartyClientId=env['COGNITO_APP_CLIENT_ID'],
+                      AdminJwtAuthorizerId=next(x['OutputValue'] for x in authorizers if x['OutputKey']=='AdminJwtAuthorizerId'))
+        candidate = json.loads((ROOT/'modules/2.2-finance/resources.yml').read_text())
+        allowed, added = {'Administration'}, set()
+        (args.output/'assembled-child.json').write_text(json.dumps(assembled,indent=2))
+        (args.output/'child-review.json').write_text(json.dumps({'changed':sorted(changed),'added':sorted(additions)},indent=2))
+        (args.output/'finance-before.json').write_text(json.dumps(old,indent=2))
         name = 'parties-'+str(int(time.time()))
         parameters = [{'ParameterKey':k,'ParameterValue':values[k]} for k in candidate['Parameters']]
         c.create_change_set(StackName=stack,ChangeSetName=name,ChangeSetType='UPDATE',TemplateBody=json.dumps(candidate),
-                           Parameters=parameters,Capabilities=['CAPABILITY_IAM','CAPABILITY_AUTO_EXPAND'],IncludeNestedStacks=not is_api)
+                           Parameters=parameters,Capabilities=['CAPABILITY_IAM','CAPABILITY_AUTO_EXPAND'],IncludeNestedStacks=True)
         c.get_waiter('change_set_create_complete').wait(StackName=stack,ChangeSetName=name)
         plan = c.describe_change_set(StackName=stack,ChangeSetName=name)
         reviewed = review(plan,allowed,added)

@@ -29,10 +29,14 @@ Validaciones: estructura local mediante scripts/validate_structure.py. Pendiente
 
 Convención vigente: las Lambdas exclusivas de onboarding deberán declararse en el resources.yml raíz del módulo cuando se prepare y autorice su transición. Los enlaces anteriores reflejan ubicaciones reales heredadas; esta corrección documental no mueve recursos ni cambia stacks.
 
-## Reparación selectiva DEV de la base compartida
+## Reparación selectiva DEV de la base compartida (antecedente)
 
-[resources.yml](resources.yml) recoge la plantilla real del stack propietario mastererp-dev-onboarding y limita la reparación a sesiones y progreso. Conserva declaraciones históricas de cinco funciones físicamente ausentes para no cambiar otros recursos. NO usar como CREATE ni desplegar sin el guard de [repair_onboarding.py](../../../scripts/repair_onboarding.py). Este script solo permite Modify sin reemplazo de las dos funciones/roles; verifica equivalencia de la definición procesada del API ante la predicción dinámica de SAM por referencias ARN.
+[resources.yml](resources.yml) es ahora el componente nativo de recursos exclusivos de Onboarding; se combina con el componente compartido de API mediante admin_api_model.py. La reparación de código se limita a sesiones y progreso. Conserva declaraciones históricas de cinco funciones físicamente ausentes para no cambiar otros recursos. NO usar como CREATE ni desplegar sin el guard de [repair_onboarding.py](../../../scripts/repair_onboarding.py). Este script solo permite Modify sin reemplazo de las dos funciones/roles; verifica el grafo completo y paginado del API y no permite volver a introducir SAM/Body.
 
 No se declara completada la transición de stacks ni la reparación de las seis rutas hacia funciones retiradas. Las plantillas por Lambda enlazadas arriba siguen siendo históricas, excluidas de este despliegue. Aprovisionamiento interno y alta/configuración/módulos HTTP requieren reparación separada y evidencia funcional; no se recrean funciones.
 
 Procedimiento y recuperación: [reparación de la base DEV](../../../docs/FOUNDATION_REPAIR_DEV.md).
+
+## Routing nativo vigente
+
+El Admin API se administra por recursos Route/Integration individuales y un ensamblado explícito de configuración compartida. Las referencias SAM/Body anteriores son históricas; no se usan para actualizar el API. Procedimiento y límites: docs/ADMIN_API_DEPLOYMENT.md en la raíz del repositorio. No desplegar directamente los fragmentos ni reimportar OpenAPI sobre rutas modulares.

@@ -1,62 +1,150 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Shared MasterERP HTTP APIs; ownership migration required before deployment",
+  "Description": "Shared API resource component; assemble by owner, never deploy standalone",
+  "Metadata": {
+    "MasterERP": {
+      "DeployStandalone": false,
+      "PhysicalOwnerStack": "mastererp-dev-onboarding",
+      "SelectedResources": [
+        "AdminHttpApi",
+        "AdminHttpApiApiGatewayDefaultStage",
+        "AdminCognitoJwtAuthorizer"
+      ],
+      "InactiveHistoricalDefinitions": {
+        "AdminStage": {
+          "Type": "AWS::ApiGatewayV2::Stage",
+          "Properties": {
+            "ApiId": {
+              "Ref": "AdminHttpApi"
+            },
+            "StageName": "$default",
+            "AutoDeploy": true
+          }
+        },
+        "ClientHttpApi": {
+          "Type": "AWS::ApiGatewayV2::Api",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "Name": "mastererp-dev-client-api",
+            "ProtocolType": "HTTP"
+          }
+        },
+        "ClientStage": {
+          "Type": "AWS::ApiGatewayV2::Stage",
+          "Properties": {
+            "ApiId": {
+              "Ref": "ClientHttpApi"
+            },
+            "StageName": "$default",
+            "AutoDeploy": true
+          }
+        },
+        "AgentHttpApi": {
+          "Type": "AWS::ApiGatewayV2::Api",
+          "DeletionPolicy": "Retain",
+          "UpdateReplacePolicy": "Retain",
+          "Properties": {
+            "Name": "mastererp-dev-api-agent",
+            "ProtocolType": "HTTP"
+          }
+        },
+        "AgentStage": {
+          "Type": "AWS::ApiGatewayV2::Stage",
+          "Properties": {
+            "ApiId": {
+              "Ref": "AgentHttpApi"
+            },
+            "StageName": "$default",
+            "AutoDeploy": true
+          }
+        }
+      }
+    }
+  },
   "Resources": {
     "AdminHttpApi": {
       "Type": "AWS::ApiGatewayV2::Api",
-      "DeletionPolicy": "Retain",
-      "UpdateReplacePolicy": "Retain",
+      "Metadata": {
+        "MasterERP": {
+          "Management": "native-resources",
+          "ExistingProtocolType": "HTTP",
+          "CreateForbidden": true
+        }
+      },
       "Properties": {
-        "Name": "mastererp-dev-admin-api",
-        "ProtocolType": "HTTP"
+        "Name": {
+          "Fn::Sub": "mastererp-${Environment}-admin-api"
+        },
+        "Description": "MasterERP admin API - resource-managed routes Resource ownership verified.",
+        "CorsConfiguration": {
+          "AllowHeaders": [
+            "authorization",
+            "content-type",
+            "idempotency-key",
+            "x-correlation-id",
+            "x-mastererp-tenant-id"
+          ],
+          "AllowMethods": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS"
+          ],
+          "AllowOrigins": [
+            "https://admin.dev.mastererp.local",
+            "https://app-dev.uonify.com"
+          ]
+        },
+        "DisableExecuteApiEndpoint": false,
+        "Version": "1.0",
+        "Tags": {
+          "httpapi:createdBy": "SAM"
+        }
       }
     },
-    "AdminStage": {
+    "AdminHttpApiApiGatewayDefaultStage": {
       "Type": "AWS::ApiGatewayV2::Stage",
       "Properties": {
+        "DefaultRouteSettings": {
+          "ThrottlingBurstLimit": 100,
+          "ThrottlingRateLimit": 50
+        },
         "ApiId": {
           "Ref": "AdminHttpApi"
         },
         "StageName": "$default",
+        "Tags": {
+          "httpapi:createdBy": "SAM"
+        },
         "AutoDeploy": true
       }
     },
-    "ClientHttpApi": {
-      "Type": "AWS::ApiGatewayV2::Api",
-      "DeletionPolicy": "Retain",
-      "UpdateReplacePolicy": "Retain",
-      "Properties": {
-        "Name": "mastererp-dev-client-api",
-        "ProtocolType": "HTTP"
-      }
-    },
-    "ClientStage": {
-      "Type": "AWS::ApiGatewayV2::Stage",
+    "AdminCognitoJwtAuthorizer": {
+      "Type": "AWS::ApiGatewayV2::Authorizer",
       "Properties": {
         "ApiId": {
-          "Ref": "ClientHttpApi"
+          "Ref": "AdminHttpApi"
         },
-        "StageName": "$default",
-        "AutoDeploy": true
-      }
-    },
-    "AgentHttpApi": {
-      "Type": "AWS::ApiGatewayV2::Api",
-      "DeletionPolicy": "Retain",
-      "UpdateReplacePolicy": "Retain",
-      "Properties": {
-        "Name": "mastererp-dev-api-agent",
-        "ProtocolType": "HTTP"
-      }
-    },
-    "AgentStage": {
-      "Type": "AWS::ApiGatewayV2::Stage",
-      "Properties": {
-        "ApiId": {
-          "Ref": "AgentHttpApi"
+        "AuthorizerType": "JWT",
+        "Name": {
+          "Fn::Sub": "mastererp-${Environment}-admin-jwt"
         },
-        "StageName": "$default",
-        "AutoDeploy": true
+        "IdentitySource": [
+          "$request.header.Authorization"
+        ],
+        "JwtConfiguration": {
+          "Issuer": {
+            "Ref": "AdminJwtIssuer"
+          },
+          "Audience": [
+            {
+              "Ref": "AdminJwtAudience"
+            }
+          ]
+        }
       }
     }
   }
