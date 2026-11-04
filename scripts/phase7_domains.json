@@ -1,0 +1,6 @@
+{
+  "catalog": {"stack": "mastererp-dev-catalog", "modules": ["2.1-catalog/2.1.1-products", "2.1-catalog/2.1.2-categories", "2.1-catalog/2.1.3-attributes", "2.1-catalog/2.1.4-brands", "2.1-catalog/2.1.5-suppliers", "2.1-catalog/2.1.6-inventory"]},
+  "operations": {"stack": "mastererp-dev-operations", "modules": ["2.3-operations/2.3.1-orders", "2.3-operations/2.3.2-preparation", "2.3-operations/2.3.3-routes", "2.3-operations/2.3.4-nodes"]},
+  "transport": {"stack": "mastererp-dev-transport", "modules": ["2.10-transport/2.10.1-drivers"]},
+  "digital-sales": {"stack": "mastererp-dev-digital-sales", "modules": ["2.4-digital-sales/2.4.2-ecommerce"]}
+}
