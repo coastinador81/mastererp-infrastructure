@@ -1,6 +1,10 @@
 # Hosting frontend de Finanzas DEV
 
-Página pública inicial en https://finanzas-dev.uonify.com: Finanzas — MasterERP, Desarrollo y Hola mundo. Sin login, datos, APIs u operaciones. Autenticación y navegación/contexto con Uonify son otra entrega. No modificar app-dev.uonify.com.
+Histórico de la primera entrega: página pública inicial en https://finanzas-dev.uonify.com: Finanzas — MasterERP, Desarrollo y Hola mundo. Sin login, datos, APIs u operaciones. Autenticación y navegación/contexto con Uonify son otra entrega. No modificar app-dev.uonify.com.
+
+## Recorrido integrado y acceso independiente
+
+La entrega actual sustituye el Hola mundo por el mismo shell y pantallas de Finanzas que se compilan en Uonify. La raíz general sigue siendo app-dev.uonify.com; este hosting permite desarrollo independiente autenticado con el mismo cliente Cognito y callback explícito. Sus orígenes API /v1/uonify/* y /v1/administration/* consumen las APIs existentes sin caché y sin reimportarlas; cada operación mantiene JWT y autorización. Ver [procedimiento común](../0-uonify/FRONTEND_DEPLOYMENT.md) y Platform/docs/FINANCE_UI_INTEGRATION.md para resultados. La evidencia de abajo corresponde a la primera entrega, con su fecha.
 
 ## Papel del acceso independiente
 

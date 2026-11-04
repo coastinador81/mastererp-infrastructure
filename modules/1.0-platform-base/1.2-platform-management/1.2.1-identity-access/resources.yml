@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MasterERP DEV shared identity; no users or tenant permissions provisioned
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev]
+  ExistingAgentApiId:
+    Type: String
+    Default: ebn01q74hh
+    AllowedValues: [ebn01q74hh]
+  CallbackUrl:
+    Type: String
+    Default: https://app-dev.uonify.com/auth/callback
+    AllowedValues: [https://app-dev.uonify.com/auth/callback]
+    Description: Reserved identity callback; frontend implementation remains pending
+  LogoutUrl:
+    Type: String
+    Default: https://app-dev.uonify.com/
+    AllowedValues: [https://app-dev.uonify.com/]
+Resources:
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      UserPoolName: !Sub mastererp-${Environment}-users
+      UserPoolTier: LITE
+      DeletionProtection: ACTIVE
+      UsernameAttributes: [email]
+      UsernameConfiguration:
+        CaseSensitive: false
+      AutoVerifiedAttributes: [email]
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      MfaConfiguration: OPTIONAL
+      EnabledMfas: [SOFTWARE_TOKEN_MFA]
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 14
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: true
+          TemporaryPasswordValidityDays: 1
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Required: true
+          Mutable: true
+      UserPoolTags:
+        Project: MasterERP
+        Environment: !Ref Environment
+        Component: identity
+        ManagedBy: cloudformation
+  ApiResourceServer:
+    Type: AWS::Cognito::UserPoolResourceServer
+    Properties:
+      UserPoolId: !Ref UserPool
+      Identifier: !Sub mastererp-${Environment}
+      Name: !Sub mastererp-${Environment}-api
+      Scopes:
+        - ScopeName: uonify.connections.status
+          ScopeDescription: Invoke connection diagnostic; tenant business permission checked separately
+        - ScopeName: identity.spaces.read
+          ScopeDescription: Read spaces assigned to the authenticated internal user
+  WebClient:
+    Type: AWS::Cognito::UserPoolClient
+    DependsOn: ApiResourceServer
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: !Sub mastererp-${Environment}-uonify-web
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      ExplicitAuthFlows: [ALLOW_REFRESH_TOKEN_AUTH]
+      SupportedIdentityProviders: [COGNITO]
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows: [code]
+      AllowedOAuthScopes: [openid, email, !Sub 'mastererp-${Environment}/uonify.connections.status', !Sub 'mastererp-${Environment}/identity.spaces.read']
+      CallbackURLs: [!Ref CallbackUrl, 'https://finanzas-dev.uonify.com/auth/callback']
+      LogoutURLs: [!Ref LogoutUrl, 'https://finanzas-dev.uonify.com/']
+      AccessTokenValidity: 15
+      IdTokenValidity: 15
+      RefreshTokenValidity: 1
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      ReadAttributes: [email, email_verified, sub]
+      WriteAttributes: [email]
+  Domain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      UserPoolId: !Ref UserPool
+      Domain: !Sub mastererp-${Environment}-uonify-${AWS::AccountId}
+      ManagedLoginVersion: 1
+  AgentJwtAuthorizer:
+    Type: AWS::ApiGatewayV2::Authorizer
+    Properties:
+      ApiId: !Ref ExistingAgentApiId
+      AuthorizerType: JWT
+      Name: !Sub mastererp-${Environment}-jwt
+      IdentitySource: ['$request.header.Authorization']
+      JwtConfiguration:
+        Issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+        Audience: [!Ref WebClient]
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+  Issuer:
+    Value: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+  WebClientId:
+    Value: !Ref WebClient
+  AgentJwtAuthorizerId:
+    Value: !Ref AgentJwtAuthorizer
+  LoginBaseUrl:
+    Value: !Sub https://mastererp-${Environment}-uonify-${AWS::AccountId}.auth.${AWS::Region}.amazoncognito.com
+  CallbackUrl:
+    Value: !Ref CallbackUrl
+  LogoutUrl:
+    Value: !Ref LogoutUrl

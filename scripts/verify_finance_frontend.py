@@ -40,7 +40,8 @@ def main():
         report["https"] = {"status":response.status,"content_type":response.headers["Content-Type"],"sha256":hashlib.sha256(html).hexdigest()}
         assert response.status == 200 and "text/html" in response.headers["Content-Type"]
     text = html.decode("utf-8")
-    assert all(s in text for s in ("Finanzas — MasterERP","Desarrollo","Hola mundo"))
+    assert "Finanzas — MasterERP" in text and 'id="root"' in text
+    report["scope"] = "static bootstrap only; functional UI verified separately in browser"
     report["assets"] = {}
     for asset in re.findall(r'(?:src|href)="(/assets/[^"]+)"',text):
         with urllib.request.urlopen("https://" + DOMAIN + asset,timeout=30) as response:

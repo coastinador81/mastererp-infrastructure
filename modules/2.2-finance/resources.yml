@@ -86,6 +86,16 @@
         "true",
         "false"
       ]
+    },
+    "FrontendAgentApiId": {
+      "Type": "String",
+      "Default": "ebn01q74hh",
+      "Description": "Existing DEV API ID; preserve physical owner, no import or replacement"
+    },
+    "FrontendAdminApiId": {
+      "Type": "String",
+      "Default": "qx8nmypdhi",
+      "Description": "Existing DEV API ID; preserve physical owner, no import or replacement"
     }
   },
   "Resources": {
@@ -295,6 +305,32 @@
               "S3OriginConfig": {
                 "OriginAccessIdentity": ""
               }
+            },
+            {
+              "Id": "ExistingAgentApi",
+              "DomainName": {
+                "Fn::Sub": "${FrontendAgentApiId}.execute-api.${AWS::Region}.amazonaws.com"
+              },
+              "CustomOriginConfig": {
+                "HTTPSPort": 443,
+                "OriginProtocolPolicy": "https-only",
+                "OriginSSLProtocols": [
+                  "TLSv1.2"
+                ]
+              }
+            },
+            {
+              "Id": "ExistingAdminApi",
+              "DomainName": {
+                "Fn::Sub": "${FrontendAdminApiId}.execute-api.${AWS::Region}.amazonaws.com"
+              },
+              "CustomOriginConfig": {
+                "HTTPSPort": 443,
+                "OriginProtocolPolicy": "https-only",
+                "OriginSSLProtocols": [
+                  "TLSv1.2"
+                ]
+              }
             }
           ],
           "DefaultCacheBehavior": {
@@ -317,7 +353,77 @@
             },
             "SslSupportMethod": "sni-only",
             "MinimumProtocolVersion": "TLSv1.2_2021"
-          }
+          },
+          "CacheBehaviors": [
+            {
+              "PathPattern": "/v1/uonify/*",
+              "TargetOriginId": "ExistingAgentApi",
+              "ViewerProtocolPolicy": "https-only",
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "PATCH",
+                "POST",
+                "DELETE"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+              "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+              "Compress": true
+            },
+            {
+              "PathPattern": "/v1/administration/*",
+              "TargetOriginId": "ExistingAdminApi",
+              "ViewerProtocolPolicy": "https-only",
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "PATCH",
+                "POST",
+                "DELETE"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+              "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+              "Compress": true
+            }
+          ],
+          "CustomErrorResponses": [
+            {
+              "ErrorCode": 403,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 404,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 500,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 502,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 503,
+              "ErrorCachingMinTTL": 0
+            },
+            {
+              "ErrorCode": 504,
+              "ErrorCachingMinTTL": 0
+            }
+          ]
         }
       },
       "Condition": "FinanceFrontend"
@@ -639,7 +745,9 @@
         "FrontendDomainName",
         "FrontendHostedZoneId",
         "FrontendCertificateArn",
-        "FrontendEnabled"
+        "FrontendEnabled",
+        "FrontendAgentApiId",
+        "FrontendAdminApiId"
       ],
       "Resources": [
         "FinanceFrontendBucket",
