@@ -2,7 +2,7 @@
 
 Responsabilidad general: Organizar proveedores y documentos administrativos de compras.
 
-Estado: pendiente de implementación.
+Estado: borradores básicos implementados en DEV; validación HTTP/visual aprobada. Aprobación, emisión y efectos financieros pendientes.
 
 Propietario funcional: Finanzas → Administración; responsable nominal pendiente de asignación.
 Dependencias: contexto autorizado de tenant y contratos del padre; reglas y criterios de aceptación se definirán con el Product Owner al priorizar la tarea.
@@ -14,12 +14,11 @@ Dependencias: contexto autorizado de tenant y contratos del padre; reglas y crit
 - [Órdenes de compra](2.2.1.2.3-ordenes-compra/README.md)
 - [Facturas de proveedores](2.2.1.2.4-facturas-proveedores/README.md)
 
-`resources.yml` raíz declara únicamente la Lambda técnica de esta carpeta, su rol y su Log Group; incluye la integración, ruta GET pública y permiso restringido para consumir el API existente; no declara otra API ni recursos de datos.
+El resources.yml raíz declara la Lambda Compras compartida, rol, logs, integración y opciones. Las tres capacidades hijas declaran sus rutas y permisos exclusivos en sus propios resources.yml raíz; la pantalla compartida no declara recursos AWS.
 
-## Diagnóstico técnico DEV
 
-Función: `mastererp-dev-adm-compras`. Estado funcional: pendiente de implementación; el handler mínimo no implementa operaciones de compras. Recursos exclusivos declarados una sola vez en [resources.yml](resources.yml). Python 3.12, 128 MB, timeout 5 segundos; logs con retención de 14 días. Sin Function URL, acceso a datos ni secretos. La ruta técnica pública se describe a continuación. Ver procedimiento de empaquetado, despliegue y verificación en Administración.
+## Borradores conectados DEV
 
-## Ruta de diagnóstico pública
+Solicitud → orden → factura de proveedor. Listado paginado, detalle, creación y edición con el maestro de proveedores existente. Una única Lambda Compras, Python 3.12, 256 MB, timeout 15 segundos y logs de 14 días. Las operaciones funcionales usan JWT, contexto validado y mastererp_app con comandos SQL controlados; no hay DML general. El diagnóstico GET /v1/administration/compras/health conserva su respuesta pública mínima.
 
-GET /v1/administration/compras/health en mastererp-dev-admin-api (qx8nmypdhi). Por decisión explícita del propietario, esta ruta técnica es pública (AuthorizationType NONE), sin datos ni operaciones de tenant. La autenticación queda pendiente antes de implementar capacidades de negocio. La API sigue en mastererp-dev-onboarding; esta carpeta declara su integración, ruta y permiso exclusivo. CORS se conserva en el propietario de la API. No se crea ni modifica ningún autorizador JWT. No desplegar las definiciones heredadas de APIs.
+API existente qx8nmypdhi y autorizador del stack mastererp-dev-onboarding. No se reimporta ni se cambia su CORS. El stack de Administración permanece anidado en Finanzas. Ver [contrato, despliegue y pruebas](../../../../docs/PURCHASE_DRAFTS_DEV.md) y la pantalla compartida [purchases](screens/purchases/README.md).
