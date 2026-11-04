@@ -34,3 +34,11 @@ Desplegado: 33 comprobaciones HTTP funcionales aprobadas, con persistencia, idem
 ## Actualización del mecanismo de API
 
 El riesgo de reimportación descrito arriba se resuelve en [el procedimiento nativo](ADMIN_API_DEPLOYMENT.md): las fases históricas prepare-api/execute-api se retiran. Para Clientes/Proveedores se conserva prepare-finance/execute-finance; la configuración compartida se actualiza con deploy_admin_api.py y rutas/integraciones son recursos individuales. No repetir el procedimiento antiguo de CORS/SAM.
+
+## Actualización de campos de proveedores
+
+Los campos nuevos se persisten mediante Database/032_party_details.sql, sobre el proveedor canónico de Catálogo 024 y el perfil por empresa. Se conservan las rutas, JWT, CORS, red, roles y secreto existentes; únicamente se actualizan los paquetes de Clientes/Proveedores porque comparten el adaptador. Las otras seis funciones conservan su código. No se despliega una API ni se reimporta OpenAPI/SAM.
+
+El resources.yml funcional de Finanzas contiene también la composición del hosting independiente, cuyo propietario es otro stack. scripts/finance_template.py selecciona solo Administration y las dependencias explícitas de sus parámetros/condiciones/outputs para mastererp-dev-finance. deploy_parties.py compara el conjunto de parámetros y los recursos del padre con la plantilla real antes de preparar el change set. Nunca incorpora parámetros o recursos frontend para solventar un KeyError del despliegue backend. Cinco pruebas de proyección verifican exclusión de hosting, dependencia condicional, referencias, no mutación y fallo ante propietarios desconocidos.
+
+Usar package_parties.py de Platform con las dependencias existentes y prepare-finance/execute-finance de este repositorio. Revisar los change sets padre e hijo y rechazar eliminaciones, reemplazos, cambios de roles o recursos ajenos. Guardar inventario de IDs, configuración, rutas e integraciones antes/después. Recuperar código con artefactos previos y change set inverso; no borrar columnas o datos para revertir SQL. Los proveedores DEMO solicitados pertenecen solo a Tumandaito y se conservan; las pruebas QA usan otros tenants con limpieza acotada.

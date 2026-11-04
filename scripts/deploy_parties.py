@@ -7,6 +7,7 @@ import time
 import boto3
 import yaml
 from deploy_administration import assemble
+from finance_template import backend_template
 
 ROOT = Path(__file__).resolve().parents[1]
 API_OWNER = 'mastererp-dev-onboarding'
@@ -89,7 +90,9 @@ def main():
                       PartySubnetIds=','.join(app['VpcConfig']['SubnetIds']),PartySecurityGroupIds=','.join(app['VpcConfig']['SecurityGroupIds']),
                       PartyCognitoIssuer=env['COGNITO_ISSUER'],PartyClientId=env['COGNITO_APP_CLIENT_ID'],
                       AdminJwtAuthorizerId=next(x['OutputValue'] for x in authorizers if x['OutputKey']=='AdminJwtAuthorizerId'))
-        candidate = json.loads((ROOT/'modules/2.2-finance/resources.yml').read_text())
+        candidate = backend_template(json.loads((ROOT/'modules/2.2-finance/resources.yml').read_text()))
+        assert set(candidate['Parameters'])==set(old['Parameters']), 'Backend parameter ownership changed'
+        assert candidate['Resources']==old['Resources'], 'Existing parent resources must remain unchanged'
         allowed, added = {'Administration'}, set()
         (args.output/'assembled-child.json').write_text(json.dumps(assembled,indent=2))
         (args.output/'child-review.json').write_text(json.dumps({'changed':sorted(changed),'added':sorted(additions)},indent=2))
