@@ -10,7 +10,7 @@ La entrega actual sustituye el Hola mundo por el mismo shell y pantallas de Fina
 
 La entrada general DEV de MasterERP es app-dev.uonify.com. La experiencia objetivo presenta las pantallas de Finanzas dentro del espacio de Uonify con navegación, identidad y contexto comunes, mediante menú o chat opcional. finanzas-dev.uonify.com se conserva como acceso independiente de desarrollo y pruebas; no es la navegación objetivo del usuario final ni obliga a crear finanzas.uonify.com en producción.
 
-Finanzas conserva componentes, build, pipeline, despliegue y rollback propios. Su integración técnica en el front general y sus rutas internas/enlaces directos siguen pendientes; no se impone `/finanzas`, iframe, Module Federation u otra solución. El hosting y las pruebas que se documentan abajo acreditan solo la página independiente ya publicada. La decisión de experiencia no elimina hosting ni cambia DNS, stacks o recursos. Ver [contrato oficial](../../docs/FRONTEND_ARCHITECTURE.md).
+Finanzas conserva componentes, build, pipeline, despliegue y rollback propios. El primer recorrido integra pantallas por composición en build y rutas hash, documentadas en Platform; las demás capacidades siguen pendientes; no se impone `/finanzas`, iframe, Module Federation u otra solución. El hosting y las pruebas que se documentan abajo acreditan solo la página independiente ya publicada. La decisión de experiencia no elimina hosting ni cambia DNS, stacks o recursos. Ver [contrato oficial](../../docs/FRONTEND_ARCHITECTURE.md).
 
 ## Propiedad y composición explícita
 
