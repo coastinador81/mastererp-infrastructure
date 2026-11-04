@@ -1,0 +1,199 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Solicitudes de compra: rutas privadas; se compone en Administracion, no es un stack independiente.",
+  "Parameters": {},
+  "Resources": {
+    "SolicitudesListRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/compras/solicitudes",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ComprasIntegrationRecovered"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "SolicitudesListPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ComprasFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/compras/solicitudes"
+        }
+      }
+    },
+    "SolicitudesDetailRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/compras/solicitudes/{id}",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ComprasIntegrationRecovered"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "SolicitudesDetailPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ComprasFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/compras/solicitudes/*"
+        }
+      }
+    },
+    "SolicitudesCreateRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "POST /v1/administration/compras/solicitudes",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ComprasIntegrationRecovered"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "SolicitudesCreatePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ComprasFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/POST/v1/administration/compras/solicitudes"
+        }
+      }
+    },
+    "SolicitudesUpdateRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "PATCH /v1/administration/compras/solicitudes/{id}",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "ComprasIntegrationRecovered"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "SolicitudesUpdatePermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ComprasFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceAccount": {
+          "Ref": "AWS::AccountId"
+        },
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/PATCH/v1/administration/compras/solicitudes/*"
+        }
+      }
+    }
+  },
+  "Outputs": {},
+  "Metadata": {
+    "MasterERP": {
+      "SharedReferences": [
+        "ExistingAdminApiId",
+        "AdminJwtAuthorizerId",
+        "ComprasFunction",
+        "ComprasIntegrationRecovered",
+        "Environment"
+      ]
+    }
+  }
+}

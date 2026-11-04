@@ -26,8 +26,20 @@ def assemble():
     expected = [str(Path(owner).relative_to('2.2-finance/2.2.1-administration')).replace('\\', '/') + '/resources.yml'
                 for owner in owners.values()]
     assert declared == expected, 'Composition must match functional ownership manifest'
+    def merge_children(source, directory):
+        for relative in source.get('Metadata',{}).get('MasterERP',{}).get('Composition',[]):
+            path=(directory/relative).resolve()
+            assert path.is_relative_to(directory.resolve()), 'Child template outside owner'
+            child=json.loads(path.read_text())
+            merge_children(child,path.parent)
+            for section in ('Parameters','Resources','Outputs'):
+                for key,value in child[section].items():
+                    if key in source[section]: raise ValueError('Duplicate child resource: '+key)
+                    source[section][key]=value
+
     for capability, owner in owners.items():
         source = json.loads((ROOT / 'modules' / owner / 'resources.yml').read_text())
+        merge_children(source, ROOT/'modules'/owner)
         for section in ('Parameters', 'Resources', 'Outputs'):
             for key, value in source[section].items():
                 if key in result[section] and (section != 'Parameters' or result[section][key] != value):
@@ -35,7 +47,7 @@ def assemble():
                 result[section][key] = value
         function = source['Resources'][capability.title() + 'Function']['Properties']
         assert function['FunctionName']['Fn::Sub'] == 'mastererp-${Environment}-adm-' + capability
-    assert len(owners) == 8 and len(result['Resources']) == 64
+    assert len(owners) == 8 and sum(r['Type']=='AWS::Lambda::Function' for r in result['Resources'].values()) == 8
     assert {x['Type'] for x in result['Resources'].values()} == {
         'AWS::Lambda::Function', 'AWS::IAM::Role', 'AWS::Logs::LogGroup',
         'AWS::ApiGatewayV2::Integration',
