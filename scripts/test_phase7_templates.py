@@ -17,6 +17,12 @@ class Phase7TemplatesTest(unittest.TestCase):
         self.assertEqual(route["ApiId"], {"Ref": "ExistingClientApiId"})
         self.assertEqual(route["AuthorizationType"], "NONE")
 
+    def test_storefront_checkout_uses_its_cognito_authorizer(self):
+        _, template = assemble("digital-sales")
+        route = template["Resources"]["StorefrontCheckoutRoute"]["Properties"]
+        self.assertEqual(route["ApiId"], {"Ref": "ExistingClientApiId"})
+        self.assertEqual(route["AuthorizerId"], {"Ref": "StorefrontJwtAuthorizer"})
+
 
 if __name__ == "__main__":
     unittest.main()

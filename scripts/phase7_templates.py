@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "scripts/phase7_domains.json"
 ALLOWED_TYPES = {"AWS::ApiGatewayV2::Integration", "AWS::ApiGatewayV2::Route",
+                 "AWS::ApiGatewayV2::Authorizer",
                  "AWS::IAM::Role", "AWS::Lambda::Function", "AWS::Lambda::Permission",
                  "AWS::Logs::LogGroup"}
 COMMON_PARAMETERS = {"Environment", "ArtifactBucket", "ExistingAdminApiId",
@@ -49,14 +50,16 @@ def validate(domain, template):
         raise ValueError("Duplicate route in composed template")
     for route in routes:
         public = route["RouteKey"] == "GET /v1/storefront/catalog"
-        expected_api = "ExistingClientApiId" if public else "ExistingAdminApiId"
+        storefront = route["RouteKey"].startswith(("GET /v1/storefront/", "POST /v1/storefront/"))
+        expected_api = "ExistingClientApiId" if storefront else "ExistingAdminApiId"
         if route["ApiId"] != {"Ref": expected_api}:
             raise ValueError("Route uses the wrong shared API: " + route["RouteKey"])
         if route["AuthorizationType"] != ("NONE" if public else "JWT"):
             raise ValueError("Invalid route authorization: " + route["RouteKey"])
-        if not public and route.get("AuthorizerId") != {"Ref": "AdminJwtAuthorizerId"}:
+        authorizer = "StorefrontJwtAuthorizer" if storefront else "AdminJwtAuthorizerId"
+        if not public and route.get("AuthorizerId") != {"Ref": authorizer}:
             raise ValueError("Administrative route lacks the shared JWT authorizer")
-    expected = COMMON_PARAMETERS | ({"ExistingClientApiId"} if domain == "digital-sales" else set())
+    expected = COMMON_PARAMETERS | ({"ExistingClientApiId", "StorefrontCognitoClientId"} if domain == "digital-sales" else set())
     artifacts = {key for key in template["Parameters"] if key.endswith("ArtifactKey")}
     if set(template["Parameters"]) != expected | artifacts:
         raise ValueError("Unexpected parameter contract")
