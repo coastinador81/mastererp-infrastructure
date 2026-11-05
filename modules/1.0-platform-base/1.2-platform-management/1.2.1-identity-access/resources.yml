@@ -93,6 +93,31 @@ Resources:
         RefreshToken: days
       ReadAttributes: [email, email_verified, sub]
       WriteAttributes: [email]
+  StorefrontClient:
+    Type: AWS::Cognito::UserPoolClient
+    DependsOn: ApiResourceServer
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: !Sub mastererp-${Environment}-storefront-web
+      GenerateSecret: false
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      ExplicitAuthFlows: [ALLOW_REFRESH_TOKEN_AUTH]
+      SupportedIdentityProviders: [COGNITO]
+      AllowedOAuthFlowsUserPoolClient: true
+      AllowedOAuthFlows: [code]
+      AllowedOAuthScopes: [openid, email]
+      CallbackURLs: ['https://tienda-dev.tumandaito.com/auth/callback']
+      LogoutURLs: ['https://tienda-dev.tumandaito.com/']
+      AccessTokenValidity: 15
+      IdTokenValidity: 15
+      RefreshTokenValidity: 1
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+      ReadAttributes: [email, email_verified, sub]
+      WriteAttributes: [email]
   Domain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
@@ -116,6 +141,8 @@ Outputs:
     Value: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
   WebClientId:
     Value: !Ref WebClient
+  StorefrontClientId:
+    Value: !Ref StorefrontClient
   AgentJwtAuthorizerId:
     Value: !Ref AgentJwtAuthorizer
   LoginBaseUrl:

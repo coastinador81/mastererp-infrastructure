@@ -11,11 +11,11 @@ Loader.add_multi_constructor('!',intrinsic)
 def decode(value):return yaml.load(value,Loader=Loader) if isinstance(value,str) else value
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('domain',choices=['identity','hosting']);p.add_argument('action',choices=['prepare','execute']);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('domain',choices=['identity','hosting']);p.add_argument('action',choices=['prepare','execute']);p.add_argument('--output',type=Path,required=True);p.add_argument('--profile',default='andrea_madriz_mastererp');a=p.parse_args()
     a.output.mkdir(parents=True,exist_ok=True)
     stack='mastererp-dev-identity' if a.domain=='identity' else 'mastererp-dev-uonify-hosting'
     source='modules/1.0-platform-base/1.2-platform-management/1.2.1-identity-access/resources.yml' if a.domain=='identity' else 'modules/0-uonify/resources.yml'
-    s=boto3.Session(profile_name='mastererp-admin',region_name='us-west-1');assert s.client('sts').get_caller_identity()['Account']=='277352717693'
+    s=boto3.Session(profile_name=a.profile,region_name='us-west-1');assert s.client('sts').get_caller_identity()['Account']=='277352717693'
     c=s.client('cloudformation');plan_file=a.output/(a.domain+'-plan.json')
     state=c.describe_stacks(StackName=stack)['Stacks'][0]
     if a.action=='prepare':
@@ -39,7 +39,7 @@ def main():
             raise
         plan=c.describe_change_set(StackName=stack,ChangeSetName=changes)
         result=[x['ResourceChange'] for x in plan['Changes']]
-        allowed={'WebClient'} if a.domain=='identity' else {'FrontendPublisherRole'}
+        allowed={'WebClient','StorefrontClient'} if a.domain=='identity' else {'FrontendPublisherRole'}
         assert all(x['LogicalResourceId'] in allowed and x['Action'] in ('Add','Modify') and x.get('Replacement','False')=='False' for x in result)
         records=c.list_stack_resources(StackName=stack)['StackResourceSummaries']
         plan_file.write_text(json.dumps({'stack':stack,'change':changes,'changes':result,'ids':{x['LogicalResourceId']:x['PhysicalResourceId'] for x in records}},indent=2))
