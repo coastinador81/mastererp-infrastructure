@@ -83,7 +83,8 @@
             "content-type",
             "idempotency-key",
             "x-correlation-id",
-            "x-mastererp-tenant-id"
+            "x-mastererp-tenant-id",
+            "x-tenant-id"
           ],
           "AllowMethods": [
             "GET",

@@ -31,8 +31,9 @@ def main():
     p.add_argument('--phase',choices=['prepare','execute','verify'],required=True)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--allow-routing-additions',action='store_true')
+    p.add_argument('--profile',default='andrea_madriz_mastererp')
     args=p.parse_args();out=args.output;out.mkdir(parents=True,exist_ok=True)
-    s=boto3.Session(profile_name='mastererp-admin',region_name='us-west-1')
+    s=boto3.Session(profile_name=args.profile,region_name='us-west-1')
     assert s.client('sts').get_caller_identity()['Account']=='277352717693'
     c,a,store=(s.client(x) for x in ('cloudformation','apigatewayv2','s3'))
     state=c.describe_stacks(StackName=OWNER)['Stacks'][0]

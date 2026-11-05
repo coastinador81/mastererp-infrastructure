@@ -15,17 +15,18 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--output',type=Path,required=True)
     p.add_argument('--platform',type=Path,required=True)
+    p.add_argument('--profile',default='andrea_madriz_mastererp')
     args=p.parse_args();results=[]
     sys.path.insert(0,str(args.platform.resolve()/'scripts'))
     import identity_qa_client as qa
-    session=boto3.Session(profile_name='mastererp-admin',region_name='us-west-1')
+    session=boto3.Session(profile_name=args.profile,region_name='us-west-1')
     assert session.client('sts').get_caller_identity()['Account']=='277352717693'
     bundle=json.loads(session.client('secretsmanager').get_secret_value(SecretId='mastererp/dev/qa/identity-validation')['SecretString'])
     id_token=qa.tokens(bundle['actors']['admin_a'])['id_token']
     def request(path,method='GET',token=None,origin=ORIGIN):
         headers={'Origin':origin}
         if token:headers['Authorization']='Bearer '+token
-        if method=='OPTIONS':headers.update({'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,content-type,idempotency-key,x-mastererp-tenant-id'})
+        if method=='OPTIONS':headers.update({'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'authorization,content-type,idempotency-key,x-mastererp-tenant-id,x-tenant-id'})
         try:r=urllib.request.urlopen(urllib.request.Request(API+path,method=method,headers=headers),timeout=30)
         except urllib.error.HTTPError as e:r=e
         body=r.read();return r.status,{k.lower():v for k,v in r.headers.items()},json.loads(body) if body else {}
@@ -43,7 +44,7 @@ def main():
         allowed={x.strip().lower() for x in headers.get('access-control-allow-headers','').split(',')}
         methods={x.strip().upper() for x in headers.get('access-control-allow-methods','').split(',')}
         check(cap+'_preflight',status,204,headers.get('access-control-allow-origin')==ORIGIN
-              and {'authorization','content-type','idempotency-key','x-mastererp-tenant-id'}<=allowed
+              and {'authorization','content-type','idempotency-key','x-mastererp-tenant-id','x-tenant-id'}<=allowed
               and {'GET','POST','PATCH','OPTIONS'}<=methods)
         status,headers,_=request(base,method='OPTIONS',origin='https://untrusted.invalid')
         check(cap+'_foreign_origin_not_allowed',status,204,'access-control-allow-origin' not in headers)
