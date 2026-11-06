@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es" class="finance-app agents-uonify-landing">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Centro de Agentes — MasterERP</title>
+    <!-- Tema alineado con frontend/modules/2.2-finance/src/finance.css y README de Finanzas (tokens --finance-*). -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root.finance-app.agents-uonify-landing {
+        --finance-font: Inter, system-ui, sans-serif;
+        --finance-text: #4b5563;
+        --finance-muted: #667085;
+        --finance-title: #374151;
+        --finance-background: #f6f8fc;
+        --finance-surface: #ffffff;
+        --finance-table-header: #f4f7fb;
+        --finance-border: #e8edf3;
+        --finance-primary: #096bdc;
+        --finance-primary-hover: #0758b3;
+        --finance-accent: #93c5fd;
+        --finance-selected: #eff6ff;
+        --finance-focus: #3b82f6;
+        --finance-space-2: 8px;
+        --finance-space-3: 12px;
+        --finance-space-4: 16px;
+        --finance-space-5: 20px;
+        --finance-space-6: 24px;
+        --finance-space-8: 32px;
+        --finance-font-body: 14px;
+        --finance-font-small: 12px;
+        --finance-font-title: 28px;
+        --finance-line-height: 1.5;
+        --finance-radius: 12px;
+        --finance-radius-small: 8px;
+        --finance-header-height: 80px;
+        --finance-nav-width: 256px;
+        --finance-shadow: 0 1px 3px rgb(16 24 40 / 3%);
+      }
+      .agents-uonify-landing *,
+      .agents-uonify-landing *::before,
+      .agents-uonify-landing *::after {
+        box-sizing: border-box;
+      }
+      .agents-uonify-landing body {
+        margin: 0;
+        min-height: 100svh;
+        background: var(--finance-background);
+        color: var(--finance-text);
+        font-family: var(--finance-font);
+        font-size: var(--finance-font-body);
+        font-weight: 400;
+        line-height: var(--finance-line-height);
+      }
+      .agents-uonify-landing a:focus-visible,
+      .agents-uonify-landing button:focus-visible {
+        outline: 2px solid var(--finance-focus);
+        outline-offset: 3px;
+      }
+      .agents-uonify-landing .integrated-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        min-height: var(--finance-header-height);
+        padding: var(--finance-space-3) var(--finance-space-6);
+        background: var(--finance-surface);
+        border-bottom: 1px solid var(--finance-border);
+        gap: var(--finance-space-5);
+      }
+      .agents-uonify-landing .brand {
+        color: var(--finance-title);
+        font-size: 22px;
+        font-weight: 600;
+        line-height: 1.2;
+        margin: 0;
+      }
+      .agents-uonify-landing .brand span {
+        display: block;
+        color: var(--finance-muted);
+        font-size: var(--finance-font-small);
+        font-weight: 400;
+        margin-top: var(--finance-space-2);
+      }
+      .agents-uonify-landing .env-pill {
+        font-size: var(--finance-font-small);
+        font-weight: 500;
+        color: var(--finance-primary);
+        background: var(--finance-selected);
+        border: 1px solid var(--finance-border);
+        border-radius: 999px;
+        padding: var(--finance-space-2) var(--finance-space-4);
+      }
+      .agents-uonify-landing .integrated-layout {
+        display: grid;
+        grid-template-columns: var(--finance-nav-width) minmax(0, 1fr);
+        min-height: calc(100svh - var(--finance-header-height));
+      }
+      .agents-uonify-landing .integrated-nav {
+        background: var(--finance-surface);
+        border-right: 1px solid var(--finance-border);
+        padding: var(--finance-space-6) var(--finance-space-3);
+        display: flex;
+        flex-direction: column;
+        gap: var(--finance-space-2);
+      }
+      .agents-uonify-landing .integrated-nav-caption {
+        font-size: var(--finance-font-small);
+        font-weight: 500;
+        color: var(--finance-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        margin: 0 0 var(--finance-space-2);
+      }
+      .agents-uonify-landing .integrated-nav a {
+        display: block;
+        padding: var(--finance-space-3) var(--finance-space-2);
+        border-radius: var(--finance-radius-small);
+        color: var(--finance-text);
+        text-decoration: none;
+        font-size: var(--finance-font-body);
+      }
+      .agents-uonify-landing .integrated-nav a[aria-current='page'] {
+        color: var(--finance-primary-hover);
+        background: var(--finance-selected);
+        font-weight: 500;
+      }
+      .agents-uonify-landing .integrated-nav a.nav-disabled {
+        color: var(--finance-muted);
+        cursor: default;
+        pointer-events: none;
+      }
+      .agents-uonify-landing .integrated-content {
+        padding: var(--finance-space-8);
+      }
+      .agents-uonify-landing .eyebrow {
+        color: var(--finance-muted);
+        font-size: var(--finance-font-small);
+        font-weight: 400;
+        letter-spacing: 0.02em;
+        margin: 0 0 var(--finance-space-2);
+      }
+      .agents-uonify-landing h1 {
+        color: var(--finance-title);
+        font-size: var(--finance-font-title);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+        margin: 0 0 var(--finance-space-4);
+      }
+      .agents-uonify-landing .lede {
+        color: var(--finance-text);
+        max-width: 52ch;
+        margin: 0 0 var(--finance-space-6);
+      }
+      .agents-uonify-landing h2 {
+        color: var(--finance-title);
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 var(--finance-space-4);
+      }
+      .agents-uonify-landing .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: var(--finance-space-5);
+      }
+      .agents-uonify-landing .panel.module-card {
+        display: block;
+        background: var(--finance-surface);
+        border: 1px solid var(--finance-border);
+        border-radius: var(--finance-radius);
+        padding: var(--finance-space-6);
+        box-shadow: var(--finance-shadow);
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.15s ease;
+      }
+      .agents-uonify-landing a.module-card:hover {
+        border-color: var(--finance-accent);
+      }
+      .agents-uonify-landing .module-card h3 {
+        color: var(--finance-title);
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 var(--finance-space-2);
+      }
+      .agents-uonify-landing .module-card p {
+        color: var(--finance-muted);
+        font-size: var(--finance-font-body);
+        margin: 0;
+      }
+      .agents-uonify-landing .module-card .badge {
+        display: inline-block;
+        margin-top: var(--finance-space-4);
+        font-size: var(--finance-font-small);
+        color: var(--finance-muted);
+        background: var(--finance-table-header);
+        border-radius: 999px;
+        padding: 2px var(--finance-space-3);
+      }
+      .agents-uonify-landing .notice {
+        margin-top: var(--finance-space-8);
+        padding: var(--finance-space-4) var(--finance-space-5);
+        background: var(--finance-selected);
+        border: 1px solid var(--finance-border);
+        border-radius: var(--finance-radius-small);
+        color: var(--finance-text);
+        font-size: var(--finance-font-body);
+      }
+      @media (max-width: 800px) {
+        .agents-uonify-landing .integrated-layout {
+          grid-template-columns: 1fr;
+        }
+        .agents-uonify-landing .integrated-nav {
+          display: none;
+        }
+        .agents-uonify-landing .integrated-content {
+          padding: var(--finance-space-6) var(--finance-space-4);
+        }
+        .agents-uonify-landing h1 {
+          font-size: 26px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="integrated-header">
+      <div>
+        <p class="brand">
+          Centro de Agentes
+          <span>MasterERP · Uonify</span>
+        </p>
+      </div>
+      <span class="env-pill">Vista previa</span>
+    </header>
+    <div class="integrated-layout">
+      <nav class="integrated-nav" aria-label="Secciones">
+        <p class="integrated-nav-caption">Centro de Agentes</p>
+        <a href="/" aria-current="page">Inicio</a>
+        <a class="nav-disabled" aria-disabled="true">Constructor</a>
+        <a class="nav-disabled" aria-disabled="true">Flujos</a>
+        <a class="nav-disabled" aria-disabled="true">Canales</a>
+      </nav>
+      <main class="integrated-content" id="main">
+        <p class="eyebrow">Dominio habilitado</p>
+        <h1>Centro de Agentes</h1>
+        <p class="lede">
+          Configura agentes y flujos que consumen Uonify. Esta entrada replica el acabado visual de
+          Finanzas (tema <code>finance-app</code>) descrito en la documentación del módulo 2.2.
+        </p>
+        <h2>Próximas capacidades</h2>
+        <div class="cards">
+          <div class="panel module-card" tabindex="-1">
+            <h3>Constructor de agentes</h3>
+            <p>Composición, herramientas y permisos por agente.</p>
+            <span class="badge">Pendiente de integración</span>
+          </div>
+          <div class="panel module-card" tabindex="-1">
+            <h3>Flujos y tareas</h3>
+            <p>Orquestación de flujos y seguimiento operativo.</p>
+            <span class="badge">Pendiente de integración</span>
+          </div>
+          <div class="panel module-card" tabindex="-1">
+            <h3>Canales</h3>
+            <p>Canales de interacción y entrega.</p>
+            <span class="badge">Pendiente de integración</span>
+          </div>
+        </div>
+        <p class="notice" role="status">
+          Interfaz de aterrizaje estática. El producto completo se integrará en Uonify y en los módulos
+          2.6.x según el registro de plataforma.
+        </p>
+      </main>
+    </div>
+  </body>
+</html>

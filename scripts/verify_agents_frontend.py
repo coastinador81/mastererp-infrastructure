@@ -48,7 +48,7 @@ def main():
         }
         assert response.status == 200 and "text/html" in response.headers["Content-Type"]
     text = html.decode("utf-8")
-    assert "Centro de Agentes" in text
+    assert "Centro de Agentes" in text and 'class="finance-app' in text
     report["scope"] = "página estática mínima; UI completa comprobada aparte"
     try:
         urllib.request.build_opener(NoRedirect()).open("http://" + DOMAIN + "/", timeout=30)

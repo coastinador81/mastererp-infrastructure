@@ -25,4 +25,5 @@ Infraestructura declarada para **S3 + CloudFront + ACM + Route53** y publicació
 
 - Plantillas: `agents-frontend-certificate.json`, `agents-frontend-hosting.json`
 - Workflow: `.github/workflows/publish-agents-uonify.yml`
-- Detalle: [HOSTING.md](HOSTING.md)
+- UI/UX (paridad con Finanzas): [UX.md](UX.md), HTML `agents-static/landing.html`
+- Detalle operativo: [HOSTING.md](HOSTING.md)

@@ -1,6 +1,6 @@
 # Hosting frontend Centro de Agentes (agents.uonify.com)
 
-Página estática mínima en https://agents.uonify.com (título **Centro de Agentes — MasterERP**), servida por **S3** (origen privado) y **CloudFront** con TLS. El HTML se genera en el workflow de este repositorio `.github/workflows/publish-agents-uonify.yml`; no hay `index.html` en el árbol de código.
+Página de aterrizaje en https://agents.uonify.com con **misma línea visual que Finanzas** (tokens `--finance-*`, clase `finance-app`): fuente `modules/2.6-agent-center/agents-static/landing.html`, publicada como `index.html` por `.github/workflows/publish-agents-uonify.yml`. Criterios de producto y referencias en [UX.md](UX.md).
 
 ## Plantillas y stacks
 
