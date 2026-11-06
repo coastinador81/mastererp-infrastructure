@@ -1,4 +1,4 @@
-"""Read-only verification of Agent Center landing (agents.uonify.com)."""
+"""Read-only verification of Agent Center landing (agents-dev.uonify.com)."""
 import argparse
 import hashlib
 import json
@@ -10,7 +10,7 @@ import urllib.request
 
 import boto3
 
-DOMAIN = "agents.uonify.com"
+DOMAIN = "agents-dev.uonify.com"
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):

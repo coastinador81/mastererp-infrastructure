@@ -1,4 +1,4 @@
-"""Prepare/review/execute change sets for Agent Center static hosting (agents.uonify.com)."""
+"""Prepare/review/execute change sets for Agent Center static hosting (agents-dev.uonify.com)."""
 import argparse
 import json
 import time
@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ACCOUNT = "277352717693"
 STACK_CERT = "mastererp-dev-agents-frontend-certificate"
 STACK_HOSTING = "mastererp-dev-agents-frontend"
-
+DEFAULT_AGENT_DOMAIN = "agents-dev.uonify.com"
 
 def load_template(name: str) -> dict:
     path = ROOT / "modules/2.6-agent-center" / name
@@ -24,6 +24,11 @@ def main():
     parser.add_argument("action", choices=["prepare", "execute"])
     parser.add_argument("--profile")
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--domain",
+        default=DEFAULT_AGENT_DOMAIN,
+        help=f"Certificado y alias CloudFront/DNS (por defecto {DEFAULT_AGENT_DOMAIN})",
+    )
     args = parser.parse_args()
     session = boto3.Session(profile_name=args.profile)
     assert session.client("sts").get_caller_identity()["Account"] == ACCOUNT
@@ -36,7 +41,7 @@ def main():
         template = load_template(
             "agents-frontend-certificate.json" if args.phase == "certificate" else "agents-frontend-hosting.json"
         )
-        parameters = []
+        parameters = [{"ParameterKey": "FrontendDomainName", "ParameterValue": args.domain}]
         if args.phase == "hosting":
             certificate = session.client("cloudformation", region_name="us-east-1").describe_stacks(
                 StackName=STACK_CERT
@@ -81,9 +86,16 @@ def main():
             raise
         detail = cf.describe_change_set(StackName=name, ChangeSetName=change)
         changes = [item["ResourceChange"] for item in detail["Changes"]]
-        assert all(c["Action"] != "Remove" and c.get("Replacement", "False") == "False" for c in changes), (
-            "Unexpected removal/replacement; do not execute"
-        )
+
+        def _change_ok(c: dict) -> bool:
+            if c["Action"] == "Remove":
+                return False
+            if c.get("Replacement", "False") == "False":
+                return True
+            # Cambiar el FQDN del certificado ACM fuerza sustitución del recurso Certificate
+            return args.phase == "certificate" and c.get("ResourceType") == "AWS::CertificateManager::Certificate"
+
+        assert all(_change_ok(c) for c in changes), "Cambio inesperado (p. ej. borrado o reemplazo no permitido); no ejecutar"
         plan.write_text(json.dumps({"stack": name, "change_set": change, "region": region, "changes": changes}, indent=2))
         print(plan.read_text())
     else:
