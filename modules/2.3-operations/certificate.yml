@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MasterERP E-commerce CloudFront certificate; us-east-1 only
+Parameters:
+  Environment: {Type: String, Default: dev, AllowedValues: [dev]}
+  FrontendDomainName: {Type: String, Default: ecom-dev.uonify.com}
+  FrontendHostedZoneId: {Type: String, Default: Z08167243FAUSDUW0Z2KP}
+Resources:
+  Certificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref FrontendDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions: [{DomainName: !Ref FrontendDomainName, HostedZoneId: !Ref FrontendHostedZoneId}]
+      Tags:
+        - {Key: Project, Value: MasterERP}
+        - {Key: Environment, Value: !Ref Environment}
+        - {Key: Component, Value: ecommerce-frontend}
+Outputs:
+  CertificateArn: {Value: !Ref Certificate}

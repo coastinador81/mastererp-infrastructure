@@ -93,8 +93,8 @@ Resources:
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows: [code]
       AllowedOAuthScopes: [openid, email, !Sub 'mastererp-${Environment}/uonify.connections.status', !Sub 'mastererp-${Environment}/identity.spaces.read']
-      CallbackURLs: [!Ref CallbackUrl, 'https://finanzas-dev.uonify.com/auth/callback']
-      LogoutURLs: [!Ref LogoutUrl, 'https://finanzas-dev.uonify.com/']
+      CallbackURLs: [!Ref CallbackUrl, 'https://finanzas-dev.uonify.com/auth/callback', 'https://ecom-dev.uonify.com/auth/callback']
+      LogoutURLs: [!Ref LogoutUrl, 'https://finanzas-dev.uonify.com/', 'https://ecom-dev.uonify.com/']
       AccessTokenValidity: 15
       IdTokenValidity: 15
       RefreshTokenValidity: 1
