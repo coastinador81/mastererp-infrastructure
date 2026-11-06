@@ -18,6 +18,17 @@ Parameters:
     Type: String
     Default: https://app-dev.uonify.com/
     AllowedValues: [https://app-dev.uonify.com/]
+  GoogleClientId:
+    Type: String
+    Default: ''
+  GoogleClientSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+Conditions:
+  GoogleEnabled: !And
+    - !Not [!Equals [!Ref GoogleClientId, '']]
+    - !Not [!Equals [!Ref GoogleClientSecret, '']]
 Resources:
   UserPool:
     Type: AWS::Cognito::UserPool
@@ -32,7 +43,7 @@ Resources:
         CaseSensitive: false
       AutoVerifiedAttributes: [email]
       AdminCreateUserConfig:
-        AllowAdminCreateUserOnly: true
+        AllowAdminCreateUserOnly: false
       AccountRecoverySetting:
         RecoveryMechanisms:
           - Name: verified_email
@@ -103,10 +114,10 @@ Resources:
       PreventUserExistenceErrors: ENABLED
       EnableTokenRevocation: true
       ExplicitAuthFlows: [ALLOW_REFRESH_TOKEN_AUTH]
-      SupportedIdentityProviders: [COGNITO]
+      SupportedIdentityProviders: !If [GoogleEnabled, [COGNITO, Google], [COGNITO]]
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows: [code]
-      AllowedOAuthScopes: [openid, email]
+      AllowedOAuthScopes: [openid, email, profile]
       CallbackURLs: ['https://tienda-dev.tumandaito.com/auth/callback']
       LogoutURLs: ['https://tienda-dev.tumandaito.com/']
       AccessTokenValidity: 15
@@ -116,8 +127,26 @@ Resources:
         AccessToken: minutes
         IdToken: minutes
         RefreshToken: days
-      ReadAttributes: [email, email_verified, sub]
+      ReadAttributes: [email, email_verified, sub, name, given_name, family_name, picture]
       WriteAttributes: [email]
+  GoogleIdentityProvider:
+    Type: AWS::Cognito::UserPoolIdentityProvider
+    Condition: GoogleEnabled
+    Properties:
+      UserPoolId: !Ref UserPool
+      ProviderName: Google
+      ProviderType: Google
+      ProviderDetails:
+        client_id: !Ref GoogleClientId
+        client_secret: !Ref GoogleClientSecret
+        authorize_scopes: openid email profile
+      AttributeMapping:
+        email: email
+        email_verified: email_verified
+        name: name
+        given_name: given_name
+        family_name: family_name
+        picture: picture
   Domain:
     Type: AWS::Cognito::UserPoolDomain
     Properties:
