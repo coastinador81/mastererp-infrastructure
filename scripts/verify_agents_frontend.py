@@ -49,7 +49,7 @@ def main():
         assert response.status == 200 and "text/html" in response.headers["Content-Type"]
     text = html.decode("utf-8")
     assert "Centro de Agentes" in text
-    report["scope"] = "static hello world; full UI verified separately"
+    report["scope"] = "página estática mínima; UI completa comprobada aparte"
     try:
         urllib.request.build_opener(NoRedirect()).open("http://" + DOMAIN + "/", timeout=30)
         raise AssertionError("HTTP did not redirect")
