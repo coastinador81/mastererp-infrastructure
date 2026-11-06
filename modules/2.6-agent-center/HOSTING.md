@@ -9,7 +9,7 @@ Página estática mínima en https://agents.uonify.com (título **Centro de Agen
 | `agents-frontend-certificate.json` | `mastererp-dev-agents-frontend-certificate` | **us-east-1** (ACM para CloudFront) |
 | `agents-frontend-hosting.json` | `mastererp-dev-agents-frontend` | **us-west-1** (S3, CloudFront, Route53, rol OIDC) |
 
-Recursos del hosting: bucket versionado y cifrado, OAC SigV4, distribución con alias `agents.uonify.com`, política de bucket restringida al ARN de la distribución, registros DNS **A** y **AAAA** en la zona `Z08167243FAUSDUW0Z2KP`, rol IAM **mastererp-dev-agents-frontend-github-role** para publicación OIDC desde **eticayservicios/mastererp-infrastructure** (rama **dev**).
+Recursos del hosting: bucket versionado y cifrado, OAC SigV4, distribución con alias `agents.uonify.com`, política de bucket restringida al ARN de la distribución, registros DNS **A** y **AAAA** en la zona `Z08167243FAUSDUW0Z2KP`, rol IAM **mastererp-dev-agents-frontend-github-role** para publicación OIDC. El `sub` del trust debe coincidir con el [sujeto inmutable](https://docs.github.com/en/actions/deployment/security/hardening-your-deployments/about-security-hardening-with-openid-connect) de este repositorio, p. ej. `repo:eticayservicios@144081289/mastererp-infrastructure@1434968384:ref:refs/heads/dev` (ver `gh api repos/.../actions/oidc/customization/sub`).
 
 ## Desplegar infraestructura
 
