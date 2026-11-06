@@ -18,3 +18,11 @@ Capa: infraestructura. Dependencias: contexto autenticado, tenant y contratos de
 Estado verificable: la reserva documental no acredita implementación; conservar cualquier código/plantilla existente y revisar evidencia específica antes de marcar implementado.
 
 Validaciones: estructura local mediante scripts/validate_structure.py. Pendientes: contratos específicos, responsable nominal y pruebas funcionales antes de habilitar esta capacidad.
+
+## Alojamiento público (agents.uonify.com)
+
+Infraestructura declarada para **S3 + CloudFront + ACM + Route53** y publicación desde este repo:
+
+- Plantillas: `agents-frontend-certificate.json`, `agents-frontend-hosting.json`
+- Workflow: `.github/workflows/publish-agents-uonify.yml`
+- Detalle: [HOSTING.md](HOSTING.md)

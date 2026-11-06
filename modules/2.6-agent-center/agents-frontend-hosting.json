@@ -1,0 +1,252 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "MasterERP Agent Center static frontend: S3, OAC, CloudFront, Route53, OIDC publisher",
+  "Parameters": {
+    "Environment": {
+      "Type": "String",
+      "Default": "dev",
+      "AllowedValues": ["dev", "qa", "prod"]
+    },
+    "FrontendDomainName": {
+      "Type": "String",
+      "Default": "agents.uonify.com"
+    },
+    "FrontendHostedZoneId": {
+      "Type": "String",
+      "Default": "Z08167243FAUSDUW0Z2KP"
+    },
+    "FrontendCertificateArn": {
+      "Type": "String",
+      "Description": "ACM certificate ARN in us-east-1 (DNS validated for FrontendDomainName)"
+    }
+  },
+  "Resources": {
+    "AgentsFrontendBucket": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Retain",
+      "UpdateReplacePolicy": "Retain",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "mastererp-${Environment}-agents-web-${AWS::AccountId}-${AWS::Region}"
+        },
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        },
+        "OwnershipControls": {
+          "Rules": [{ "ObjectOwnership": "BucketOwnerEnforced" }]
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": { "SSEAlgorithm": "AES256" }
+            }
+          ]
+        },
+        "VersioningConfiguration": { "Status": "Enabled" },
+        "Tags": [
+          { "Key": "Project", "Value": "MasterERP" },
+          { "Key": "Environment", "Value": { "Ref": "Environment" } },
+          { "Key": "Component", "Value": "agents-frontend" }
+        ]
+      }
+    },
+    "AgentsFrontendOAC": {
+      "Type": "AWS::CloudFront::OriginAccessControl",
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": { "Fn::Sub": "mastererp-${Environment}-agents-web" },
+          "OriginAccessControlOriginType": "s3",
+          "SigningBehavior": "always",
+          "SigningProtocol": "sigv4"
+        }
+      }
+    },
+    "AgentsFrontendDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "Tags": [
+          { "Key": "Project", "Value": "MasterERP" },
+          { "Key": "Environment", "Value": { "Ref": "Environment" } },
+          { "Key": "Component", "Value": "agents-frontend" }
+        ],
+        "DistributionConfig": {
+          "Enabled": true,
+          "Comment": { "Fn::Sub": "MasterERP ${Environment} Agent Center frontend" },
+          "Aliases": [{ "Ref": "FrontendDomainName" }],
+          "DefaultRootObject": "index.html",
+          "HttpVersion": "http2",
+          "IPV6Enabled": true,
+          "PriceClass": "PriceClass_100",
+          "Origins": [
+            {
+              "Id": "AgentsS3",
+              "DomainName": {
+                "Fn::GetAtt": ["AgentsFrontendBucket", "RegionalDomainName"]
+              },
+              "OriginAccessControlId": { "Ref": "AgentsFrontendOAC" },
+              "S3OriginConfig": { "OriginAccessIdentity": "" }
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "AgentsS3",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": ["GET", "HEAD"],
+            "CachedMethods": ["GET", "HEAD"],
+            "Compress": true,
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6"
+          },
+          "ViewerCertificate": {
+            "AcmCertificateArn": { "Ref": "FrontendCertificateArn" },
+            "SslSupportMethod": "sni-only",
+            "MinimumProtocolVersion": "TLSv1.2_2021"
+          }
+        }
+      }
+    },
+    "AgentsFrontendBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": { "Ref": "AgentsFrontendBucket" },
+        "PolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": { "Service": "cloudfront.amazonaws.com" },
+              "Action": "s3:GetObject",
+              "Resource": { "Fn::Sub": "${AgentsFrontendBucket.Arn}/*" },
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceArn": {
+                    "Fn::Sub": "arn:${AWS::Partition}:cloudfront::${AWS::AccountId}:distribution/${AgentsFrontendDistribution}"
+                  }
+                }
+              }
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": [
+                { "Fn::GetAtt": ["AgentsFrontendBucket", "Arn"] },
+                { "Fn::Sub": "${AgentsFrontendBucket.Arn}/*" }
+              ],
+              "Condition": {
+                "Bool": { "aws:SecureTransport": "false" }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "AgentsFrontendDns": {
+      "Type": "AWS::Route53::RecordSetGroup",
+      "Properties": {
+        "HostedZoneId": { "Ref": "FrontendHostedZoneId" },
+        "RecordSets": [
+          {
+            "Name": { "Ref": "FrontendDomainName" },
+            "Type": "A",
+            "AliasTarget": {
+              "HostedZoneId": "Z2FDTNDATAQYW2",
+              "DNSName": {
+                "Fn::GetAtt": ["AgentsFrontendDistribution", "DomainName"]
+              },
+              "EvaluateTargetHealth": false
+            }
+          },
+          {
+            "Name": { "Ref": "FrontendDomainName" },
+            "Type": "AAAA",
+            "AliasTarget": {
+              "HostedZoneId": "Z2FDTNDATAQYW2",
+              "DNSName": {
+                "Fn::GetAtt": ["AgentsFrontendDistribution", "DomainName"]
+              },
+              "EvaluateTargetHealth": false
+            }
+          }
+        ]
+      }
+    },
+    "AgentsFrontendPublisherRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "RoleName": {
+          "Fn::Sub": "mastererp-${Environment}-agents-frontend-github-role"
+        },
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Federated": {
+                  "Fn::Sub": "arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com"
+                }
+              },
+              "Action": "sts:AssumeRoleWithWebIdentity",
+              "Condition": {
+                "StringEquals": {
+                  "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                  "token.actions.githubusercontent.com:sub": "repo:eticayservicios/mastererp-infrastructure:ref:refs/heads/dev"
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": "publish-agents-frontend-only",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": ["s3:ListBucket"],
+                  "Resource": { "Fn::GetAtt": ["AgentsFrontendBucket", "Arn"] }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+                  "Resource": { "Fn::Sub": "${AgentsFrontendBucket.Arn}/*" }
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": ["cloudfront:CreateInvalidation", "cloudfront:GetInvalidation"],
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:cloudfront::${AWS::AccountId}:distribution/${AgentsFrontendDistribution}"
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Tags": [
+          { "Key": "Project", "Value": "MasterERP" },
+          { "Key": "Environment", "Value": { "Ref": "Environment" } }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "FrontendBucketName": {
+      "Value": { "Ref": "AgentsFrontendBucket" }
+    },
+    "FrontendDistributionId": {
+      "Value": { "Ref": "AgentsFrontendDistribution" }
+    },
+    "FrontendDistributionDomain": {
+      "Value": { "Fn::GetAtt": ["AgentsFrontendDistribution", "DomainName"] }
+    },
+    "FrontendPublisherRoleArn": {
+      "Value": { "Fn::GetAtt": ["AgentsFrontendPublisherRole", "Arn"] }
+    },
+    "FrontendUrl": {
+      "Value": { "Fn::Sub": "https://${FrontendDomainName}" }
+    }
+  }
+}

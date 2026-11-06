@@ -1,0 +1,66 @@
+name: Publish agents.uonify.com
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/publish-agents-uonify.yml'
+      - 'modules/2.6-agent-center/agents-frontend-hosting.json'
+      - 'modules/2.6-agent-center/agents-frontend-certificate.json'
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: mastererp-dev-agents-frontend
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::277352717693:role/mastererp-dev-agents-frontend-github-role
+          aws-region: us-west-1
+      - name: Build index.html
+        run: |
+          cat <<'EOF' > index.html
+          <!DOCTYPE html>
+          <html lang="es">
+            <head>
+              <meta charset="utf-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1" />
+              <title>Centro de Agentes — MasterERP</title>
+              <style>
+                body {
+                  font-family: system-ui, sans-serif;
+                  margin: 0;
+                  min-height: 100vh;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: #0f1419;
+                  color: #e8eef4;
+                }
+                main { text-align: center; padding: 2rem; }
+                h1 { font-weight: 600; margin: 0; }
+              </style>
+            </head>
+            <body>
+              <main>
+                <h1>Centro de Agentes — MasterERP</h1>
+              </main>
+            </body>
+          </html>
+          EOF
+      - name: Publish to S3 and invalidate CloudFront
+        env:
+          BUCKET: ${{ vars.AGENTS_UONIFY_BUCKET }}
+          DISTRIBUTION: ${{ vars.AGENTS_UONIFY_DISTRIBUTION_ID }}
+        run: |
+          set -euo pipefail
+          test -n "${BUCKET:-}" && test -n "${DISTRIBUTION:-}"
+          test "$(aws sts get-caller-identity --query Account --output text)" = 277352717693
+          aws s3 cp index.html "s3://$BUCKET/index.html" --content-type 'text/html; charset=utf-8' --cache-control 'no-cache,max-age=0,must-revalidate'
+          invalidation=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" --paths / /index.html --query Invalidation.Id --output text)
+          aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION" --id "$invalidation"
