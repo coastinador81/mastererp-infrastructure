@@ -48,3 +48,7 @@ Variables GitHub (repositorio **mastererp-platform**, rama `dev`):
 - `STOREFRONT_DEV_TENANT_ID` (tenant business con la tienda activa para el dominio)
 
 Publicación canónica: workflow Platform `.github/workflows/publish-storefront-dev.yml`. El workflow de Infrastructure queda solo para la página estática provisional.
+
+## Propiedad de publicación de la aplicación
+
+La aplicación Expo de tienda-dev.uonify.com se publica desde Platform mediante publish-storefront-dev.yml. Usa STOREFRONT_UONIFY_BUCKET y STOREFRONT_UONIFY_DISTRIBUTION_ID referenciando los recursos existentes. Infrastructure conserva IaC; su workflow estático de bootstrap es exclusivamente manual y no se ejecuta por push, para no sobrescribir index.html de la aplicación con una página histórica. No despachar ese bootstrap sobre una tienda activa sin una decisión explícita de recuperación. No se amplían permisos IAM ni se crean credenciales por esta corrección.

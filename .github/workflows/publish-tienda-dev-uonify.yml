@@ -1,13 +1,8 @@
-name: Publish tienda-dev.uonify.com
+name: Legacy storefront bootstrap (manual only)
 on:
   workflow_dispatch:
-  push:
-    branches: [dev]
-    paths:
-      - '.github/workflows/publish-tienda-dev-uonify.yml'
-      - 'modules/2.3-ecommerce/2.3.2-stores/storefront-frontend-hosting.json'
-      - 'modules/2.3-ecommerce/2.3.2-stores/storefront-frontend-certificate.json'
-      - 'modules/2.3-ecommerce/2.3.2-stores/storefront-static/**'
+# Platform owns application publication. This legacy static bootstrap must not
+# overwrite the Expo application when Infrastructure paths or templates change.
 permissions:
   contents: read
   id-token: write
