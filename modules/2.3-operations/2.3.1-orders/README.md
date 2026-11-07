@@ -37,3 +37,12 @@ Estado de esta nota: procedimiento preparado; registrar resultado real del chang
 ### Revisión del change set y arquitectura
 
 La inspección real confirma Lambda Python 3.12 ARM64. El artefacto se construye para Linux ARM64 en CI y se comprueba ELF AArch64 de cada binario; el script rechaza un ZIP x86 antes de cargarlo. El primer change set no se ejecutó: incluía la reevaluación dinámica de OrdersIntegration.IntegrationUri por la referencia OrdersFunction.Arn. Se permite únicamente esa dependencia explícita, Modify sin reemplazo; el script bloquea cualquier otro recurso/cambio y compara después el valor real de integración, rutas completas, JWT, CORS, IDs y configuración de Lambda. No hay cambio funcional de la API por esa reevaluación.
+
+
+## Resultado real — 7 noviembre 2026
+
+Actualización final ejecutada en mastererp-dev-operations. Fuente Platform e2013ad; ZIP ARM64 SHA-256 61f69a11947e9fe16f0070f846f366c3d2d17a8801c2aa09d289e68c447aadc8. OrdersFunction Active/Successful. El script comprobó igualdad de IDs físicos, configuración, URI de integración, rutas, JWT y CORS, y el checksum real coincide con el ZIP. La única dependencia adicional fue la reevaluación dinámica de OrdersIntegration por el mismo ARN, sin reemplazo.
+
+La primera actualización encontró typing_extensions.py ausente: se restauró por change set el paquete previo exacto 4b34522006c66161dfadc998839808761b1d52501ffefac8ee3a450511e75a5a, coincidente con Git d277dfe para el adapter. Después se desplegó el ZIP corregido y pasaron 14 casos HTTP reales, con tres ventas persistidas y concurrencia. Se conserva evidencia de la recuperación y del plan final en [docs/sales-deployment-evidence](../../../docs/sales-deployment-evidence/). Las descripciones anteriores de candidato son históricas.
+
+Sin cambios en Cognito, hosting, API compartida, JWT, CORS, otras Lambdas, IAM de ejecución o red. RDS se gestionó desde Database por su migrador oficial (046/047 y respaldos previos), no desde este script. Los datos de venta de fixture se conservan en tenant DEV suspendido para respetar inmutabilidad.

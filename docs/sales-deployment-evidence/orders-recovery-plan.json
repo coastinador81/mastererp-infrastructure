@@ -1,0 +1,1052 @@
+{
+  "stack": "mastererp-dev-operations",
+  "stack_id": "arn:aws:cloudformation:us-west-1:277352717693:stack/mastererp-dev-operations/d2b06240-d8ae-11f1-95c4-06ffc44d69eb",
+  "change_set": "arn:aws:cloudformation:us-west-1:277352717693:changeSet/orders-sales-1794011513/d9c5746a-a58a-43ac-9ffc-e31c66195617",
+  "artifact_sha256": "4b34522006c66161dfadc998839808761b1d52501ffefac8ee3a450511e75a5a",
+  "source_commit": "d277dfe48001d7470b56269cccb54383f8cd19cf",
+  "artifact_key": "mastererp/dev/orders-sales/d277dfe48001d7470b56269cccb54383f8cd19cf/4b34522006c66161dfadc998839808761b1d52501ffefac8ee3a450511e75a5a.zip",
+  "old_artifact_key": "mastererp/dev/orders-sales/8f0efac00a42f62f41a5d5543d41769c1872b925/138a2f112b3d55c4684d6abfdd003360762bd61ee5eab97d1e34662ce890d970.zip",
+  "physical_ids_before": {
+    "NodesConfigureRoute": "rvl7vmu",
+    "NodesDetailRoute": "32gu88m",
+    "NodesFunction": "mastererp-dev-nodes",
+    "NodesIntegration": "3g3i0n0",
+    "NodesListRoute": "ss4deuj",
+    "NodesLogs": "/aws/lambda/mastererp-dev-nodes",
+    "NodesPermission": "mastererp-dev-operations-NodesPermission-BLaUbUBhCz6d",
+    "NodesRole": "mastererp-dev-operations-NodesRole-bdOOTFN7e2Zg",
+    "NodesTransitionRoute": "vkwycng",
+    "OrdersApiPermission": "mastererp-dev-operations-OrdersApiPermission-SP26HwJSj8CR",
+    "OrdersCreateRoute": "i4jpnla",
+    "OrdersDetailRoute": "f9ppf8o",
+    "OrdersFunction": "mastererp-dev-orders",
+    "OrdersIntegration": "iln0p8k",
+    "OrdersListRoute": "txlh0jo",
+    "OrdersLogs": "/aws/lambda/mastererp-dev-orders",
+    "OrdersRole": "mastererp-dev-operations-OrdersRole-iSaXRUHTgzIe",
+    "OrdersTransitionRoute": "wqpcxk6",
+    "PreparationCompleteRoute": "cv4oj1h",
+    "PreparationDetailRoute": "d6l53is",
+    "PreparationFunction": "mastererp-dev-preparation",
+    "PreparationIntegration": "cix0jbq",
+    "PreparationItemRoute": "8z3fi7h",
+    "PreparationListRoute": "k0vrd88",
+    "PreparationLogs": "/aws/lambda/mastererp-dev-preparation",
+    "PreparationPermission": "mastererp-dev-operations-PreparationPermission-AHXRuYnktNZx",
+    "PreparationRole": "mastererp-dev-operations-PreparationRole-Y7g8q0zgbWDw",
+    "PreparationStartRoute": "ifmp2dv",
+    "RoutesAssignRoute": "e21v515",
+    "RoutesCreateRoute": "93c9pk1",
+    "RoutesDetailRoute": "jmj77b0",
+    "RoutesFunction": "mastererp-dev-routes",
+    "RoutesIntegration": "v9g6xum",
+    "RoutesListRoute": "h0z1x84",
+    "RoutesLogs": "/aws/lambda/mastererp-dev-routes",
+    "RoutesPermission": "mastererp-dev-operations-RoutesPermission-Y2D3f18qsMTz",
+    "RoutesRole": "mastererp-dev-operations-RoutesRole-WFKhKWell4Nq",
+    "RoutesStopRoute": "9gft6v8",
+    "RoutesTransitionRoute": "6lil8pj"
+  },
+  "api_id": "qx8nmypdhi",
+  "api_before": {
+    "integration": {
+      "ConnectionType": "INTERNET",
+      "IntegrationId": "iln0p8k",
+      "IntegrationMethod": "POST",
+      "IntegrationType": "AWS_PROXY",
+      "IntegrationUri": "arn:aws:lambda:us-west-1:277352717693:function:mastererp-dev-orders",
+      "PayloadFormatVersion": "2.0",
+      "TimeoutInMillis": 15000
+    },
+    "routes": [
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "1929ak4",
+        "RouteKey": "PATCH /v1/administration/compras/facturas/{id}",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "1gbsolb",
+        "RouteKey": "POST /v1/onboarding/sessions/{id}/complete",
+        "Target": "integrations/dwcur6j"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "32gu88m",
+        "RouteKey": "GET /v1/companies/{company_id}/nodes/{node_id}",
+        "Target": "integrations/3g3i0n0"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "3doeowg",
+        "RouteKey": "GET /v1/companies/{company_id}/nodes/{node_id}/inventory/{product_id}",
+        "Target": "integrations/fki1ose"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "42qvl2r",
+        "RouteKey": "GET /v1/administration/clientes",
+        "Target": "integrations/ie1m8ce"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "44mmr6q",
+        "RouteKey": "POST /v1/companies/{company_id}/nodes/{node_id}/inventory/reservations",
+        "Target": "integrations/fki1ose"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "4f749gj",
+        "RouteKey": "GET /v1/administration/compras/solicitudes/{id}",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "57uyfan",
+        "RouteKey": "GET /v1/companies/{company_id}/stores",
+        "Target": "integrations/uzzllzu"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "5g2l6y9",
+        "RouteKey": "GET /v1/catalog/suppliers",
+        "Target": "integrations/vpskm5h"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "5kgov2s",
+        "RouteKey": "GET /v1/modules",
+        "Target": "integrations/aucfztl"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "5l3kl30",
+        "RouteKey": "GET /v1/products",
+        "Target": "integrations/yxzc6ti"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "66m5c02",
+        "RouteKey": "POST /v1/catalog/brands",
+        "Target": "integrations/2jyvs8o"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "6e5vxhh",
+        "RouteKey": "POST /v1/catalog/categories",
+        "Target": "integrations/uvf4nnk"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "6lil8pj",
+        "RouteKey": "POST /v1/companies/{company_id}/routes/{route_id}/transitions",
+        "Target": "integrations/v9g6xum"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "74vl9tj",
+        "RouteKey": "GET /v1/tenants/{id}/modules",
+        "Target": "integrations/g37vbgs"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "774ul4l",
+        "RouteKey": "PATCH /v1/catalog/categories/{category_slug}",
+        "Target": "integrations/uvf4nnk"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "8l8zhed",
+        "RouteKey": "GET /v1/companies/{company_id}/stores/{store_id}",
+        "Target": "integrations/uzzllzu"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "8mki4bd",
+        "RouteKey": "GET /v1/administration/clientes/{id}",
+        "Target": "integrations/ie1m8ce"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "8xnhokd",
+        "RouteKey": "GET /v1/administration/clientes/health",
+        "Target": "integrations/ie1m8ce"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "8z3fi7h",
+        "RouteKey": "PATCH /v1/companies/{company_id}/orders/{order_id}/preparation/items/{line_id}",
+        "Target": "integrations/cix0jbq"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "90hcb85",
+        "RouteKey": "GET /v1/administration/compras/ordenes",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "93c9pk1",
+        "RouteKey": "POST /v1/companies/{company_id}/routes",
+        "Target": "integrations/v9g6xum"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "9gft6v8",
+        "RouteKey": "POST /v1/companies/{company_id}/routes/{route_id}/stops/{order_id}",
+        "Target": "integrations/v9g6xum"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "9vgk513",
+        "RouteKey": "GET /v1/products/{product_id}",
+        "Target": "integrations/yxzc6ti"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "b5pra0j",
+        "RouteKey": "POST /v1/catalog/attributes",
+        "Target": "integrations/qbqhsig"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "c4hz587",
+        "RouteKey": "POST /v1/catalog/suppliers",
+        "Target": "integrations/vpskm5h"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "cfkw3kf",
+        "RouteKey": "PATCH /v1/catalog/attributes/{attribute_code}",
+        "Target": "integrations/qbqhsig"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "cv4oj1h",
+        "RouteKey": "POST /v1/companies/{company_id}/orders/{order_id}/preparation/complete",
+        "Target": "integrations/cix0jbq"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "cyx331s",
+        "RouteKey": "GET /v1/administration/conciliacion/health",
+        "Target": "integrations/5twsxg7"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "czqixj2",
+        "RouteKey": "POST /v1/onboarding/sessions",
+        "Target": "integrations/vq3oii6"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "d6l53is",
+        "RouteKey": "GET /v1/companies/{company_id}/orders/{order_id}/preparation",
+        "Target": "integrations/cix0jbq"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "e21v515",
+        "RouteKey": "PUT /v1/companies/{company_id}/routes/{route_id}/driver",
+        "Target": "integrations/v9g6xum"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "ehq91jo",
+        "RouteKey": "GET /v1/catalog/attributes/{attribute_code}",
+        "Target": "integrations/qbqhsig"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "ekga2vt",
+        "RouteKey": "PATCH /v1/companies/{company_id}/stores/{store_id}",
+        "Target": "integrations/uzzllzu"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "els66fs",
+        "RouteKey": "PATCH /v1/companies/{company_id}/drivers/{driver_id}",
+        "Target": "integrations/tafr0fj"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "f9j3fjv",
+        "RouteKey": "GET /v1/onboarding/sessions/{id}/progress",
+        "Target": "integrations/pkqlwxa"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "f9ppf8o",
+        "RouteKey": "GET /v1/companies/{company_id}/orders/{order_id}",
+        "Target": "integrations/iln0p8k"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "fxdkv7u",
+        "RouteKey": "PUT /v1/companies/{company_id}/nodes/{node_id}/drivers/{driver_id}",
+        "Target": "integrations/tafr0fj"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "g0gb0gb",
+        "RouteKey": "GET /v1/catalog/brands",
+        "Target": "integrations/2jyvs8o"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "gho4rip",
+        "RouteKey": "GET /v1/administration/cartera/health",
+        "Target": "integrations/oytrbi5"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "gteu4tc",
+        "RouteKey": "GET /v1/companies/{company_id}/drivers/{driver_id}",
+        "Target": "integrations/tafr0fj"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "h0z1x84",
+        "RouteKey": "GET /v1/companies/{company_id}/routes",
+        "Target": "integrations/v9g6xum"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "hsjrip7",
+        "RouteKey": "PATCH /v1/administration/clientes/{id}",
+        "Target": "integrations/ie1m8ce"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "hsyw6z1",
+        "RouteKey": "GET /v1/catalog/categories/{category_slug}",
+        "Target": "integrations/uvf4nnk"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "hub4iri",
+        "RouteKey": "POST /v1/administration/compras/facturas",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "hyxo07f",
+        "RouteKey": "GET /v1/catalog/suppliers/{supplier_id}",
+        "Target": "integrations/vpskm5h"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "i4jpnla",
+        "RouteKey": "POST /v1/companies/{company_id}/orders",
+        "Target": "integrations/iln0p8k"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "idqlc19",
+        "RouteKey": "PUT /v1/companies/{company_id}/nodes/{node_id}/inventory/{product_id}/stock",
+        "Target": "integrations/fki1ose"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "ifmp2dv",
+        "RouteKey": "POST /v1/companies/{company_id}/orders/{order_id}/preparation/start",
+        "Target": "integrations/cix0jbq"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "in7no06",
+        "RouteKey": "GET /v1/catalog/categories",
+        "Target": "integrations/uvf4nnk"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "izm8rx1",
+        "RouteKey": "GET /v1/tenants/{id}/config",
+        "Target": "integrations/1k6tr8c"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "je2zx6s",
+        "RouteKey": "POST /v1/administration/compras/solicitudes",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "jmj77b0",
+        "RouteKey": "GET /v1/companies/{company_id}/routes/{route_id}",
+        "Target": "integrations/v9g6xum"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "jtpy2ll",
+        "RouteKey": "GET /v1/catalog/attributes",
+        "Target": "integrations/qbqhsig"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "jvgyzqt",
+        "RouteKey": "POST /v1/products",
+        "Target": "integrations/yxzc6ti"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "k0vrd88",
+        "RouteKey": "GET /v1/companies/{company_id}/preparations",
+        "Target": "integrations/cix0jbq"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "kaxem5a",
+        "RouteKey": "GET /v1/administration/ventas/health",
+        "Target": "integrations/keysq0r"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "knybpep",
+        "RouteKey": "POST /v1/administration/clientes",
+        "Target": "integrations/ie1m8ce"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "ktqfumt",
+        "RouteKey": "GET /v1/administration/proveedores",
+        "Target": "integrations/g2c8kka"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "l2gncq1",
+        "RouteKey": "PUT /v1/onboarding/sessions/{id}/steps/{stepId}",
+        "Target": "integrations/6de0jf9"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "l6u354f",
+        "RouteKey": "GET /v1/administration/compras/health",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "lil90qq",
+        "RouteKey": "PATCH /v1/products/{product_id}",
+        "Target": "integrations/yxzc6ti"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "llfkoo3",
+        "RouteKey": "PATCH /v1/onboarding/sessions/{id}",
+        "Target": "integrations/2c7r82e"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "lvkcv19",
+        "RouteKey": "GET /v1/administration/compras/solicitudes",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "mfu1eys",
+        "RouteKey": "POST /v1/companies/{company_id}/stores/{store_id}/customers/{customer_id}/invitations",
+        "Target": "integrations/uzzllzu"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "mzsbdn2",
+        "RouteKey": "GET /v1/administration/proveedores/health",
+        "Target": "integrations/g2c8kka"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "ovqv25s",
+        "RouteKey": "PUT /v1/tenants/{id}/modules/{moduleId}",
+        "Target": "integrations/b25wdz0"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "owiu0ef",
+        "RouteKey": "POST /v1/companies/{company_id}/stores",
+        "Target": "integrations/uzzllzu"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "p9laic5",
+        "RouteKey": "POST /v1/administration/compras/ordenes",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "q2vo2yo",
+        "RouteKey": "GET /v1/companies/{company_id}/nodes/{node_id}/inventory",
+        "Target": "integrations/fki1ose"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "qazncm2",
+        "RouteKey": "GET /v1/administration/compras/facturas",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "qipn4qg",
+        "RouteKey": "GET /v1/companies/{company_id}/drivers",
+        "Target": "integrations/tafr0fj"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "qtgj7ln",
+        "RouteKey": "GET /v1/administration/compras/facturas/{id}",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "roiuki3",
+        "RouteKey": "PATCH /v1/administration/proveedores/{id}",
+        "Target": "integrations/g2c8kka"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "rvl7vmu",
+        "RouteKey": "PUT /v1/companies/{company_id}/nodes/{node_id}",
+        "Target": "integrations/3g3i0n0"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "s31nij3",
+        "RouteKey": "PATCH /v1/administration/compras/ordenes/{id}",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "sgfsopi",
+        "RouteKey": "GET /v1/catalog/brands/{brand_slug}",
+        "Target": "integrations/2jyvs8o"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "ss4deuj",
+        "RouteKey": "GET /v1/companies/{company_id}/nodes",
+        "Target": "integrations/3g3i0n0"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "szqfi6o",
+        "RouteKey": "PATCH /v1/catalog/suppliers/{supplier_id}",
+        "Target": "integrations/vpskm5h"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "t8rabi1",
+        "RouteKey": "GET /v1/administration/compras/opciones",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "txlh0jo",
+        "RouteKey": "GET /v1/companies/{company_id}/orders",
+        "Target": "integrations/iln0p8k"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "v55ikt1",
+        "RouteKey": "GET /v1/administration/gastos/health",
+        "Target": "integrations/8heu4y5"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "vkn1vga",
+        "RouteKey": "PATCH /v1/catalog/brands/{brand_slug}",
+        "Target": "integrations/2jyvs8o"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "vkwycng",
+        "RouteKey": "POST /v1/companies/{company_id}/nodes/{node_id}/transitions",
+        "Target": "integrations/3g3i0n0"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "w4opc73",
+        "RouteKey": "GET /v1/administration/proveedores/{id}",
+        "Target": "integrations/g2c8kka"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "w5arqnu",
+        "RouteKey": "PATCH /v1/administration/compras/solicitudes/{id}",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "NONE",
+        "RequestModels": {},
+        "RouteId": "wpty5i3",
+        "RouteKey": "GET /v1/administration/tesoreria/health",
+        "Target": "integrations/ntn73t9"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "wqpcxk6",
+        "RouteKey": "POST /v1/companies/{company_id}/orders/{order_id}/transitions",
+        "Target": "integrations/iln0p8k"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "wtjniyo",
+        "RouteKey": "POST /v1/companies/{company_id}/drivers",
+        "Target": "integrations/tafr0fj"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "x546dqh",
+        "RouteKey": "GET /v1/onboarding/sessions/{id}",
+        "Target": "integrations/k4drl9i"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "xjiyx2v",
+        "RouteKey": "GET /v1/administration/compras/ordenes/{id}",
+        "Target": "integrations/8h8xxe1"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "y527qv8",
+        "RouteKey": "POST /v1/tenants",
+        "Target": "integrations/sq6dj93"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "zf3kfb5",
+        "RouteKey": "POST /v1/companies/{company_id}/inventory/reservations/{reservation_id}/finalize",
+        "Target": "integrations/fki1ose"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "RequestParameters": {},
+        "RouteId": "zje4ylc",
+        "RouteKey": "PATCH /v1/tenants/{id}/config",
+        "Target": "integrations/4per4hs"
+      },
+      {
+        "ApiKeyRequired": false,
+        "AuthorizationScopes": [
+          "mastererp-dev/identity.spaces.read"
+        ],
+        "AuthorizationType": "JWT",
+        "AuthorizerId": "49et65",
+        "RequestModels": {},
+        "RouteId": "zrtijep",
+        "RouteKey": "POST /v1/administration/proveedores",
+        "Target": "integrations/g2c8kka"
+      }
+    ],
+    "cors": {
+      "AllowHeaders": [
+        "authorization",
+        "content-type",
+        "idempotency-key",
+        "x-correlation-id",
+        "x-mastererp-tenant-id",
+        "x-tenant-id"
+      ],
+      "AllowMethods": [
+        "GET",
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE",
+        "OPTIONS"
+      ],
+      "AllowOrigins": [
+        "https://admin.dev.mastererp.local",
+        "https://app-dev.uonify.com"
+      ]
+    }
+  },
+  "configuration_sha256": "470e4cb267c2c13f8319f177488a77a17668885b5d6a4f2e71ef964d74e8b3ba",
+  "result": {
+    "state": "Active",
+    "code_sha256": "SzRSIAbGYWHfrcmYg5gIdhsdUlAf/vrI7jpFBRHnWlo=",
+    "physical_ids_preserved": true
+  }
+}
