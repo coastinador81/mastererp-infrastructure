@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "MasterERP DEV technical Lambda: ventas; no API or database.",
+  "Description": "MasterERP company-scoped read-only sales API; preserves existing health, API and integration ownership.",
   "Parameters": {
     "Environment": {
       "Type": "String",
@@ -20,6 +20,27 @@
     "ExistingAdminApiId": {
       "Type": "String",
       "Default": "qx8nmypdhi"
+    },
+    "PartyDatabaseHost": {
+      "Type": "String"
+    },
+    "PartyDatabaseSecretArn": {
+      "Type": "String"
+    },
+    "PartySubnetIds": {
+      "Type": "CommaDelimitedList"
+    },
+    "PartySecurityGroupIds": {
+      "Type": "CommaDelimitedList"
+    },
+    "PartyCognitoIssuer": {
+      "Type": "String"
+    },
+    "PartyClientId": {
+      "Type": "String"
+    },
+    "AdminJwtAuthorizerId": {
+      "Type": "String"
     }
   },
   "Resources": {
@@ -88,6 +109,41 @@
                 }
               ]
             }
+          },
+          {
+            "PolicyName": "ReadApplicationSecret",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": "secretsmanager:GetSecretValue",
+                  "Resource": {
+                    "Ref": "PartyDatabaseSecretArn"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "LambdaPrivateNetwork",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSubnets",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:AssignPrivateIpAddresses",
+                    "ec2:UnassignPrivateIpAddresses"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
           }
         ],
         "Tags": [
@@ -125,8 +181,8 @@
         "Architectures": [
           "arm64"
         ],
-        "MemorySize": 128,
-        "Timeout": 5,
+        "MemorySize": 256,
+        "Timeout": 15,
         "Role": {
           "Fn::GetAtt": [
             "VentasRole",
@@ -160,7 +216,38 @@
             "Key": "ManagedBy",
             "Value": "cloudformation"
           }
-        ]
+        ],
+        "VpcConfig": {
+          "SubnetIds": {
+            "Ref": "PartySubnetIds"
+          },
+          "SecurityGroupIds": {
+            "Ref": "PartySecurityGroupIds"
+          }
+        },
+        "Environment": {
+          "Variables": {
+            "ENVIRONMENT": {
+              "Ref": "Environment"
+            },
+            "COGNITO_ISSUER": {
+              "Ref": "PartyCognitoIssuer"
+            },
+            "COGNITO_APP_CLIENT_ID": {
+              "Ref": "PartyClientId"
+            },
+            "DATABASE_HOST": {
+              "Ref": "PartyDatabaseHost"
+            },
+            "DATABASE_SECRET_ARN": {
+              "Ref": "PartyDatabaseSecretArn"
+            },
+            "IDENTITY_DB_ENABLED": "true",
+            "REQUIRED_API_SCOPE": {
+              "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+            }
+          }
+        }
       }
     },
     "VentasIntegrationRecovered": {
@@ -215,6 +302,90 @@
         },
         "SourceArn": {
           "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/ventas/health"
+        }
+      }
+    },
+    "VentasListRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/ventas",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "VentasIntegrationRecovered"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "VentasListPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "VentasFunction"
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/ventas"
+        }
+      }
+    },
+    "VentasDetailRoute": {
+      "Type": "AWS::ApiGatewayV2::Route",
+      "Properties": {
+        "ApiId": {
+          "Ref": "ExistingAdminApiId"
+        },
+        "RouteKey": "GET /v1/administration/ventas/{id}",
+        "AuthorizationType": "JWT",
+        "AuthorizerId": {
+          "Ref": "AdminJwtAuthorizerId"
+        },
+        "AuthorizationScopes": [
+          {
+            "Fn::Sub": "mastererp-${Environment}/identity.spaces.read"
+          }
+        ],
+        "Target": {
+          "Fn::Join": [
+            "/",
+            [
+              "integrations",
+              {
+                "Ref": "VentasIntegrationRecovered"
+              }
+            ]
+          ]
+        }
+      }
+    },
+    "VentasDetailPermission": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "VentasFunction"
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/ventas/*"
         }
       }
     }

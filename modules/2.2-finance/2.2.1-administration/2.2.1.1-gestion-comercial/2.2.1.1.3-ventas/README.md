@@ -16,3 +16,12 @@ Función: `mastererp-dev-adm-ventas`. Estado funcional: pendiente de implementac
 ## Ruta de diagnóstico pública
 
 GET /v1/administration/ventas/health en mastererp-dev-admin-api (qx8nmypdhi). Por decisión explícita del propietario, esta ruta técnica es pública (AuthorizationType NONE), sin datos ni operaciones de tenant. La autenticación queda pendiente antes de implementar capacidades de negocio. La API sigue en mastererp-dev-onboarding; esta carpeta declara su integración, ruta y permiso exclusivo. CORS se conserva en el propietario de la API. No se crea ni modifica ningún autorizador JWT. No desplegar las definiciones heredadas de APIs.
+
+
+## Consulta de Ventas — preparación de despliegue
+
+La Lambda existente mastererp-dev-adm-ventas recibe únicamente la lectura de listado/ficha y conserva /health. Recursos comunes en este resources.yml raíz: rol/log/Lambda/integración existentes y dos rutas GET JWT con permisos de invocación propios. Se reutilizan referencia de aplicación, subnets privadas, SG y autorizador ya usados por Proveedores; no se crean API, red ni secretos. Los YAML vacíos de screens/list y screens/detail son reservas documentales excluidas del ensamblado.
+
+Actualizar por scripts/deploy_sales.py, usando el stack padre mastererp-dev-finance y su hijo mastererp-dev-administration. El script parte de la plantilla desplegada, superpone solo recursos Ventas y conserva parámetros/recursos ajenos. Revisar change sets raíz y anidado: sin eliminaciones ni reemplazos. No reimportar OpenAPI/SAM ni cambiar CORS/autenticación global. Aplicar 048 de Database antes de activar la API y publicar frontend después de comprobar HTTP real.
+
+Estado de este apartado: candidato; registrar resultado ejecutado y pruebas antes de afirmar disponibilidad.
