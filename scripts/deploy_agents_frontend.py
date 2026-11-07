@@ -1,4 +1,4 @@
-"""Prepare/review/execute change sets for Agent Center static hosting (agents-dev.uonify.com)."""
+"""Prepare/review/execute change sets for Agent Center static hosting (agentes-dev.uonify.com)."""
 import argparse
 import json
 import time
@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ACCOUNT = "277352717693"
 STACK_CERT = "mastererp-dev-agents-frontend-certificate"
 STACK_HOSTING = "mastererp-dev-agents-frontend"
-DEFAULT_AGENT_DOMAIN = "agents-dev.uonify.com"
+DEFAULT_AGENT_DOMAIN = "agentes-dev.uonify.com"
 
 def load_template(name: str) -> dict:
     path = ROOT / "modules/2.6-agent-center" / name
@@ -46,7 +46,10 @@ def main():
             certificate = session.client("cloudformation", region_name="us-east-1").describe_stacks(
                 StackName=STACK_CERT
             )["Stacks"][0]
+            assert certificate["StackStatus"] in ("CREATE_COMPLETE", "UPDATE_COMPLETE"), "Esperar a que termine el stack del certificado antes de preparar hosting"
             arn = next(o["OutputValue"] for o in certificate["Outputs"] if o["OutputKey"] == "CertificateArn")
+            issued = session.client("acm", region_name="us-east-1").describe_certificate(CertificateArn=arn)["Certificate"]
+            assert issued["Status"] == "ISSUED" and args.domain in issued.get("SubjectAlternativeNames", []), "El certificado debe estar emitido para el dominio solicitado"
             parameters.append({"ParameterKey": "FrontendCertificateArn", "ParameterValue": arn})
         body = json.dumps(template)
         cf.validate_template(TemplateBody=body)

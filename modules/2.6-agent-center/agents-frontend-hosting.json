@@ -9,7 +9,7 @@
     },
     "FrontendDomainName": {
       "Type": "String",
-      "Default": "agents-dev.uonify.com"
+      "Default": "agentes-dev.uonify.com"
     },
     "FrontendHostedZoneId": {
       "Type": "String",

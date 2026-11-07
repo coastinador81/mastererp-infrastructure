@@ -1,6 +1,6 @@
 # Centro de Agentes — guía de UI/UX
 
-Esta entrada (**agents-dev.uonify.com**) comparte criterios con **Finanzas** para que la experiencia sea reconocible dentro del ecosistema MasterERP/Uonify.
+Esta entrada (**agentes-dev.uonify.com**) comparte criterios con **Finanzas** para que la experiencia sea reconocible dentro del ecosistema MasterERP/Uonify.
 
 ## Referencia principal
 

@@ -1,5 +1,8 @@
 # Finance
 
+> Numeración vigente: consultar docs/MODULE_RENUMBERING.md desde la raíz. Las ubicaciones fuente cambian; los contratos SQL/API y stacks efectivos se conservan. Los apartados históricos no alteran la distribución nueva.
+
+
 Objetivo específico: Coordinar los dominios financieros sin mezclar ejecución operativa.
 
 - **Responsabilidad funcional:** administración, contabilidad, analítica y pagos.

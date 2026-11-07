@@ -19,7 +19,7 @@ Estado verificable: la reserva documental no acredita implementación; conservar
 
 Validaciones: estructura local mediante scripts/validate_structure.py. Pendientes: contratos específicos, responsable nominal y pruebas funcionales antes de habilitar esta capacidad.
 
-## Alojamiento público (agents-dev.uonify.com)
+## Alojamiento público (agentes-dev.uonify.com)
 
 Infraestructura declarada para **S3 + CloudFront + ACM + Route53** y publicación desde este repo:
 

@@ -5,9 +5,9 @@ on:
     branches: [dev]
     paths:
       - '.github/workflows/publish-tienda-dev-uonify.yml'
-      - 'modules/2.4-digital-sales/2.4.2-ecommerce/storefront-frontend-hosting.json'
-      - 'modules/2.4-digital-sales/2.4.2-ecommerce/storefront-frontend-certificate.json'
-      - 'modules/2.4-digital-sales/2.4.2-ecommerce/storefront-static/**'
+      - 'modules/2.3-ecommerce/2.3.2-stores/storefront-frontend-hosting.json'
+      - 'modules/2.3-ecommerce/2.3.2-stores/storefront-frontend-certificate.json'
+      - 'modules/2.3-ecommerce/2.3.2-stores/storefront-static/**'
 permissions:
   contents: read
   id-token: write
@@ -24,7 +24,7 @@ jobs:
           role-to-assume: arn:aws:iam::277352717693:role/mastererp-dev-storefront-frontend-github-role
           aws-region: us-west-1
       - name: Package index.html
-        run: cp modules/2.4-digital-sales/2.4.2-ecommerce/storefront-static/index.html index.html
+        run: cp modules/2.3-ecommerce/2.3.2-stores/storefront-static/index.html index.html
       - name: Publish to S3 and invalidate CloudFront
         env:
           BUCKET: ${{ vars.STOREFRONT_UONIFY_BUCKET }}

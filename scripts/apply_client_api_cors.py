@@ -1,4 +1,4 @@
-"""Apply storefront Client API CORS from modules/2.4-digital-sales/2.4.2-ecommerce/client-api-cors-dev.json."""
+"""Apply storefront Client API CORS from modules/2.3-ecommerce/2.3.2-stores/client-api-cors-dev.json."""
 import argparse
 import json
 from pathlib import Path
@@ -6,7 +6,7 @@ from pathlib import Path
 import boto3
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "modules/2.4-digital-sales/2.4.2-ecommerce/client-api-cors-dev.json"
+SOURCE = ROOT / "modules/2.3-ecommerce/2.3.2-stores/client-api-cors-dev.json"
 ACCOUNT = "277352717693"
 
 

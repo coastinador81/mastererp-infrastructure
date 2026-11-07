@@ -6,17 +6,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULES = (
-    "2.1-catalog/2.1.1-products",
-    "2.1-catalog/2.1.2-categories",
-    "2.1-catalog/2.1.3-attributes",
-    "2.1-catalog/2.1.4-brands",
-    "2.1-catalog/2.1.5-suppliers",
-    "2.1-catalog/2.1.6-inventory",
-    "2.3-operations/2.3.1-orders",
-    "2.3-operations/2.3.2-preparation",
-    "2.3-operations/2.3.3-routes",
-    "2.3-operations/2.3.4-nodes",
-    "2.4-digital-sales/2.4.2-ecommerce",
+    "2.3-ecommerce/2.3.4-catalog/2.3.4.1-products",
+    "2.3-ecommerce/2.3.4-catalog/2.3.4.2-categories",
+    "2.3-ecommerce/2.3.4-catalog/2.3.4.3-attributes",
+    "2.3-ecommerce/2.3.4-catalog/2.3.4.4-brands",
+    "2.3-ecommerce/2.3.4-catalog/2.3.4.5-suppliers",
+    "2.1-inventory/2.1.1-inventory",
+    "2.3-ecommerce/2.3.1-orders",
+    "2.1-inventory/2.1.3-preparation",
+    "2.10-transport/2.10.5-routes",
+    "2.1-inventory/2.1.2-nodes",
+    "2.3-ecommerce/2.3.2-stores",
     "2.10-transport/2.10.1-drivers",
 )
 
@@ -43,7 +43,7 @@ def main():
                 continue
             routes += 1
             authorization = resource.get("Properties", {}).get("AuthorizationType")
-            public_catalog = relative.endswith("2.4.2-ecommerce") and name == "PublicCatalogRoute"
+            public_catalog = relative.endswith("2.3.2-stores") and name == "PublicCatalogRoute"
             require(authorization == ("NONE" if public_catalog else "JWT"), f"route authorization mismatch: {relative}/{name}")
         require(not any(folder.glob("lambdas/**/resources.yml")), f"nested Lambda template forbidden: {relative}")
     print(f"OK: Phase 5 Infrastructure gates passed for {len(MODULES)} owners and {routes} routes.")

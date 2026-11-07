@@ -1,4 +1,4 @@
-name: Publish agents-dev.uonify.com
+name: Publish agentes-dev.uonify.com
 on:
   workflow_dispatch:
   push:

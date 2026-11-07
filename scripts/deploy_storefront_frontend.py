@@ -12,7 +12,7 @@ ACCOUNT = "277352717693"
 STACK_CERT = "mastererp-dev-storefront-frontend-certificate"
 STACK_HOSTING = "mastererp-dev-storefront-frontend"
 DEFAULT_STOREFRONT_DOMAIN = "tienda-dev.uonify.com"
-TEMPLATE_DIR = ROOT / "modules/2.4-digital-sales/2.4.2-ecommerce"
+TEMPLATE_DIR = ROOT / "modules/2.3-ecommerce/2.3.2-stores"
 
 
 def load_template(name: str) -> dict:
