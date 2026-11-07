@@ -4,6 +4,8 @@ import hashlib
 import json
 from pathlib import Path
 import time
+import struct
+import zipfile
 import boto3
 
 
@@ -21,7 +23,7 @@ def main():
     args = parser.parse_args()
     session = boto3.Session(profile_name="mastererp-admin", region_name="us-west-1")
     assert session.client("sts").get_caller_identity()["Account"] == ACCOUNT
-    cfn, s3, lam = (session.client(name) for name in ("cloudformation", "s3", "lambda"))
+    cfn, s3, lam, api = (session.client(name) for name in ("cloudformation", "s3", "lambda", "apigatewayv2"))
 
     def resources():
         rows = [r for page in cfn.get_paginator("list_stack_resources").paginate(StackName=STACK)
@@ -30,7 +32,14 @@ def main():
 
     def config():
         c = lam.get_function_configuration(FunctionName=FUNCTION)
-        return {key: c.get(key) for key in ("Role", "Runtime", "Handler", "MemorySize", "Timeout", "VpcConfig", "Environment")}
+        return {key: c.get(key) for key in ("Role", "Runtime", "Handler", "MemorySize", "Timeout", "VpcConfig", "Environment", "Architectures")}
+
+    def api_state(api_id, integration_id):
+        integration = api.get_integration(ApiId=api_id, IntegrationId=integration_id)
+        integration.pop("ResponseMetadata", None)
+        routes = [r for page in api.get_paginator("get_routes").paginate(ApiId=api_id) for r in page["Items"]]
+        return {"integration": integration, "routes": sorted(routes, key=lambda r: r["RouteId"]),
+                "cors": api.get_api(ApiId=api_id).get("CorsConfiguration")}
 
     if not args.execute:
         assert args.artifact and args.source_commit and len(args.source_commit) == 40
@@ -38,6 +47,10 @@ def main():
         params = {p["ParameterKey"]: p["ParameterValue"] for p in stack["Parameters"]}
         before = resources()
         assert before["OrdersFunction"] == FUNCTION
+        assert config()["Architectures"] == ["arm64"]
+        with zipfile.ZipFile(args.artifact) as archive:
+            libs = [n for n in archive.namelist() if ".so" in n]
+            assert libs and all(struct.unpack("<H", archive.read(n)[18:20])[0] == 183 for n in libs), "Linux ARM64 binaries required"
         digest = hashlib.sha256(args.artifact.read_bytes()).hexdigest()
         key = f"mastererp/dev/orders-sales/{args.source_commit}/{digest}.zip"
         s3.upload_file(str(args.artifact), params["ArtifactBucket"], key)
@@ -50,6 +63,8 @@ def main():
         plan = {"stack": STACK, "stack_id": stack["StackId"], "change_set": change["Id"],
                 "artifact_sha256": digest, "source_commit": args.source_commit, "artifact_key": key,
                 "old_artifact_key": params["OrdersArtifactKey"], "physical_ids_before": before,
+                "api_id": params["ExistingAdminApiId"],
+                "api_before": api_state(params["ExistingAdminApiId"], before["OrdersIntegration"]),
                 "configuration_sha256": hashlib.sha256(json.dumps(config(), sort_keys=True).encode()).hexdigest()}
         args.plan.parent.mkdir(parents=True, exist_ok=True)
         args.plan.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
@@ -60,17 +75,25 @@ def main():
         assert resources() == plan["physical_ids_before"]
         assert hashlib.sha256(json.dumps(config(), sort_keys=True).encode()).hexdigest() == plan["configuration_sha256"]
     changes = cfn.describe_change_set(ChangeSetName=plan["change_set"])["Changes"]
-    assert len(changes) == 1, "Only OrdersFunction may change"
-    resource = changes[0]["ResourceChange"]
+    by_id = {r["ResourceChange"]["LogicalResourceId"]: r["ResourceChange"] for r in changes}
+    assert set(by_id) <= {"OrdersFunction", "OrdersIntegration"} and "OrdersFunction" in by_id
+    resource = by_id["OrdersFunction"]
     assert resource["LogicalResourceId"] == "OrdersFunction" and resource["Action"] == "Modify"
     assert resource["Replacement"] == "False"
     assert all(d["Target"].get("Name") == "Code" for d in resource.get("Details", []))
-    print(json.dumps({"stack": STACK, "changes": [{k: resource[k] for k in ("LogicalResourceId", "Action", "Replacement")}],
+    if "OrdersIntegration" in by_id:
+        integration = by_id["OrdersIntegration"]
+        assert integration["Action"] == "Modify" and integration["Replacement"] == "False"
+        assert all(d["Evaluation"] == "Dynamic" and d["ChangeSource"] == "ResourceAttribute"
+                   and d["CausingEntity"] == "OrdersFunction.Arn" and d["Target"]["Name"] == "IntegrationUri"
+                   for d in integration["Details"])
+    print(json.dumps({"stack": STACK, "changes": [{k: r[k] for k in ("LogicalResourceId", "Action", "Replacement")} for r in by_id.values()],
                       "source_commit": plan["source_commit"], "artifact_sha256": plan["artifact_sha256"]}))
     if args.execute:
         cfn.execute_change_set(ChangeSetName=plan["change_set"])
         cfn.get_waiter("stack_update_complete").wait(StackName=STACK, WaiterConfig={"Delay": 5, "MaxAttempts": 120})
         assert resources() == plan["physical_ids_before"]
+        assert api_state(plan["api_id"], plan["physical_ids_before"]["OrdersIntegration"]) == plan["api_before"]
         assert hashlib.sha256(json.dumps(config(), sort_keys=True).encode()).hexdigest() == plan["configuration_sha256"]
         actual = lam.get_function_configuration(FunctionName=FUNCTION)
         assert actual["State"] == "Active" and actual["LastUpdateStatus"] == "Successful"

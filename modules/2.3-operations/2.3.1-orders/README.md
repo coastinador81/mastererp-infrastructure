@@ -32,3 +32,8 @@ La descripción inicial de plantilla no desplegada es histórica: la inspección
 El artefacto procede del workflow Validate Orders backend candidate de Platform/dev. Depende de 046+047 de Database, sin SQL ni secretos en este repositorio. 047 acota la confirmación financiera al rol Administradores de Finanzas sin escritura operativa general. API, JWT, CORS, red, roles de ejecución, las otras funciones y sus parámetros permanecen sin cambios.
 
 Estado de esta nota: procedimiento preparado; registrar resultado real del change set y pruebas HTTP antes de afirmar despliegue completado.
+
+
+### Revisión del change set y arquitectura
+
+La inspección real confirma Lambda Python 3.12 ARM64. El artefacto se construye para Linux ARM64 en CI y se comprueba ELF AArch64 de cada binario; el script rechaza un ZIP x86 antes de cargarlo. El primer change set no se ejecutó: incluía la reevaluación dinámica de OrdersIntegration.IntegrationUri por la referencia OrdersFunction.Arn. Se permite únicamente esa dependencia explícita, Modify sin reemplazo; el script bloquea cualquier otro recurso/cambio y compara después el valor real de integración, rutas completas, JWT, CORS, IDs y configuración de Lambda. No hay cambio funcional de la API por esa reevaluación.
