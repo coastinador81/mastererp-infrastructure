@@ -49,6 +49,13 @@ def main():
         assert response.status == 200 and "text/html" in response.headers["Content-Type"]
     text = html.decode("utf-8")
     assert "Centro de Agentes" in text and 'class="finance-app' in text
+    assert '<mastererp-module-launcher current-app="agents">' in text
+    manifest = json.loads((Path(__file__).resolve().parents[1] / "modules/2.6-agent-center/agents-static/shared/module-launcher-manifest.json").read_text())
+    with urllib.request.urlopen("https://" + DOMAIN + "/shared/module-launcher.mjs", timeout=30) as response:
+        assert response.status == 200 and "javascript" in response.headers["Content-Type"]
+        launcher_sha = hashlib.sha256(response.read()).hexdigest()
+    assert launcher_sha == manifest["sha256"]
+    report["shared_launcher_sha256"] = launcher_sha
     report["scope"] = "página estática mínima; UI completa comprobada aparte"
     try:
         urllib.request.build_opener(NoRedirect()).open("http://" + DOMAIN + "/", timeout=30)

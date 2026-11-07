@@ -97,6 +97,8 @@
         border-radius: 999px;
         padding: var(--finance-space-2) var(--finance-space-4);
       }
+      .agents-uonify-landing .header-actions {display:flex;align-items:center;gap:12px;margin-left:auto}
+      @media(max-width:600px){.agents-uonify-landing .integrated-header{flex-wrap:nowrap;gap:12px;padding:12px 16px}.agents-uonify-landing .env-pill{display:none}.agents-uonify-landing .brand{font-size:20px}}
       .agents-uonify-landing .integrated-layout {
         display: grid;
         grid-template-columns: var(--finance-nav-width) minmax(0, 1fr);
@@ -237,7 +239,7 @@
           <span>MasterERP · Uonify</span>
         </p>
       </div>
-      <span class="env-pill">Vista previa</span>
+      <div class="header-actions"><mastererp-module-launcher current-app="agents"></mastererp-module-launcher><span class="env-pill">Vista previa</span></div>
     </header>
     <div class="integrated-layout">
       <nav class="integrated-nav" aria-label="Secciones">
@@ -273,10 +275,11 @@
           </div>
         </div>
         <p class="notice" role="status">
-          Interfaz de aterrizaje estática. El producto completo se integrará en Uonify y en los módulos
-          2.6.x según el registro de plataforma.
+          Interfaz de aterrizaje estática. Las capacidades de agentes siguen pendientes; puedes abrir
+          las otras aplicaciones disponibles desde el lanzador superior.
         </p>
       </main>
     </div>
+    <script type="module" src="/shared/module-launcher.mjs"></script>
   </body>
 </html>

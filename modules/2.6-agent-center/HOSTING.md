@@ -66,3 +66,9 @@ Comprueba **https://agentes-dev.uonify.com**, TLS, redirección HTTP→HTTPS, cl
 ## Cambio de dominio DEV a español
 
 Se sustituye el hostname anterior por agentes-dev.uonify.com sobre los mismos stacks, bucket y distribución. El certificado se reemplaza en us-east-1 y usa UpdateReplacePolicy Retain para no bloquear su actualización mientras el certificado anterior esté asociado a CloudFront. Después se actualizan el alias y los registros A/AAAA en us-west-1; solo estos registros DNS pueden requerir reemplazo por cambio de nombre. Revisar ambos change sets. El certificado anterior se limpia únicamente cuando ya no tenga InUseBy; no se cambia identidad, API, RDS ni otra aplicación.
+
+## Publicación del lanzador compartido
+
+La landing carga `/shared/module-launcher.mjs` desde su propio origen. El workflow verifica el SHA-256 del manifiesto generado, publica el JavaScript antes de index.html y luego invalida ambas rutas. El objeto usa Content-Type `text/javascript; charset=utf-8` y caché revalidable. No requiere nuevas credenciales, permisos IAM, DNS, certificados ni stacks.
+
+En una publicación manual autorizada, subir también `modules/2.6-agent-center/agents-static/shared/module-launcher.mjs` a `s3://<bucket-existente>/shared/module-launcher.mjs` con los mismos headers e incluir `/shared/module-launcher.mjs` en la invalidación. No descargar la implementación desde otro dominio en runtime. Las próximas actualizaciones se sincronizan desde la fuente oficial de Platform y se revisan en ambos repositorios.

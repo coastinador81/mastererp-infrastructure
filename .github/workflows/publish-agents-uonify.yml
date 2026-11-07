@@ -25,6 +25,16 @@ jobs:
           aws-region: us-west-1
       - name: Package index.html (tema alineado con Finanzas)
         run: cp modules/2.6-agent-center/agents-static/landing.html index.html
+      - name: Verify generated shared launcher asset
+        run: |
+          python3 - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          folder = Path('modules/2.6-agent-center/agents-static/shared')
+          manifest = json.loads((folder / 'module-launcher-manifest.json').read_text())
+          assert manifest['generated'] is True
+          assert hashlib.sha256((folder / 'module-launcher.mjs').read_bytes()).hexdigest() == manifest['sha256']
+          PY
       - name: Publish to S3 and invalidate CloudFront
         env:
           BUCKET: ${{ vars.AGENTS_UONIFY_BUCKET }}
@@ -33,6 +43,7 @@ jobs:
           set -euo pipefail
           test -n "${BUCKET:-}" && test -n "${DISTRIBUTION:-}"
           test "$(aws sts get-caller-identity --query Account --output text)" = 277352717693
+          aws s3 cp modules/2.6-agent-center/agents-static/shared/module-launcher.mjs "s3://$BUCKET/shared/module-launcher.mjs" --content-type 'text/javascript; charset=utf-8' --cache-control 'no-cache,max-age=0,must-revalidate'
           aws s3 cp index.html "s3://$BUCKET/index.html" --content-type 'text/html; charset=utf-8' --cache-control 'no-cache,max-age=0,must-revalidate'
-          invalidation=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" --paths / /index.html --query Invalidation.Id --output text)
+          invalidation=$(aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION" --paths / /index.html /shared/module-launcher.mjs --query Invalidation.Id --output text)
           aws cloudfront wait invalidation-completed --distribution-id "$DISTRIBUTION" --id "$invalidation"
