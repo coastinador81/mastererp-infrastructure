@@ -118,8 +118,12 @@ Resources:
       AllowedOAuthFlowsUserPoolClient: true
       AllowedOAuthFlows: [code]
       AllowedOAuthScopes: [openid, email, profile]
-      CallbackURLs: ['https://tienda-dev.tumandaito.com/auth/callback']
-      LogoutURLs: ['https://tienda-dev.tumandaito.com/']
+      CallbackURLs:
+        - https://tienda-dev.tumandaito.com/auth/callback
+        - https://tienda-dev.uonify.com/auth/callback
+      LogoutURLs:
+        - https://tienda-dev.tumandaito.com/
+        - https://tienda-dev.uonify.com/
       AccessTokenValidity: 15
       IdTokenValidity: 15
       RefreshTokenValidity: 1
