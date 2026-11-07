@@ -1,0 +1,20 @@
+{
+  "ApiId": "btqqku792c",
+  "StackOwner": "mastererp-dev-http-apis",
+  "CorsConfiguration": {
+    "AllowHeaders": [
+      "authorization",
+      "content-type",
+      "idempotency-key",
+      "x-correlation-id",
+      "x-tenant-id"
+    ],
+    "AllowMethods": ["GET", "POST", "PATCH", "OPTIONS"],
+    "AllowOrigins": [
+      "https://portal.dev.mastererp.local",
+      "https://tienda-dev.tumandaito.com",
+      "https://tienda-dev.uonify.com"
+    ],
+    "MaxAge": 300
+  }
+}

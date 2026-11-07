@@ -31,6 +31,17 @@ aws s3 cp modules/2.4-digital-sales/2.4.2-ecommerce/storefront-static/index.html
 aws cloudfront create-invalidation --distribution-id $DIST --paths "/ /index.html" --profile mastererp-admin
 ```
 
+## CORS Client API (`btqqku792c`)
+
+El stack propietario es `mastererp-dev-http-apis`. Tras cambiar dominios de storefront,
+aplicar `modules/2.4-digital-sales/2.4.2-ecommerce/client-api-cors-dev.json`:
+
+```powershell
+python scripts/apply_client_api_cors.py --profile mastererp-admin
+```
+
+## Publicación
+
 Variables GitHub (repositorio **mastererp-platform**, rama `dev`):
 
 - `STOREFRONT_UONIFY_BUCKET`, `STOREFRONT_UONIFY_DISTRIBUTION_ID` (outputs del stack)
