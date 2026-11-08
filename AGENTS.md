@@ -47,6 +47,13 @@ Las IA pueden resolver decisiones técnicas dentro de los estándares y contrato
 
 No instalar herramientas, publicar ni desplegar por una tarea documental. Respetar contratos y alcance; no inventar recursos o pruebas aprobadas. Preguntar solo cuando la ambigüedad cambie contratos, propiedad o arquitectura; continuar comprobaciones independientes. Verificar implementación real y comunicar validaciones omitidas.
 
+
+## Propiedad obligatoria de frontend e infraestructura
+
+El **código fuente editable** de toda interfaz pertenece exclusivamente a `mastererp-platform/frontend/modules/<módulo>/`. Infrastructure solo es propietaria de recursos AWS y de la operación de publicación —por ejemplo S3, CloudFront, Route 53, ACM, IAM/OIDC y pipelines—; no debe contener ni aceptar copias editables de HTML, CSS, JavaScript, assets o builds de los frontends.
+
+Antes de modificar una interfaz, un workflow o hosting, los agentes deben informar al desarrollador de: **repositorio propietario, módulo funcional, recurso afectado y si la acción cambia código, infraestructura o ambos**. Un cambio de hosting no autoriza a editar la interfaz; un cambio de interfaz no autoriza a modificar DNS, permisos, AWS ni desplegar. Si una tarea necesita ambos, se coordina por separado y se conserva una única fuente de código en Platform.
+
 <!-- ux-ui-standard:start -->
 ## Lectura obligatoria de UX/UI
 
