@@ -13,7 +13,7 @@ El dominio `https://agentes-dev.uonify.com` sirve el artefacto generado desde `m
 | `agents-frontend-certificate.json` | `mastererp-dev-agents-frontend-certificate` | **us-east-1** (ACM para CloudFront) |
 | `agents-frontend-hosting.json` | `mastererp-dev-agents-frontend` | **us-west-1** (S3, CloudFront, Route53, OIDC) |
 
-Recursos del hosting: bucket versionado y cifrado, OAC SigV4, distribución con alias **agentes-dev.uonify.com**, política de bucket restringida al ARN de la distribución, registros DNS **A** y **AAAA** en la zona `Z08167243FAUSDUW0Z2KP`, rol IAM **mastererp-dev-agents-frontend-github-role** para publicación OIDC. El `sub` del trust debe coincidir con el [sujeto inmutable](https://docs.github.com/en/actions/deployment/security/hardening-your-deployments/about-security-hardening-with-openid-connect) de este repositorio, p. ej. `repo:eticayservicios@144081289/mastererp-infrastructure@1434968384:ref:refs/heads/dev` (ver `gh api repos/.../actions/oidc/customization/sub`).
+Recursos del hosting: bucket versionado y cifrado, OAC SigV4, distribución con alias **agentes-dev.uonify.com**, política de bucket restringida al ARN de la distribución, registros DNS **A** y **AAAA** en la zona `Z08167243FAUSDUW0Z2KP`, rol IAM **mastererp-dev-agents-frontend-github-role** para publicación OIDC. El trust OIDC del rol se limita a `repo:eticayservicios/mastererp-platform:ref:refs/heads/dev`; Platform es quien publica el frontend.
 
 ## Desplegar infraestructura
 
@@ -37,21 +37,9 @@ En **CREATE** inicial sustituir `stack-update-complete` por `stack-create-comple
 
 Si cambias solo el **dominio** del certificado y el stack de certificado queda en `UPDATE_COMPLETE_CLEANUP_IN_PROGRESS` con errores al borrar el certificado antiguo («Certificate … is in use»), aplica primero la **actualización del stack de hosting** con el nuevo `FrontendCertificateArn` (como arriba) para que CloudFront suelte el certificado anterior; después el stack de certificado debería completar la limpieza.
 
-## Publicación automática (GitHub Actions)
+## Publicación desde Platform
 
-1. Variables `AGENTS_UONIFY_BUCKET` y `AGENTS_UONIFY_DISTRIBUTION_ID` (outputs del stack de hosting).
-2. Workflow **Publish agentes-dev.uonify.com**: push a `dev` o `workflow_dispatch`.
-
-Si el certificado o el alias cambian de dominio, reaplicar certificado + hosting antes de invalidar.
-
-## Publicación manual (alternativa)
-
-```powershell
-$BUCKET = <FrontendBucketName del output>
-$DIST = <FrontendDistributionId del output>
-aws s3 cp modules/2.6-agent-center/agents-static/landing.html "s3://$BUCKET/index.html" --content-type "text/html; charset=utf-8" --cache-control "no-cache,max-age=0,must-revalidate" --profile mastererp-admin --region us-west-1
-aws cloudfront create-invalidation --distribution-id $DIST --paths "/ /index.html" --profile mastererp-admin
-```
+El workflow de publicación vive en `mastererp-platform/.github/workflows/publish-agents-uonify.yml`. Usa las variables `AGENTS_UONIFY_BUCKET` y `AGENTS_UONIFY_DISTRIBUTION_ID` del repositorio Platform y publica el artefacto generado desde el módulo 2.6. No ejecutar publicaciones manuales desde Infrastructure ni restaurar una copia local de la interfaz.
 
 ## Verificación
 
