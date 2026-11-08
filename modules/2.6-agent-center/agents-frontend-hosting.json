@@ -192,7 +192,7 @@
               "Condition": {
                 "StringEquals": {
                   "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-                  "token.actions.githubusercontent.com:sub": "repo:eticayservicios@144081289/mastererp-infrastructure@1434968384:ref:refs/heads/dev"
+                  "token.actions.githubusercontent.com:sub": "repo:eticayservicios:mastererp-platform:ref:refs/heads/dev"
                 }
               }
             }
