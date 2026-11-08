@@ -1,0 +1,14 @@
+# Uonify DEV · /etc/apt/sources.list.d/ubuntu.sources (instalado por bootstrap.sh)
+# Solo HTTPS: el security group no permite salida al puerto 80, y el espejo por defecto de EC2
+# (http://eu-west-1.ec2.ports.ubuntu.com) no sirve HTTPS. arm64 usa ubuntu-ports.
+Types: deb
+URIs: https://ports.ubuntu.com/ubuntu-ports/
+Suites: noble noble-updates noble-backports
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+Types: deb
+URIs: https://ports.ubuntu.com/ubuntu-ports/
+Suites: noble-security
+Components: main restricted universe multiverse
+Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg

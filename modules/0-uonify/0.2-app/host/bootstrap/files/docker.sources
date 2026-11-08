@@ -1,0 +1,8 @@
+# Uonify DEV · /etc/apt/sources.list.d/docker.sources (instalado por bootstrap.sh)
+# Repositorio oficial de Docker CE por HTTPS; la clave se comprueba por huella antes de instalarla.
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: noble
+Components: stable
+Architectures: arm64
+Signed-By: /etc/apt/keyrings/docker.asc

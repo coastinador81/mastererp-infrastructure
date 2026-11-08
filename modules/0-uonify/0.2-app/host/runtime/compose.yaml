@@ -1,0 +1,438 @@
+# Uonify DEV runtime on the EC2 host of stack uonify-dev-backend (eu-west-1). It serves
+# https://dev.uonify.com/api/* (and the voice WebSocket) behind CloudFront, origin
+# origin-dev.uonify.com. Decision D-DEV-HOSTING-20261107. Database starts EMPTY.
+#
+# Install (host bootstrap): this folder WITHOUT validate-local.sh (workstation only) goes to the
+# stable path /opt/uonify/runtime, never to a versioned bundle folder: ./nginx.conf and
+# ./nginx-entrypoint.sh are bind sources (create_host_path false), so a removed folder stops nginx
+# at its next restart. Owner root:root, mode 0644/0755 or the bundle's 0640/0750. The nginx master
+# is root WITHOUT CAP_DAC_OVERRIDE: a file of another owner with owner-only bits (e.g. 1000:1000
+# 0600) stops it ("can't open '/opt/uonify/nginx-entrypoint.sh': Permission denied").
+# /etc/uonify/compose.env: root:root 0600, made once from compose.env.example (no secrets, it
+# holds the image digests); a re-install never overwrites it.
+#
+# Commands (root on the host; every docker compose command needs the env file):
+#   docker compose -f /opt/uonify/runtime/compose.yaml --env-file /etc/uonify/compose.env up -d
+#   docker compose -f /opt/uonify/runtime/compose.yaml --env-file /etc/uonify/compose.env \
+#       --profile armed up -d clips-worker
+# clips-worker (the clip engine) lives in profile "armed": start it only once its pilot lists
+# exist in /run/uonify, and pass --profile armed to stop/down while it runs.
+# After replacing nginx.conf or nginx-entrypoint.sh: same command with up -d --force-recreate nginx
+# (a bind-mounted file replaced on the host stays the old one inside the running container).
+#
+# Host contract, ready BEFORE docker.service starts (secrets: uonify-secrets-sync from SSM; the
+# rest: bootstrap.sh). The three secret dirs are tmpfs, 0711 root:root (enter, never list).
+#   /run/uonify/                      backend secret files, same names as on the Mac, each
+#                                     1000:1000 0400 (1000 = user of api and workers; they open them
+#                                     by name). DEV set: google-oauth.json (new DEV OAuth client),
+#                                     encryption-key (new), postgres-password (new), stripe-test-key,
+#                                     stripe-test-publishable-key, stripe-test-vat21 (0 bytes),
+#                                     optional creative-clips-only-rate-snapshots.json. Pilot lists
+#                                     only after the owner's first login (his new UUID). Never
+#                                     jev-api-key, amazon-* or semantic-model-pilot.json.
+#   /run/uonify-db/postgres-password  the same password, 70:0 0440 (70 = postgres; the entrypoint
+#                                     reads it as root before dropping to 70).
+#   /run/uonify-edge/origin-verify    value(s) of the X-Origin-Verify origin custom header set in
+#                                     CloudFront: 1 line (2 while rotating), [A-Za-z0-9_-]{32,256},
+#                                     0:0 0400. nginx-entrypoint.sh renders it at container start;
+#                                     uonify-secrets-sync restarts nginx when it changes.
+#   /data                             the encrypted 30 GiB data volume (found by its EBS volume id,
+#                                     never by device order), mounted before docker.service starts.
+#   /data/postgres                    70:70 0700.
+#   /data/redis                       999:999 0700 (redis runs as 999 from the first instruction).
+#   /etc/letsencrypt/{live,archive}/origin-dev.uonify.com
+#                                     certbot (DNS-01, RSA 2048). Its deploy hook (uonify-cert-deploy)
+#                                     sends HUP to the nginx container, found by its compose labels.
+# Bind mounts use create_host_path: false: a missing secret or an unmounted /data stops the
+# container instead of starting it on an empty directory of the root volume.
+#
+# Checks from the host (root, by SSM), also before CloudFront exists. The X-Origin-Verify value
+# must never reach a process argument list (ps, /proc/<pid>/cmdline) or a trace: read and printf
+# are shell builtins (sh/dash/bash) and curl takes the header from stdin (-H @-). Never run these
+# under set -x / sh -x. --resolve keeps SNI and Host = origin-dev.uonify.com, so curl also
+# verifies the real certificate (no -k).
+#   curl -sS -o /dev/null -w '%{http_code}\n' --resolve origin-dev.uonify.com:443:127.0.0.1 \
+#       https://origin-dev.uonify.com/api/health                                  # 403: gate shut
+#   IFS= read -r v < /run/uonify-edge/origin-verify; printf 'X-Origin-Verify: %s\n' "$v" \
+#     | curl -sS -o /dev/null -w '%{http_code}\n' -H @- \
+#       --resolve origin-dev.uonify.com:443:127.0.0.1 https://origin-dev.uonify.com/api/health; \
+#     unset v                                                                     # 200: api up
+#
+# Hardening per service is the one that runs today on the Mac (docker inspect, 07-11) plus the
+# fixes of the two plan reviews. UONIFY_ADMIN_DEV_SIMPLE_LOGIN must never be added here.
+
+name: uonify-dev
+
+# Fixed subnet of the edge network (nginx <-> api only). FORWARDED_ALLOW_IPS of the api is this
+# exact CIDR, so uvicorn trusts X-Forwarded-For/Proto only from nginx.
+x-edge-cidr: &edge_cidr 172.29.10.0/28
+
+x-logging-api: &logging-api
+  driver: awslogs
+  options:
+    awslogs-region: eu-west-1
+    awslogs-group: /uonify/dev/api
+    awslogs-create-group: "false"
+    mode: non-blocking
+    max-buffer-size: 8m
+    tag: "{{.Name}}/{{.ID}}"
+
+x-logging-workers: &logging-workers
+  driver: awslogs
+  options:
+    awslogs-region: eu-west-1
+    awslogs-group: /uonify/dev/workers
+    awslogs-create-group: "false"
+    mode: non-blocking
+    max-buffer-size: 4m
+    tag: "{{.Name}}/{{.ID}}"
+
+x-logging-nginx: &logging-nginx
+  driver: awslogs
+  options:
+    awslogs-region: eu-west-1
+    awslogs-group: /uonify/dev/nginx
+    awslogs-create-group: "false"
+    mode: non-blocking
+    max-buffer-size: 4m
+    tag: "{{.Name}}/{{.ID}}"
+
+# api and workers: same profile as the read-only api that ran on the Mac (overlay-stale) and the
+# workers re-armed on 07-11: uid 1000, read-only root, no capabilities, no-new-privileges, secrets
+# read-only. Every one of them adds its own tmpfs /tmp (>= 64m).
+x-backend: &backend
+  platform: linux/arm64
+  user: "1000:1000"
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  restart: unless-stopped
+  stop_grace_period: 30s
+  volumes:
+    - type: bind
+      source: /run/uonify
+      target: /run/uonify
+      read_only: true
+      bind:
+        create_host_path: false
+
+# Variables of every backend process. UONIFY_ORIGIN is the only value the sealed overlay accepts
+# besides the local one; the overlay forces the admin simple login off on this origin anyway.
+x-env-common: &env-common
+  UONIFY_ORIGIN: https://dev.uonify.com
+  UONIFY_TEST_DAILY_REQUEST_LIMIT: "50"
+  UONIFY_TEST_PROJECT_IDS: ${UONIFY_TEST_PROJECT_IDS?define UONIFY_TEST_PROJECT_IDS in the env file (empty until the owner has a DEV project)}
+  UONIFY_CREATIVE_OUTPUT_BUCKETS: ${UONIFY_CREATIVE_OUTPUT_BUCKETS?define UONIFY_CREATIVE_OUTPUT_BUCKETS in the env file (empty keeps the engine fail-closed)}
+  UONIFY_CREATIVE_OUTPUT_LOCATION: ${UONIFY_CREATIVE_OUTPUT_LOCATION?define UONIFY_CREATIVE_OUTPUT_LOCATION in the env file (empty keeps the engine fail-closed)}
+
+# Same set as the Mac api/conversation/materials/billing containers (minus the admin flag).
+x-env-session: &env-session
+  <<: *env-common
+  UONIFY_SESSION_REDIS_URL: redis://redis:6379/0
+  UONIFY_CONVERSATION_ACTIVE_LIMIT: "256"
+
+services:
+  db:
+    image: docker.io/library/postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
+    platform: linux/arm64
+    # terse + no statement text: Postgres errors never copy row values (DETAIL) or SQL into
+    # CloudWatch (personal data; the AWS account is shared).
+    command: ["postgres", "-c", "log_error_verbosity=terse", "-c", "log_min_error_statement=panic"]
+    environment:
+      POSTGRES_USER: uonify
+      POSTGRES_DB: uonify
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    read_only: true
+    cap_drop: [ALL]
+    # Only what the entrypoint needs as root: find/chown/chmod over PGDATA (70:70 0700, hence
+    # DAC_OVERRIDE) and the socket dir, and gosu to drop to uid 70. It reads the password file
+    # (70:0 0440) as root, before the drop.
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /var/run/postgresql:size=1m
+      - /tmp:size=64m
+    shm_size: 128mb
+    volumes:
+      - type: bind
+        source: /data/postgres
+        target: /var/lib/postgresql/data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /run/uonify-db/postgres-password
+        target: /run/secrets/postgres-password
+        read_only: true
+        bind:
+          create_host_path: false
+    networks: [private]
+    healthcheck:
+      # Over TCP: during the first init the temporary server only listens on the socket, so the
+      # api never sees "healthy" before the real server accepts network connections.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U uonify -d uonify"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 120s
+      start_interval: 2s
+    restart: unless-stopped
+    stop_grace_period: 60s
+    logging: *logging-workers
+
+  redis:
+    image: docker.io/library/redis:7.4.7-alpine@sha256:02f2cc4882f8bf87c79a220ac958f58c700bdec0dfb9b9ea61b62fb0e8f1bfcf
+    platform: linux/arm64
+    user: "999:999"
+    command: ["redis-server", "--appendonly", "yes", "--appendfsync", "everysec",
+      "--save", "60 1", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=16m
+    volumes:
+      - type: bind
+        source: /data/redis
+        target: /data
+        bind:
+          create_host_path: false
+    networks: [private]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+      start_interval: 2s
+    restart: unless-stopped
+    logging: *logging-workers
+
+  mailpit:
+    image: docker.io/axllent/mailpit:v1.27.4@sha256:df6c2541907e1be6fac21f509927cf6ed771617a1f4b361ef66d97bd05593d2d
+    platform: linux/arm64
+    # Runs as nobody (checked read-only and healthy on 07-11; on the Mac it runs as root without
+    # capabilities). Its healthcheck (/mailpit readyz) comes from the image.
+    user: "65534:65534"
+    environment:
+      MP_QUIET: "true"                  # errors only: no recipient addresses in CloudWatch
+      MP_DISABLE_VERSION_CHECK: "true"
+      MP_MAX_MESSAGES: "500"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=64m                   # temporary message store, lost on restart
+    # Web UI only on the host loopback: admin codes are read through an SSM port-forward to
+    # 127.0.0.1:8025. SMTP 1025 is only reachable on the private network (api, billing-worker).
+    ports:
+      - "127.0.0.1:8025:8025"
+    networks: [private, mailpit-ui]
+    restart: unless-stopped
+    logging: *logging-workers
+
+  api:
+    <<: *backend
+    image: 277352717693.dkr.ecr.eu-west-1.amazonaws.com/uonify-dev/api@${API_DIGEST:?set API_DIGEST (sha256 of uonify-dev-api:devorigin-20261107 in ECR)}
+    command: ["python", "-m", "app.run"]
+    environment:
+      <<: *env-session
+      FORWARDED_ALLOW_IPS: *edge_cidr
+    tmpfs:
+      - /tmp:size=256m                  # multipart uploads of up to 20 MiB spill to /tmp
+    networks:
+      private: {}
+      outbound:
+        gw_priority: 10                 # default route through outbound, not through edge
+      edge: {}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 180s                # first boot applies every migration on the empty DB
+      start_interval: 3s
+    logging: *logging-api
+
+  conversation-worker:
+    <<: *backend
+    image: 277352717693.dkr.ecr.eu-west-1.amazonaws.com/uonify-dev/conv@${CONV_DIGEST:?set CONV_DIGEST (sha256 of uonify-dev-conv:devorigin-20261107 in ECR)}
+    # The image CMD is app.run; the worker command is set explicitly, as on the Mac.
+    command: ["python", "-m", "app.run_conversation_worker"]
+    environment: *env-session
+    # On the Mac this worker still runs with a writable root. For uid 1000 the only writable
+    # paths there were /tmp, /var/tmp and /run/lock, so these three tmpfs keep the same behaviour.
+    tmpfs:
+      - /tmp:size=256m                  # document readers spool Drive files here
+      - /var/tmp:size=16m
+      - /run/lock:size=1m
+    init: true                          # reaps the reader/OCR child processes
+    mem_limit: 2g
+    networks: [private, outbound]
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_healthy      # the api applies the migrations first
+    logging: *logging-workers
+
+  materials-worker:
+    <<: *backend
+    image: 277352717693.dkr.ecr.eu-west-1.amazonaws.com/uonify-dev/api@${API_DIGEST:?set API_DIGEST (sha256 of uonify-dev-api:devorigin-20261107 in ECR)}
+    command: ["python", "-m", "app.run_material_worker"]
+    # No UONIFY_NATIVE_SPOOL: the Blender reader of the Mac does not exist here, so .blend
+    # sources fail closed with their own message ("El lector Blender local no está disponible").
+    environment: *env-session
+    tmpfs:
+      - /tmp:size=512m                  # reader input (<= 64 MiB) and OCR work files
+    init: true                          # reaps the reader/OCR child processes
+    mem_limit: 2g
+    networks: [private, outbound]
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    logging: *logging-workers
+
+  billing-worker:
+    <<: *backend
+    image: 277352717693.dkr.ecr.eu-west-1.amazonaws.com/uonify-dev/api@${API_DIGEST:?set API_DIGEST (sha256 of uonify-dev-api:devorigin-20261107 in ECR)}
+    command: ["python", "-m", "app.billing_worker"]
+    # Reminder links are built from UONIFY_ORIGIN; mail goes to mailpit:1025 (fixed in the code).
+    environment: *env-session
+    tmpfs:
+      - /tmp:size=64m
+    networks: [private, outbound]
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    logging: *logging-workers
+
+  clips-worker:
+    <<: *backend
+    profiles: ["armed"]
+    image: 277352717693.dkr.ecr.eu-west-1.amazonaws.com/uonify-dev/clips@${CLIPS_DIGEST:?set CLIPS_DIGEST (sha256 of uonify-dev-clips:devorigin-20261107 in ECR)}
+    command: ["python", "-m", "app.run_clips_only_worker"]
+    # Same variables as the Mac clips-only-worker, plus the DEV origin.
+    environment: *env-common
+    tmpfs:
+      - /tmp:size=64m
+    networks: [private, outbound]
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        condition: service_healthy
+    logging: *logging-workers
+
+  nginx:
+    image: docker.io/library/nginx:1.30.6-alpine@sha256:583b7f2fce1cdb8da5ad5c39ebd3c33b98b87d493190e548bdee1fa8c619c311
+    platform: linux/arm64
+    # Renders the accepted X-Origin-Verify value(s) into the tmpfs, then execs nginx.
+    entrypoint: ["/bin/sh", "/opt/uonify/nginx-entrypoint.sh"]
+    command: ["nginx", "-g", "daemon off;"]
+    read_only: true
+    cap_drop: [ALL]
+    # Master as root only to read the certificate key and the rendered map; CHOWN for the temp
+    # dirs it creates for the workers, SETUID/SETGID to start the workers as nginx (uid 101).
+    # It listens on 8443, so NET_BIND_SERVICE is not needed.
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /run:size=1m                    # nginx.pid and the rendered origin-verify map
+      - /var/cache/nginx:size=128m      # client_body_temp: request bodies up to 20 MiB
+      - /tmp:size=16m
+    volumes:
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx-entrypoint.sh
+        target: /opt/uonify/nginx-entrypoint.sh
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /run/uonify-edge/origin-verify
+        target: /run/secrets/origin-verify
+        read_only: true
+        bind:
+          create_host_path: false
+      # Only this certificate (live/ holds relative symlinks into archive/); never the ACME
+      # account key under /etc/letsencrypt/accounts.
+      - type: bind
+        source: /etc/letsencrypt/live/origin-dev.uonify.com
+        target: /etc/letsencrypt/live/origin-dev.uonify.com
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /etc/letsencrypt/archive/origin-dev.uonify.com
+        target: /etc/letsencrypt/archive/origin-dev.uonify.com
+        read_only: true
+        bind:
+          create_host_path: false
+    # 443 on the host; the security group only lets the CloudFront origin-facing prefix list in.
+    ports:
+      - "443:8443"
+    networks: [edge]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8081/nginx-health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+      start_interval: 2s
+    restart: unless-stopped
+    stop_grace_period: 15s
+    logging: *logging-nginx
+
+networks:
+  # db, redis, mailpit (SMTP), api and workers. No route out of the host.
+  private:
+    internal: true
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-uny-private
+    ipam:
+      config:
+        - subnet: 172.29.20.0/24
+  # Egress of api and workers (Google APIs, Stripe). The security group allows only 443/587 out.
+  outbound:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-uny-outbound
+    ipam:
+      config:
+        - subnet: 172.29.30.0/24
+  # nginx <-> api only; carries the published 443 of nginx.
+  edge:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-uny-edge
+    ipam:
+      config:
+        - subnet: *edge_cidr
+  # Only mailpit: publishes its UI on the host loopback (an internal network cannot publish) and
+  # will carry the SES relay on 587 in step 17.
+  mailpit-ui:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-uny-mailui
+    ipam:
+      config:
+        - subnet: 172.29.40.0/29

@@ -1,0 +1,32 @@
+{
+  "Statement": [
+    {
+      "Effect": "Deny",
+      "Action": [
+        "Update:Replace",
+        "Update:Delete"
+      ],
+      "Principal": "*",
+      "Resource": [
+        "LogicalResourceId/HostInstance",
+        "LogicalResourceId/DataVolume",
+        "LogicalResourceId/DataKey",
+        "LogicalResourceId/DataKeyAlias",
+        "LogicalResourceId/BackupBucket",
+        "LogicalResourceId/HostEip",
+        "LogicalResourceId/DataVolumeAttachment",
+        "LogicalResourceId/DataVolumeSnapshotPolicy",
+        "LogicalResourceId/BackupBucketPolicy",
+        "LogicalResourceId/HostSecurityGroup",
+        "LogicalResourceId/PublicSubnet",
+        "LogicalResourceId/Vpc"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": "Update:*",
+      "Principal": "*",
+      "Resource": "*"
+    }
+  ]
+}
