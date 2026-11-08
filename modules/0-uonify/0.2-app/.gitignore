@@ -10,3 +10,50 @@ out-*.txt
 # Temporales
 tmp/
 *.log
+
+# modules/0-uonify/0.2-app · infraestructura del DEV de Uonify.
+# El .gitignore de la raíz del repo solo excluye build/ y __pycache__. Este no sustituye a la revisión
+# ni al escaneo de secretos antes de cada push (README de modules/0-uonify, sección 8).
+# Configuración real y secretos, también los que lee upload_dev_secrets.sh (--local-dir, --extra-file).
+# Solo se suben *.example con valores falsos: su excepción va en la última línea.
+.env*
+compose.env*
+.local/
+client_secret*.json
+google-oauth.json
+encryption-key
+postgres-password
+stripe-test-*
+stripe-webhook-secret
+amazon-client-secret
+amazon-config.json
+jev-api-key
+semantic-model-pilot.json
+creative-clips-only-rate-snapshots.json
+.pgpass
+pgpass
+origin-verify
+*.pfx
+# Red de seguridad: copias reales de CloudFront (llevan X-Origin-Verify en claro).
+# edge/ vive en platform frontend/modules/0-uonify/0.2-app desde el 08-11-2026.
+E4N1UCPZZ2F0-*.json
+vuelta-atras/
+# Paquete generado del host
+# Salidas de verificación y restos de pruebas
+*-out.txt
+verif-*/
+resumen-revision*.json
+.run-*/
+# Listas piloto (llevan UUID de usuarios) y volcados y copias de la base (uonify-pg-backup.sh)
+pilotos-*/
+*-pilot-users.json
+live-*-users.json
+*.dump
+*.pgdump
+*.roles.sql
+*.manifest
+# Locales
+node_modules/
+.DS_Store
+# Plantillas con valores falsos: siempre se suben. Va la última para que ningún patrón anterior la pise.
+!*.example
