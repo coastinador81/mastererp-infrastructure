@@ -1,6 +1,3 @@
-# Copias reales de CloudFront (llevan el secreto de origen) y temporales de pruebas
-edge/backups/
-edge/test/tmp/
 # Paquetes generados del host y salidas de verificación
 host/bootstrap/dist/
 out-*.txt
