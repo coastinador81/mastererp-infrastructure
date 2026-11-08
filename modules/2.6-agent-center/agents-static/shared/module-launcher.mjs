@@ -80,3 +80,35 @@ if(typeof window!=='undefined'&&!window.customElements.get('mastererp-module-lau
  }
  window.customElements.define('mastererp-module-launcher',ModuleLauncher);
 }
+
+
+// Related navigation uses the same fixed catalogue/icons as the nine-dot launcher.
+const railStyles=`
+ :host{display:block;font-family:Inter,system-ui,sans-serif;color:#4b5563}*{box-sizing:border-box}
+ nav{display:flex;flex-direction:column;align-items:center;gap:14px;padding:20px 4px;background:#f6f8fc}
+ .service{display:flex;flex-direction:column;align-items:center;gap:6px;width:64px;padding:8px 2px;color:#667085;text-decoration:none;border-radius:12px;font-size:10px;line-height:1.4;text-align:center;font-weight:400}
+ .icon{display:grid;place-items:center;width:44px;height:40px;border-radius:13px;color:#667085}.icon svg{width:23px;height:23px}
+ a:hover .icon{background:#eaf1fa;color:#2563b8}.current .icon{background:#dceeff;color:#096bdc}.current{color:#096bdc}
+ a:focus-visible{outline:2px solid #2563eb;outline-offset:1px}.service span:last-child{max-width:60px;overflow-wrap:anywhere}
+ @media(max-width:800px){nav{flex-direction:row;justify-content:center;gap:8px;padding:5px 8px;min-height:72px}.service{padding:3px 2px;gap:2px}.icon{height:36px}}
+`;
+if(typeof window!=='undefined'&&!window.customElements.get('mastererp-related-services')){
+ class RelatedServices extends HTMLElement{
+  static observedAttributes=['current-app','related-apps'];
+  constructor(){super();this.attachShadow({mode:'open'});}
+  connectedCallback(){this.render();}
+  attributeChangedCallback(){if(this.isConnected)this.render();}
+  render(){
+   const current=this.getAttribute('current-app');
+   const ids=(this.getAttribute('related-apps')||'uonify,ecommerce,finance,inventory').split(',');
+   const modules=[...new Set(ids)].map(id=>MODULES.find(module=>module.id===id)).filter(module=>module?.href);
+   // Attribute values only select catalogue entries; never interpolate user HTML.
+   this.shadowRoot.innerHTML=`<style>${railStyles}</style><nav aria-label="Servicios relacionados">${modules.map(module=>{
+    const active=module.id===current,label=module.id==='uonify'?'Chat':module.name;
+    const content=`<span class="icon">${svg(module.icon)}</span><span>${label}</span>`;
+    return active?`<span class="service current" aria-current="page" aria-label="${module.name}, aplicación actual" title="${module.name}: aplicación actual">${content}</span>`:`<a class="service" href="${module.href}" target="_self" aria-label="Ir a ${module.name}" title="${module.name}">${content}</a>`;
+   }).join('')}</nav>`;
+  }
+ }
+ window.customElements.define('mastererp-related-services',RelatedServices);
+}
