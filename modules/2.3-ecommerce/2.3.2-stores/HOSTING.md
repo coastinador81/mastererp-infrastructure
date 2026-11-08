@@ -1,7 +1,9 @@
 # Hosting storefront público (tienda-dev.uonify.com)
 
-Página estática provisional (`Hola mundo`) en https://tienda-dev.uonify.com, fuente
-`storefront-static/index.html`, publicada por `.github/workflows/publish-tienda-dev-uonify.yml`.
+El frontend de https://tienda-dev.uonify.com pertenece a mastererp-platform, en
+`frontend/modules/2.3-ecommerce/2.3.2-stores/storefront/`. Su build y publicación
+son responsabilidad exclusiva del workflow Platform `.github/workflows/publish-storefront-dev.yml`.
+Infrastructure conserva únicamente las definiciones y los scripts de infraestructura del hosting.
 
 ## Plantillas y stacks
 
@@ -22,15 +24,6 @@ python scripts/deploy_storefront_frontend.py hosting execute --profile mastererp
 aws cloudformation wait stack-create-complete --profile mastererp-admin --region us-west-1 --stack-name mastererp-dev-storefront-frontend
 ```
 
-Publicación manual del Hola mundo:
-
-```powershell
-$BUCKET = <FrontendBucketName>
-$DIST = <FrontendDistributionId>
-aws s3 cp modules/2.3-ecommerce/2.3.2-stores/storefront-static/index.html "s3://$BUCKET/index.html" --content-type "text/html; charset=utf-8" --cache-control "no-cache,max-age=0,must-revalidate" --profile mastererp-admin --region us-west-1
-aws cloudfront create-invalidation --distribution-id $DIST --paths "/ /index.html" --profile mastererp-admin
-```
-
 ## CORS Client API (`btqqku792c`)
 
 El stack propietario es `mastererp-dev-http-apis`. Tras cambiar dominios de storefront,
@@ -47,8 +40,8 @@ Variables GitHub (repositorio **mastererp-platform**, rama `dev`):
 - `STOREFRONT_UONIFY_BUCKET`, `STOREFRONT_UONIFY_DISTRIBUTION_ID` (outputs del stack)
 - `STOREFRONT_DEV_TENANT_ID` (tenant business con la tienda activa para el dominio)
 
-Publicación canónica: workflow Platform `.github/workflows/publish-storefront-dev.yml`. El workflow de Infrastructure queda solo para la página estática provisional.
+Publicación canónica: workflow Platform `.github/workflows/publish-storefront-dev.yml`. No existe un publicador alternativo de la tienda en Infrastructure.
 
 ## Propiedad de publicación de la aplicación
 
-La aplicación Expo de tienda-dev.uonify.com se publica desde Platform mediante publish-storefront-dev.yml. Usa STOREFRONT_UONIFY_BUCKET y STOREFRONT_UONIFY_DISTRIBUTION_ID referenciando los recursos existentes. Infrastructure conserva IaC; su workflow estático de bootstrap es exclusivamente manual y no se ejecuta por push, para no sobrescribir index.html de la aplicación con una página histórica. No despachar ese bootstrap sobre una tienda activa sin una decisión explícita de recuperación. No se amplían permisos IAM ni se crean credenciales por esta corrección.
+La aplicación Expo de tienda-dev.uonify.com se publica desde Platform mediante publish-storefront-dev.yml. Usa STOREFRONT_UONIFY_BUCKET y STOREFRONT_UONIFY_DISTRIBUTION_ID referenciando los recursos existentes. Infrastructure conserva IaC. Se retiraron el HTML histórico «Hola mundo» y su workflow de bootstrap manual para evitar que sobrescriban la aplicación. Esta limpieza no modifica buckets, objetos publicados, CloudFront, DNS, certificados, roles IAM ni stacks. La recuperación de contenido debe realizarse desde los artefactos del frontend de Platform, no recreando una segunda implementación en Infrastructure.
