@@ -1,0 +1,4 @@
+# Uonify DEV · /etc/chrony/sources.d/uonify-amazon-time-sync.sources (instalado por bootstrap.sh)
+# Amazon Time Sync Service (enlace local, no lo filtran los security groups; no hay salida UDP 123).
+# El TOTP de /admin depende de la hora exacta.
+server 169.254.169.123 prefer iburst minpoll 4 maxpoll 4

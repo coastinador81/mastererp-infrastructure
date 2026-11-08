@@ -1,0 +1,14 @@
+# Uonify DEV · /etc/systemd/system/uonify-pg-backup.timer (instalado y activado por bootstrap.sh)
+# Cada noche a las 02:15 UTC (antes del snapshot DLM de las 03:00 UTC), con hasta 15 min de margen
+# aleatorio. Persistent: si el host estaba apagado, se lanza al arrancar.
+[Unit]
+Description=Uonify DEV: copia nocturna de PostgreSQL a S3
+
+[Timer]
+OnCalendar=*-*-* 02:15:00 UTC
+RandomizedDelaySec=15min
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

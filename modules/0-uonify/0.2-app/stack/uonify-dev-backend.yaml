@@ -1,0 +1,850 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Uonify DEV backend host (stack uonify-dev-backend, eu-west-1, decision D-DEV-HOSTING-20261107).
+  One Graviton t4g.medium Ubuntu 24.04 arm64 host for Docker Compose in a dedicated VPC, HTTPS
+  ingress only from CloudFront origin-facing addresses, CMK-encrypted EBS, DLM daily snapshots,
+  private S3 backup bucket and a least-privilege instance role. No SSH, no key pair, no UserData.
+
+# ---------------------------------------------------------------------------------------------
+# DRAFT, NOT DEPLOYED. Operational runbook: read it before any create, update or delete.
+#
+# CREATE with "aws cloudformation create-stack" ("deploy" and "create-change-set" accept neither
+# --retain-except-on-create nor --enable-termination-protection):
+#   --stack-name uonify-dev-backend --region eu-west-1 --capabilities CAPABILITY_IAM
+#   --retain-except-on-create --enable-termination-protection
+#   --stack-policy-body file://uonify-dev-backend.stack-policy.json
+#   --parameters ParameterKey=HostTerminationProtection,ParameterValue=false
+#   --tags Key=Project,Value=uonify Key=Env,Value=dev Key=ManagedBy,Value=cloudformation
+# HostTerminationProtection=false on the first create lets a failed create roll back
+# (CloudFormation cannot terminate an instance that has DisableApiTermination). After
+# CREATE_COMPLETE and the checks, run update-stack --use-previous-template
+# --capabilities CAPABILITY_IAM with HostTerminationProtection=true and UsePreviousValue=true for
+# every other parameter (no interruption). Pass every parameter in every update: an omitted one
+# falls back to its Default.
+#
+# FAILED CREATE: the rollback removes what the create made (RetainExceptOnCreate in the
+# template, the CLI flag as a second guard) but may leave one snapshot of the empty data volume
+# (DeletionPolicy Snapshot): delete it. Before retrying, run update-termination-protection
+# --no-enable-termination-protection, then delete-stack. If the stack ends in ROLLBACK_FAILED on
+# HostInstance (created with protection on): aws ec2 modify-instance-attribute --instance-id <id>
+# --no-disable-api-termination, then delete-stack, then remove what that delete retained (EIP,
+# alias/uonify-dev, bucket, key) before retrying.
+#
+# DELIBERATE DELETE (the plan's step-7 rollback), in this order:
+#   1. remove the origin-dev origin and the /api/* behavior from CloudFront E4N1UCPZZ2F0;
+#   2. delete the origin-dev.uonify.com A record (it lives outside this stack);
+#   3. on the host: docker compose down, then umount the data volume (avoids a stuck detach);
+#   4. update the stack with HostTerminationProtection=false (no interruption);
+#   5. update-termination-protection --no-enable-termination-protection, then delete-stack;
+#   6. release the Elastic IP, which the stack retains so that the A record can never point to
+#      a recycled address;
+#   7. clean the residuals, which keep billing: DLM snapshots and the final data-volume
+#      snapshot, the CMK (never schedule its deletion while a snapshot, dump or /uonify/dev
+#      SecureString still needs it), the alias and the backup bucket.
+# RE-CREATE after a delete: the retained alias/uonify-dev and bucket names collide. First IMPORT
+# the retained DataKey, DataKeyAlias, BackupBucket and BackupBucketPolicy (change set of type
+# IMPORT, template trimmed to those four logical IDs), then update to this full template, so
+# secrets, dumps and snapshots stay on the same key ARN.
+#
+# UPDATES: uonify-dev-backend.stack-policy.json denies Update:Replace and Update:Delete on the
+# stateful and network resources; an intentional replacement needs the owner's OK and a one-off
+# --stack-policy-during-update-body. Never change AmiId, AvailabilityZone, the root block device
+# mapping (except DeleteOnTermination), DataKey KeySpec/KeyUsage/MultiRegion, the Vpc or
+# PublicSubnet CIDR, the security group GroupDescription or any DataVolumeAttachment property:
+# each one replaces the instance, the attachment of the mounted data volume or the security
+# group. Grow the data volume with an in-place Size update, the root volume only with
+# ec2 modify-volume (accepted drift).
+#
+# HOST SETUP (later, only through SSM):
+# - apt must use https://ports.ubuntu.com/ubuntu-ports (no port-80 egress; the default
+#   http://eu-west-1.ec2.ports.ubuntu.com mirror has no HTTPS). Time sync must use
+#   169.254.169.123 (Amazon Time Sync, link-local, not filtered by security groups; there is no
+#   UDP 123 egress). TOTP for /admin depends on it.
+# - DNS works only through the VPC resolver (no port-53 egress). The certbot --manual hooks run
+#   aws route53 change-resource-record-sets --hosted-zone-id <HostedZoneId>, then
+#   aws route53 wait resource-record-sets-changed --id <ChangeInfo.Id>; they never query outside
+#   nameservers (dig @ns-... times out). The certbot dns-route53 plugin and lego need
+#   ListHostedZones/ListResourceRecordSets and are not supported.
+# - Only /uonify/dev/api, /uonify/dev/workers and /uonify/dev/nginx are writable. db, redis and
+#   mailpit log to /uonify/dev/workers or use the local driver, never to another group name
+#   (the non-blocking awslogs driver would drop those logs without an error).
+# - Backups: aws s3 cp <dump or -> s3://<BackupBucketName>/pg/<name> without --sse or
+#   --sse-kms-key-id (aws s3 cp has no --expected-bucket-owner; the role's s3:ResourceAccount
+#   condition pins the bucket owner). With s3api put-object/get-object, pass
+#   --expected-bucket-owner <account id>. The bucket default is the CMK, the bucket policy denies
+#   any other requested encryption and SSE-C is blocked on the bucket.
+# - The pre-deploy snapshot is taken by the operator from outside the host
+#   (aws ec2 create-snapshot --volume-id <DataVolumeId output>) before the SSM deploy command;
+#   the host role has no ec2:CreateSnapshot.
+# - No SMTP egress yet: TCP 587 for the SES relay is added in the plan's step-17 batch (a
+#   security group rule change does not interrupt the instance).
+# - CPU credits: t4g gets no launch credits, so with CpuCredits=standard the host starts at the
+#   20 percent per vCPU baseline and earns 24 credits per hour (max 576). Start QA only when
+#   CPUCreditBalance (AWS/EC2) is at least 100. Standard deviates from the plan's "unlimited +
+#   alarm" until the step-18 alarms exist; record it in D-DEV-HOSTING. Unlimited is the owner's
+#   spend decision and needs a CPUSurplusCreditsCharged alarm.
+#
+# COST: about 38 USD/month in year 1 (t4g.medium 26.86, 50 GB gp3 4.40, public IPv4 3.65, KMS
+# key 1.00, snapshots, logs and S3 about 1-3). Key rotation adds 1 USD/month in year 2 and
+# 2 USD/month from year 3; t4g.large adds about 27 USD/month (owner's OK).
+# RESIDUAL RISK, for the owner to accept in D-DEV-HOSTING before step 9: every
+# AdministratorAccess user of this shared account, including two key-only automation users,
+# can decrypt the secrets and backups and open a root shell through SSM. No key policy can
+# prevent it.
+# ---------------------------------------------------------------------------------------------
+
+Rules:
+  OnlyUonifyAccountInIreland:
+    Assertions:
+      - Assert: !And
+          - !Equals [!Ref "AWS::Region", eu-west-1]
+          - !Equals [!Ref "AWS::AccountId", "277352717693"]
+        AssertDescription: >-
+          This stack may only be deployed in account 277352717693, region eu-west-1
+          (never us-west-1, where the MasterERP team runs).
+
+Parameters:
+  AmiId:
+    Type: AWS::EC2::Image::Id
+    Default: ami-00797c07f9374d3bf
+    Description: >-
+      Canonical Ubuntu 24.04 LTS arm64 gp3 (ubuntu-noble-24.04-arm64-server-20261023, owner
+      099720109477). Pinned on purpose instead of the SSM public parameter: changing it REPLACES
+      the instance.
+  InstanceType:
+    Type: String
+    Default: t4g.medium
+    AllowedValues:
+      - t4g.medium
+      - t4g.large
+    Description: >-
+      Graviton (arm64) only, because the container images are linux/arm64. A change stops and
+      starts the instance (no replacement). t4g.large adds about 27 USD per month.
+  HostTerminationProtection:
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+    Description: >-
+      EC2 DisableApiTermination for the host. Pass false on the FIRST create-stack (so a failed
+      create can roll back) and before any delete-stack; set true with an update right after
+      CREATE_COMPLETE. Changing it does not interrupt the instance.
+  CpuCredits:
+    Type: String
+    Default: standard
+    AllowedValues:
+      - standard
+      - unlimited
+    Description: >-
+      standard = fixed cost; when the credit balance is empty the CPU is held at the 20 percent
+      per vCPU baseline. t4g gets no launch credits: a new host starts at 0 credits and earns 24
+      credits per hour (max 576). unlimited = never throttled, but sustained use above the
+      baseline is billed at 0.04 USD per vCPU-hour (worst case about +47 USD per month for
+      t4g.medium); it is the owner's spend decision. Can be switched at any time without
+      interrupting the instance.
+  AvailabilityZone:
+    Type: AWS::EC2::AvailabilityZone::Name
+    Default: eu-west-1a
+    Description: >-
+      AZ of the subnet, instance and data volume (eu-west-1a is euw1-az2 in this account and
+      offers t4g.medium).
+  CloudFrontOriginFacingPrefixListId:
+    Type: String
+    Default: pl-4fa04526
+    AllowedValues:
+      - pl-4fa04526
+    Description: >-
+      AWS-managed prefix list com.amazonaws.global.cloudfront.origin-facing (IPv4) in eu-west-1.
+      Pinned: another list would change who can reach port 443. Its weight is 55, so this one
+      rule uses 55 of the 60 inbound rules allowed per security group.
+  HostedZoneId:
+    Type: AWS::Route53::HostedZone::Id
+    Default: Z08167243FAUSDUW0Z2KP
+    AllowedValues:
+      - Z08167243FAUSDUW0Z2KP
+    Description: >-
+      Shared public hosted zone uonify.com (also used by the MasterERP team), pinned. The host
+      may only change the ACME challenge TXT record below.
+  AcmeChallengeRecordName:
+    Type: String
+    Default: _acme-challenge.origin-dev.uonify.com
+    AllowedValues:
+      - _acme-challenge.origin-dev.uonify.com
+    Description: >-
+      The only record the host may change (type TXT, actions UPSERT or DELETE). Pinned: any
+      other _acme-challenge name (the apex one, for example) would let the host obtain
+      certificates for other names of the shared zone, wildcards included.
+
+Resources:
+  # ------------------------------------------------------------------ network (dedicated VPC)
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.77.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.77.0.0/24
+      AvailabilityZone: !Ref AvailabilityZone
+      # No auto-assigned public IPv4: the only public address is the Elastic IP.
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend-public
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend-public
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  DefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  HostSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      # Create-only property (a change replaces the group), so it does not list the rules.
+      GroupDescription: uonify-dev-backend host (rules are defined in the stack template)
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          SourcePrefixListId: !Ref CloudFrontOriginFacingPrefixListId
+          Description: HTTPS from CloudFront origin-facing IPv4 (managed prefix list, weight 55)
+      # Listing egress rules removes the default allow-all egress rule. The VPC resolver (DNS),
+      # IMDS and Amazon Time Sync are not filtered by security groups. No SMTP yet: TCP 587 to
+      # SES is added in the plan's step-17 batch.
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS to Google APIs, Stripe, AWS APIs (SSM, ECR, S3, Logs, Route 53), LetsEncrypt, apt and Docker repos
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend-host
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  # ------------------------------------------------------------------ encryption key
+  DataKey:
+    Type: AWS::KMS::Key
+    # Deleted (30-day pending window) only if the create that made it rolls back. Retained on
+    # stack delete and on replacement: DLM snapshots, S3 dumps and SSM SecureStrings encrypted
+    # with it must stay readable.
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: uonify-dev CMK for the DEV backend EBS volumes, DLM snapshots, S3 backups and SSM SecureStrings
+      Enabled: true
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyUsage: ENCRYPT_DECRYPT
+      MultiRegion: false
+      EnableKeyRotation: true
+      RotationPeriodInDays: 365
+      PendingWindowInDays: 30
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          # Root statement only: it delegates administration and use to IAM policies in this
+          # account, so the key can never become unmanageable. The key policy names no role of
+          # this stack: a role created seconds earlier may not be visible to KMS yet, and
+          # CloudFormation does not retry the resulting MalformedPolicyDocumentException. The
+          # instance role (via SSM and S3) and the DLM role (via EC2) get key use from their own
+          # IAM policies below; the deploying admin gets the EBS launch permissions (CreateGrant,
+          # Decrypt, DescribeKey, GenerateDataKeyWithoutPlaintext, ReEncrypt*) from its IAM policy.
+          - Sid: AccountRootAdmin
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+      Tags:
+        - Key: Name
+          Value: uonify-dev
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  DataKeyAlias:
+    Type: AWS::KMS::Alias
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      AliasName: alias/uonify-dev
+      TargetKeyId: !Ref DataKey
+
+  # ------------------------------------------------------------------ IAM
+  InstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /uonify/
+      Description: uonify-dev-backend EC2 host (SSM, own parameters, ECR pull uonify-dev/*, own log groups, own backup bucket, ACME TXT only)
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      # AmazonSSMManagedEC2InstanceDefaultPolicy is AmazonSSMManagedInstanceCore without
+      # ssm:GetParameter(s) on "*": agent registration, Run Command and Session Manager only.
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/AmazonSSMManagedEC2InstanceDefaultPolicy"
+      Tags:
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  # The host's own permissions. A separate resource, so the role and the instance profile do not
+  # wait for the bucket and the log groups.
+  InstanceRolePolicy:
+    Type: AWS::IAM::RolePolicy
+    Properties:
+      RoleName: !Ref InstanceRole
+      PolicyName: uonify-dev-backend-host
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ReadOwnSsmParameters
+            Effect: Allow
+            Action:
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParametersByPath
+            Resource:
+              - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/uonify/dev"
+              - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/uonify/dev/*"
+          # Second layer for a shared account (/mastererp/..., /rentprive/...,
+          # /aws/reference/secretsmanager/...): even if a broader policy is ever attached, only
+          # /uonify/dev and the AWS public /aws/service parameters (no account in the ARN) stay
+          # readable.
+          - Sid: DenyOtherSsmParameters
+            Effect: Deny
+            Action:
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParametersByPath
+              - ssm:GetParameterHistory
+            NotResource:
+              - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/uonify/dev"
+              - !Sub "arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/uonify/dev/*"
+              - !Sub "arn:${AWS::Partition}:ssm:*::parameter/aws/service/*"
+          # Decrypt SSM SecureStrings and read/write the SSE-KMS backup bucket, only through SSM
+          # and S3 in this region, never as a raw KMS call. No EC2/EBS use: attached volumes are
+          # decrypted through the grants EC2 created at launch.
+          - Sid: UseDataKeyViaSsmAndS3
+            Effect: Allow
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey
+              - kms:DescribeKey
+            Resource: !GetAtt DataKey.Arn
+            Condition:
+              StringEquals:
+                kms:ViaService:
+                  - !Sub "ssm.${AWS::Region}.amazonaws.com"
+                  - !Sub "s3.${AWS::Region}.amazonaws.com"
+          - Sid: EcrAuthToken
+            Effect: Allow
+            Action: ecr:GetAuthorizationToken
+            Resource: "*"
+          - Sid: EcrPullUonifyDev
+            Effect: Allow
+            Action:
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+              - ecr:BatchCheckLayerAvailability
+            Resource: !Sub "arn:${AWS::Partition}:ecr:${AWS::Region}:${AWS::AccountId}:repository/uonify-dev/*"
+          - Sid: WriteOwnLogGroups
+            Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+              - logs:DescribeLogStreams
+            Resource:
+              - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${ApiLogGroup}"
+              - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${ApiLogGroup}:*"
+              - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${WorkersLogGroup}"
+              - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${WorkersLogGroup}:*"
+              - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${NginxLogGroup}"
+              - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:${NginxLogGroup}:*"
+          # s3:ResourceAccount: dumps never go to a same-named bucket owned by another account.
+          - Sid: ListBackupBucket
+            Effect: Allow
+            Action: s3:ListBucket
+            Resource: !GetAtt BackupBucket.Arn
+            Condition:
+              StringEquals:
+                s3:ResourceAccount: !Ref "AWS::AccountId"
+          # No s3:DeleteObject*: the host can add new versions but never remove backups.
+          # AbortMultipartUpload lets the CLI clean up a failed multipart dump upload.
+          - Sid: PutGetBackupObjects
+            Effect: Allow
+            Action:
+              - s3:PutObject
+              - s3:GetObject
+              - s3:AbortMultipartUpload
+            Resource: !Sub "${BackupBucket.Arn}/*"
+            Condition:
+              StringEquals:
+                s3:ResourceAccount: !Ref "AWS::AccountId"
+          # DNS-01 for the origin certificate: only the pinned ACME TXT name in the pinned zone,
+          # only UPSERT/DELETE. The Null block guards against the ForAllValues empty-set pitfall.
+          # No ListHostedZones*: the hooks pass --hosted-zone-id.
+          - Sid: AcmeDns01TxtOnly
+            Effect: Allow
+            Action: route53:ChangeResourceRecordSets
+            Resource: !Sub "arn:${AWS::Partition}:route53:::hostedzone/${HostedZoneId}"
+            Condition:
+              ForAllValues:StringEquals:
+                route53:ChangeResourceRecordSetsNormalizedRecordNames:
+                  - !Ref AcmeChallengeRecordName
+                route53:ChangeResourceRecordSetsRecordTypes:
+                  - TXT
+                route53:ChangeResourceRecordSetsActions:
+                  - UPSERT
+                  - DELETE
+              "Null":
+                route53:ChangeResourceRecordSetsNormalizedRecordNames: "false"
+                route53:ChangeResourceRecordSetsRecordTypes: "false"
+                route53:ChangeResourceRecordSetsActions: "false"
+          - Sid: AcmeDns01ChangeStatus
+            Effect: Allow
+            Action: route53:GetChange
+            Resource: !Sub "arn:${AWS::Partition}:route53:::change/*"
+
+  InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: /uonify/
+      Roles:
+        - !Ref InstanceRole
+
+  DlmRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /uonify/
+      Description: uonify-dev-backend Data Lifecycle Manager role (daily snapshots of the tagged data volume)
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: dlm.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub "arn:${AWS::Partition}:iam::aws:policy/service-role/AWSDataLifecycleManagerServiceRole"
+      # EBS pattern for the CMK-encrypted source volume (AWS docs require key use for the DLM
+      # role), only through EC2 in this region. Granted here, not in the key policy.
+      Policies:
+        - PolicyName: uonify-dev-dlm-data-key
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Sid: DataKeyUseViaEc2
+                Effect: Allow
+                Action:
+                  - kms:Decrypt
+                  - kms:DescribeKey
+                  - kms:GenerateDataKeyWithoutPlaintext
+                  - kms:ReEncryptFrom
+                  - kms:ReEncryptTo
+                Resource: !GetAtt DataKey.Arn
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub "ec2.${AWS::Region}.amazonaws.com"
+              - Sid: DataKeyGrantsForEbsViaEc2
+                Effect: Allow
+                Action: kms:CreateGrant
+                Resource: !GetAtt DataKey.Arn
+                Condition:
+                  Bool:
+                    kms:GrantIsForAWSResource: "true"
+                  StringEquals:
+                    kms:ViaService: !Sub "ec2.${AWS::Region}.amazonaws.com"
+      Tags:
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  # ------------------------------------------------------------------ host
+  HostInstance:
+    Type: AWS::EC2::Instance
+    # On delete the instance goes before the gateway is detached: the retained EIP stays mapped
+    # to it until it terminates, and a mapped address blocks DetachInternetGateway.
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      ImageId: !Ref AmiId
+      InstanceType: !Ref InstanceType
+      SubnetId: !Ref PublicSubnet
+      SecurityGroupIds:
+        - !Ref HostSecurityGroup
+      IamInstanceProfile: !Ref InstanceProfile
+      # No KeyName and no UserData: access and setup only through SSM.
+      # Termination protection comes from a parameter: false for the first create and before a
+      # delete (CloudFormation cannot terminate a protected instance), true otherwise.
+      DisableApiTermination: !Ref HostTerminationProtection
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: false
+      CreditSpecification:
+        CPUCredits: !Ref CpuCredits
+      # IMDSv2 only, hop limit 1: containers on Docker bridge networks cannot reach the role
+      # credentials; host processes (dockerd awslogs, SSM agent, aws cli) still can.
+      MetadataOptions:
+        HttpEndpoint: enabled
+        HttpTokens: required
+        HttpPutResponseHopLimit: 1
+        HttpProtocolIpv6: disabled
+        InstanceMetadataTags: disabled
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeType: gp3
+            VolumeSize: 20
+            Encrypted: true
+            KmsKeyId: !GetAtt DataKey.Arn
+            DeleteOnTermination: true
+      PropagateTagsToVolumeOnCreation: true
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  DataVolume:
+    Type: AWS::EC2::Volume
+    # A final snapshot is taken if the stack is deleted or the volume has to be replaced.
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      AvailabilityZone: !GetAtt PublicSubnet.AvailabilityZone
+      Size: 30
+      VolumeType: gp3
+      Iops: 3000
+      Throughput: 125
+      Encrypted: true
+      KmsKeyId: !GetAtt DataKey.Arn
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend-data
+        - Key: uonify-dlm
+          Value: dev-data-daily
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  DataVolumeAttachment:
+    Type: AWS::EC2::VolumeAttachment
+    Properties:
+      InstanceId: !Ref HostInstance
+      VolumeId: !Ref DataVolume
+      # Nitro: appears as /dev/nvme1n1; mount by filesystem UUID or by-id with the volume id.
+      Device: /dev/sdf
+
+  # Retained on stack delete and on replacement, so the origin-dev A record (outside this stack)
+  # can never point to a recycled address; it is released by hand once the record is gone. A
+  # failed first create still releases it: the record cannot exist yet at that point.
+  HostEip:
+    Type: AWS::EC2::EIP
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref HostInstance
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  # ------------------------------------------------------------------ snapshots (DLM)
+  DataVolumeSnapshotPolicy:
+    Type: AWS::DLM::LifecyclePolicy
+    Properties:
+      Description: uonify-dev-backend daily snapshot of the data volume keep 7
+      State: ENABLED
+      ExecutionRoleArn: !GetAtt DlmRole.Arn
+      PolicyDetails:
+        PolicyType: EBS_SNAPSHOT_MANAGEMENT
+        ResourceTypes:
+          - VOLUME
+        ResourceLocations:
+          - CLOUD
+        TargetTags:
+          - Key: uonify-dlm
+            Value: dev-data-daily
+        Schedules:
+          - Name: daily-0300-utc-keep-7
+            CreateRule:
+              Interval: 24
+              IntervalUnit: HOURS
+              Times:
+                - "03:00"
+            RetainRule:
+              Count: 7
+            CopyTags: true
+            TagsToAdd:
+              - Key: CreatedBy
+                Value: dlm-uonify-dev-backend
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backend-data-daily
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  # ------------------------------------------------------------------ backups (S3)
+  BackupBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Sub "uonify-dev-backups-${AWS::AccountId}-${AWS::Region}"
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !GetAtt DataKey.Arn
+            BucketKeyEnabled: true
+            BlockedEncryptionTypes:
+              EncryptionType:
+                - SSE-C
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          # Current objects expire after 35 days and are then kept 30 more days as noncurrent
+          # versions (worst case about 65 days in total). Overwritten objects: 30 days.
+          - Id: expire-backups
+            Status: Enabled
+            ExpirationInDays: 35
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: 7
+          - Id: remove-expired-delete-markers
+            Status: Enabled
+            ExpiredObjectDeleteMarker: true
+      Tags:
+        - Key: Name
+          Value: uonify-dev-backups
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  BackupBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    # Kept with the retained bucket so it stays TLS-only and CMK-only after a stack delete.
+    DeletionPolicy: RetainExceptOnCreate
+    UpdateReplacePolicy: Retain
+    Properties:
+      Bucket: !Ref BackupBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: DenyNonTls
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !GetAtt BackupBucket.Arn
+              - !Sub "${BackupBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+          # Uploads use the bucket default (the CMK). A request that asks for any other
+          # encryption is denied: AES256, aws:kms without a key id (S3 would then use aws/s3), or
+          # a key id other than the CMK ARN. Requests without encryption headers are unaffected.
+          - Sid: DenyRequestedEncryptionOtherThanDataKey
+            Effect: Deny
+            Principal: "*"
+            Action: s3:PutObject
+            Resource: !Sub "${BackupBucket.Arn}/*"
+            Condition:
+              "Null":
+                s3:x-amz-server-side-encryption: "false"
+              StringNotEquals:
+                s3:x-amz-server-side-encryption-aws-kms-key-id: !GetAtt DataKey.Arn
+
+  # ------------------------------------------------------------------ logs
+  # Created here so dockerd never needs logs:CreateLogGroup (use awslogs-create-group=false,
+  # mode=non-blocking, max-buffer-size). Deleted with the stack on purpose (30-day operational
+  # logs; a retained group with a fixed name would block re-creating the stack).
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: /uonify/dev/api
+      RetentionInDays: 30
+      Tags:
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  WorkersLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: /uonify/dev/workers
+      RetentionInDays: 30
+      Tags:
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+  NginxLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: /uonify/dev/nginx
+      RetentionInDays: 30
+      Tags:
+        - Key: Project
+          Value: uonify
+        - Key: Env
+          Value: dev
+        - Key: ManagedBy
+          Value: cloudformation
+
+Outputs:
+  InstanceId:
+    Description: EC2 host (use with SSM Session Manager or Run Command)
+    Value: !Ref HostInstance
+  ElasticIp:
+    Description: >-
+      Public IPv4 for the origin-dev.uonify.com A record (created outside this stack). Retained
+      on stack delete: release it by hand once the record is gone.
+    Value: !Ref HostEip
+  SecurityGroupId:
+    Value: !Ref HostSecurityGroup
+  VpcId:
+    Value: !Ref Vpc
+  SubnetId:
+    Value: !Ref PublicSubnet
+  DataVolumeId:
+    Description: Encrypted data volume (DLM target, mount point for Postgres data, pre-deploy snapshots)
+    Value: !Ref DataVolume
+  KmsKeyArn:
+    Value: !GetAtt DataKey.Arn
+  KmsKeyAlias:
+    Value: !Ref DataKeyAlias
+  BackupBucketName:
+    Value: !Ref BackupBucket
+  ApiLogGroupName:
+    Value: !Ref ApiLogGroup
+  WorkersLogGroupName:
+    Value: !Ref WorkersLogGroup
+  NginxLogGroupName:
+    Value: !Ref NginxLogGroup
+  InstanceRoleArn:
+    Value: !GetAtt InstanceRole.Arn

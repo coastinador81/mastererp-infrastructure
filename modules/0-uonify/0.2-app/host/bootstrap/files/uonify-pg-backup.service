@@ -1,0 +1,27 @@
+# Uonify DEV · /etc/systemd/system/uonify-pg-backup.service (instalado por bootstrap.sh)
+# Copia de PostgreSQL a S3 con SSE-KMS desde un contenedor efímero; nada en claro en disco.
+# La lanza uonify-pg-backup.timer; a mano: sudo systemctl start uonify-pg-backup.service
+# Si falla, la unidad queda en «failed» (systemctl --failed) y la copia sin .manifest no vale.
+[Unit]
+Description=Uonify DEV: copia nocturna de PostgreSQL a S3 (SSE-KMS)
+After=docker.service uonify-secrets.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/uonify-pg-backup
+TimeoutStartSec=2h
+Environment=HOME=/root
+Environment=AWS_REGION=eu-west-1
+Environment=AWS_DEFAULT_REGION=eu-west-1
+Environment=AWS_PAGER=
+Environment=AWS_CLI_AUTO_PROMPT=off
+UMask=0077
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=read-only
+SyslogIdentifier=uonify-pg-backup
