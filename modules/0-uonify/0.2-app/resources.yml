@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Uonify DEV 0.2-app: rol OIDC de GitHub con el que el workflow publish-uonify-web-dev.yml de mastererp-platform (rama dev) publica https://dev.uonify.com (web en S3, funciones de la puerta e invalidaciones). Sin acceso al KVS de la puerta, a la configuracion de la distribucion ni a secretos.",
+  "Description": "Uonify DEV 0.2-app: rol OIDC de GitHub con el que el workflow publish-uonify-web-dev.yml de mastererp-platform (rama dev) publica https://dev.uonify.com (web en S3, funciones de la puerta e invalidaciones). Sin acceso directo a la API del KVS de la puerta, a la configuracion de la distribucion ni a secretos.",
   "Parameters": {
     "GitHubOidcProviderArn": { "Type": "String", "Default": "arn:aws:iam::277352717693:oidc-provider/token.actions.githubusercontent.com" },
     "WebBucketName": { "Type": "String", "Default": "uonify-dev-web-277352717693" },
@@ -22,9 +22,15 @@
               "Principal": { "Federated": { "Ref": "GitHubOidcProviderArn" } },
               "Action": "sts:AssumeRoleWithWebIdentity",
               "Condition": {
+                "StringLike": {
+                  "token.actions.githubusercontent.com:job_workflow_ref": [
+                    "eticayservicios/mastererp-platform/.github/workflows/publish-uonify-web-dev.yml@refs/heads/dev",
+                    "eticayservicios@144081289/mastererp-platform@1434968316/.github/workflows/publish-uonify-web-dev.yml@refs/heads/dev"
+                  ]
+                },
                 "StringEquals": {
                   "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-                  "token.actions.githubusercontent.com:sub": "repo:eticayservicios/mastererp-platform:ref:refs/heads/dev"
+                  "token.actions.githubusercontent.com:sub": "repo:eticayservicios@144081289/mastererp-platform@1434968316:ref:refs/heads/dev"
                 }
               }
             }
@@ -56,6 +62,7 @@
                     "cloudfront-keyvaluestore:*",
                     "cloudfront:GetDistribution",
                     "cloudfront:GetDistributionConfig",
+                    "cloudfront:ListDistributions*",
                     "cloudfront:UpdateDistribution",
                     "cloudfront:DeleteDistribution",
                     "cloudfront:CreateFunction",
