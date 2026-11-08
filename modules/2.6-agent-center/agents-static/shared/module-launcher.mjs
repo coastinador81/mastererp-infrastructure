@@ -1,8 +1,9 @@
 // Official Platform source. The Agent Center static asset is generated from this file.
 export const MODULES=Object.freeze([
+ {id:'uonify',name:'Chat principal',color:'blue',icon:'chat',href:'https://dev.uonify.com/'},
  {id:'finance',name:'Finanzas',color:'blue',icon:'finance',href:'https://finanzas-dev.uonify.com/'},
  {id:'ecommerce',name:'Ecommerce',color:'violet',icon:'sales',href:'https://ecom-dev.uonify.com/'},
- {id:'inventory',name:'Inventario',color:'teal',icon:'inventory'},
+ {id:'inventory',name:'Inventario',color:'teal',icon:'inventory',href:'https://inventario-dev.uonify.com/'},
  {id:'transport',name:'Transporte',color:'rose',icon:'transport'},
  {id:'crm',name:'CRM',color:'rose',icon:'people'},
  {id:'marketing',name:'Marketing',color:'orange',icon:'marketing'},
@@ -14,6 +15,7 @@ export const MODULES=Object.freeze([
 ].map(Object.freeze));
 
 const paths={
+ chat:'<path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2Zm3 5h8m-8 4h5"/>',
  finance:'<path d="M4 20h16M6 16v-4m6 4V8m6 8V4m-13 4 6-5 4 2 4-3"/>',
  sales:'<path d="M3 4h2l2 12h12l2-9H6"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
  inventory:'<path d="M3 21V9l9-6 9 6v12M7 21V11h10v10M3 21h18M7 15h10m-10 3h10m-7-7v10m4-10v10"/>',
