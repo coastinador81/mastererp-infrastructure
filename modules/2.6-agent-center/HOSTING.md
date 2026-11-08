@@ -1,6 +1,10 @@
 # Hosting frontend Centro de Agentes (agentes-dev.uonify.com)
 
-Página de aterrizaje en https://agentes-dev.uonify.com con **misma línea visual que Finanzas** (tokens `--finance-*`, clase `finance-app`): fuente `modules/2.6-agent-center/agents-static/landing.html`, publicada como `index.html` por `.github/workflows/publish-agents-uonify.yml`. Criterios de producto y referencias en [UX.md](UX.md).
+El dominio `https://agentes-dev.uonify.com` sirve el artefacto generado desde `mastererp-platform/frontend/modules/2.6-agent-center/agents-web/index.html`. Este repositorio no contiene ni edita la interfaz; conserva exclusivamente su hosting y permisos de publicación.
+
+## Regla obligatoria de separación
+
+**Platform es la única fuente de código frontend.** Antes de editar HTML, CSS, JavaScript, assets o build del Centro de Agentes, los agentes deben informar al desarrollador y trabajar en `mastererp-platform/frontend/modules/2.6-agent-center/`. Infrastructure solo admite cambios de S3, CloudFront, Route 53, ACM, IAM/OIDC, variables de publicación o documentación operativa. Un cambio de infraestructura no autoriza a modificar la interfaz.
 
 ## Plantillas y stacks
 
