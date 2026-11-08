@@ -69,7 +69,7 @@ if(typeof window!=='undefined'&&!window.customElements.get('mastererp-module-lau
     <section id="module-panel" class="panel" aria-label="Módulos de MasterERP" hidden><div class="heading"><div><strong>Tu espacio de trabajo</strong><p>MasterERP + Uonify</p></div><button type="button" class="close" aria-label="Cerrar módulos">×</button></div>
      <div class="grid">${MODULES.map(module=>{
       const active=module.id===current,content=`<span class="icon ${module.color}">${svg(module.icon)}</span><span>${module.name}</span><small>${active?'Estás aquí':module.href?'Abrir aplicación':'Pendiente'}</small>`;
-      return active?`<div class="tile current" aria-current="true">${content}</div>`:module.href?`<a class="tile" href="${module.href}">${content}</a>`:`<div class="tile" aria-disabled="true">${content}</div>`;
+      return active?`<div class="tile current" aria-current="true">${content}</div>`:module.href?`<a class="tile" href="${module.href}" target="_self">${content}</a>`:`<div class="tile" aria-disabled="true">${content}</div>`;
      }).join('')}</div><p class="note">Cada aplicación valida tu acceso. Los módulos pendientes todavía no están disponibles.</p></section>`;
    const trigger=this.shadowRoot.querySelector('.trigger');trigger.addEventListener('click',()=>this.toggle());
    trigger.addEventListener('keydown',event=>{if(event.key==='ArrowDown'){event.preventDefault();if(!this.opened)this.toggle();this.shadowRoot.querySelector('.grid a')?.focus();}});
