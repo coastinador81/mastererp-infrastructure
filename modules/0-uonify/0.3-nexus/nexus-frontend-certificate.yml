@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Nexus DEV CloudFront certificate; deploy in us-east-1 only.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev]
+  FrontendDomainName:
+    Type: String
+    Default: nexus-dev.uonify.com
+  FrontendHostedZoneId:
+    Type: String
+    Default: Z08167243FAUSDUW0Z2KP
+
+Resources:
+  NexusFrontendCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref FrontendDomainName
+      ValidationMethod: DNS
+      DomainValidationOptions:
+        - DomainName: !Ref FrontendDomainName
+          HostedZoneId: !Ref FrontendHostedZoneId
+      Tags:
+        - Key: Project
+          Value: MasterERP
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Component
+          Value: nexus-frontend
+    UpdateReplacePolicy: Retain
+
+Outputs:
+  CertificateArn:
+    Value: !Ref NexusFrontendCertificate
+    Description: ACM certificate ARN for the Nexus CloudFront distribution.
