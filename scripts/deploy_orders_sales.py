@@ -21,6 +21,7 @@ def main():
     parser.add_argument("--plan", type=Path, required=True)
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--add-notes-route", action="store_true")
+    parser.add_argument("--add-bulk-route", action="store_true")
     parser.add_argument("--profile", default="andrea_madriz_mastererp")
     args = parser.parse_args()
     session = boto3.Session(profile_name=args.profile, region_name="us-west-1")
@@ -50,11 +51,17 @@ def main():
         before = {route["RouteKey"]: route for route in plan["api_before"]["routes"]}
         after = {route["RouteKey"]: route for route in current["routes"]}
         assert all(after.get(key) == value for key, value in before.items())
+        expected = set()
+        if plan.get("add_notes_route"):
+            expected.add("POST /v1/companies/{company_id}/orders/{order_id}/notes")
+        if plan.get("add_bulk_route"):
+            expected.add("POST /v1/companies/{company_id}/orders/bulk-transitions")
         added = set(after) - set(before)
-        assert added == {"POST /v1/companies/{company_id}/orders/{order_id}/notes"}
-        notes = after[added.pop()]
-        assert notes["AuthorizationType"] == "JWT" and notes["AuthorizerId"]
-        assert notes["Target"] == "integrations/" + plan["physical_ids_before"]["OrdersIntegration"]
+        assert added == expected
+        for key in added:
+            route = after[key]
+            assert route["AuthorizationType"] == "JWT" and route["AuthorizerId"]
+            assert route["Target"] == "integrations/" + plan["physical_ids_before"]["OrdersIntegration"]
 
     if not args.execute:
         assert args.artifact and args.source_commit and len(args.source_commit) == 40
@@ -71,12 +78,14 @@ def main():
         s3.upload_file(str(args.artifact), params["ArtifactBucket"], key)
         name = "orders-sales-" + str(int(time.time()))
         change_args = {}
-        if args.add_notes_route:
+        if args.add_notes_route or args.add_bulk_route:
             template = cfn.get_template(StackName=STACK, TemplateStage="Original")["TemplateBody"]
-            assert "OrdersNotesRoute" not in template["Resources"]
             source = json.loads((Path(__file__).resolve().parents[1] /
                 "modules/2.3-ecommerce/2.3.1-orders/resources.yml").read_text())
-            template["Resources"]["OrdersNotesRoute"] = source["Resources"]["OrdersNotesRoute"]
+            additions = (["OrdersNotesRoute"] if args.add_notes_route else []) + (["OrdersBulkTransitionRoute"] if args.add_bulk_route else [])
+            for logical_id in additions:
+                assert logical_id not in template["Resources"]
+                template["Resources"][logical_id] = source["Resources"][logical_id]
             change_args["TemplateBody"] = json.dumps(template)
         else:
             change_args["UsePreviousTemplate"] = True
@@ -91,6 +100,7 @@ def main():
                 "api_id": params["ExistingAdminApiId"],
                 "api_before": api_state(params["ExistingAdminApiId"], before["OrdersIntegration"]),
                 "add_notes_route": args.add_notes_route,
+                "add_bulk_route": args.add_bulk_route,
                 "configuration_sha256": hashlib.sha256(json.dumps(config(), sort_keys=True).encode()).hexdigest()}
         args.plan.parent.mkdir(parents=True, exist_ok=True)
         args.plan.write_text(json.dumps(plan, indent=2) + "\n", encoding="utf-8")
@@ -105,6 +115,8 @@ def main():
     allowed = {"OrdersFunction", "OrdersIntegration"}
     if plan.get("add_notes_route"):
         allowed.add("OrdersNotesRoute")
+    if plan.get("add_bulk_route"):
+        allowed.add("OrdersBulkTransitionRoute")
     assert set(by_id) <= allowed and "OrdersFunction" in by_id
     resource = by_id["OrdersFunction"]
     assert resource["LogicalResourceId"] == "OrdersFunction" and resource["Action"] == "Modify"
@@ -119,6 +131,9 @@ def main():
     if plan.get("add_notes_route"):
         notes = by_id.get("OrdersNotesRoute")
         assert notes and notes["Action"] == "Add" and notes.get("Replacement", "False") == "False"
+    if plan.get("add_bulk_route"):
+        bulk = by_id.get("OrdersBulkTransitionRoute")
+        assert bulk and bulk["Action"] == "Add" and bulk.get("Replacement", "False") == "False"
     print(json.dumps({"stack": STACK, "changes": [{"LogicalResourceId": r["LogicalResourceId"],
                       "Action": r["Action"], "Replacement": r.get("Replacement", "False")} for r in by_id.values()],
                       "source_commit": plan["source_commit"], "artifact_sha256": plan["artifact_sha256"]}))
@@ -127,8 +142,9 @@ def main():
         cfn.get_waiter("stack_update_complete").wait(StackName=STACK, WaiterConfig={"Delay": 5, "MaxAttempts": 120})
         current_resources = resources()
         assert {key: current_resources[key] for key in plan["physical_ids_before"]} == plan["physical_ids_before"]
-        if plan.get("add_notes_route"):
-            assert "OrdersNotesRoute" in current_resources
+        if plan.get("add_notes_route") or plan.get("add_bulk_route"):
+            if plan.get("add_notes_route"): assert "OrdersNotesRoute" in current_resources
+            if plan.get("add_bulk_route"): assert "OrdersBulkTransitionRoute" in current_resources
             assert_api_after(plan)
         else:
             assert api_state(plan["api_id"], plan["physical_ids_before"]["OrdersIntegration"]) == plan["api_before"]
