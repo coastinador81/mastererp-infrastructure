@@ -46,3 +46,26 @@ Actualización final ejecutada en mastererp-dev-operations. Fuente Platform e201
 La primera actualización encontró typing_extensions.py ausente: se restauró por change set el paquete previo exacto 4b34522006c66161dfadc998839808761b1d52501ffefac8ee3a450511e75a5a, coincidente con Git d277dfe para el adapter. Después se desplegó el ZIP corregido y pasaron 14 casos HTTP reales, con tres ventas persistidas y concurrencia. Se conserva evidencia de la recuperación y del plan final en [docs/sales-deployment-evidence](../../../docs/sales-deployment-evidence). Las descripciones anteriores de candidato son históricas.
 
 Sin cambios en Cognito, hosting, API compartida, JWT, CORS, otras Lambdas, IAM de ejecución o red. RDS se gestionó desde Database por su migrador oficial (046/047 y respaldos previos), no desde este script. Los datos de venta de fixture se conservan en tenant DEV suspendido para respetar inmutabilidad.
+
+
+## Notas, historial y cancelación — 11 noviembre 2026
+
+Se actualizó únicamente `OrdersFunction` en `mastererp-dev-operations` con el
+artefacto validado de Platform `027710839c0fb1bce6f81397b9f601614cc2f192`
+(SHA-256 `1b0f8b802ff6dea6a4717640ba9303449223144a06f3e51b42144ad158a58eb6`).
+El mismo change set añadió la ruta JWT
+`POST /v1/companies/{company_id}/orders/{order_id}/notes`, apuntando a la
+integración existente de Orders. No se reemplazaron recursos ni cambiaron
+Cognito, CORS, IAM, red, IDs físicos u otras Lambdas; Tesorería y sus rutas no
+formaron parte del despliegue.
+
+El script admite este caso con `--add-notes-route` al preparar el plan y permite
+seleccionar explícitamente el perfil con `--profile`. Antes de ejecutar, valida
+que el change set solo contenga `OrdersFunction`, la reevaluación dinámica de
+`OrdersIntegration` y `OrdersNotesRoute`. Después comprueba los IDs, la
+configuración de Lambda, todas las rutas previas, JWT y CORS.
+
+Verificación DEV: la ruta de notas rechazó una solicitud sin JWT con HTTP 401 y
+el smoke autenticado de solo lectura pasó Orders y el resto de capacidades
+operativas, incluido el rechazo de un tenant ajeno y la eliminación de la
+membresía QA temporal. No se mutaron pedidos ni pagos durante la prueba.
