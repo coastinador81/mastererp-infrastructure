@@ -6,8 +6,8 @@ from deploy_administration import assemble
 
 PARENT,CHILD,API="mastererp-dev-finance","mastererp-dev-administration","qx8nmypdhi"
 FUNCTION="mastererp-dev-adm-tesoreria"
-ALLOWED={"TesoreriaFunction","TesoreriaIntegrationRecovered","TesoreriaApiPermission","PendingReceiptsRoute","ReviewReceiptRoute"}
-ADDITIONS={"PendingReceiptsRoute","ReviewReceiptRoute"}
+ALLOWED={"TesoreriaFunction","TesoreriaIntegrationRecovered","TesoreriaReceiptsApiPermission","PendingReceiptsRoute","ReviewReceiptRoute"}
+ADDITIONS={"TesoreriaReceiptsApiPermission","PendingReceiptsRoute","ReviewReceiptRoute"}
 
 def main():
  p=argparse.ArgumentParser();p.add_argument('--artifact',type=Path);p.add_argument('--source-commit');p.add_argument('--plan',type=Path,required=True);p.add_argument('--execute',action='store_true');p.add_argument('--profile',default='andrea_madriz_mastererp');a=p.parse_args()
@@ -21,7 +21,7 @@ def main():
   old=cf.get_template(StackName=CHILD,TemplateStage='Original')['TemplateBody'];old=json.loads(old) if isinstance(old,str) else old
   _,desired=assemble();candidate=copy.deepcopy(old)
   assert ADDITIONS.isdisjoint(old['Resources'])
-  for key in ADDITIONS|{'TesoreriaApiPermission'}:candidate['Resources'][key]=desired['Resources'][key]
+  for key in ADDITIONS:candidate['Resources'][key]=desired['Resources'][key]
   before=routes();assert not any('/finance/receipts' in key for key in before)
   params={x['ParameterKey']:x['ParameterValue'] for x in parent['Parameters']};bucket=params['ArtifactBucket'];assert all(store.get_public_access_block(Bucket=bucket)['PublicAccessBlockConfiguration'].values())
   digest=hashlib.sha256(a.artifact.read_bytes()).hexdigest();artifact_key=f'mastererp/dev/administration/treasury/{a.source_commit}/{digest}.zip';store.upload_file(str(a.artifact),bucket,artifact_key)
