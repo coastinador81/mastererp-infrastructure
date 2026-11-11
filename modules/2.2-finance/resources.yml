@@ -169,6 +169,12 @@
           "PartyClientId": {
             "Ref": "PartyClientId"
           },
+          "DatabaseHost":{"Ref":"PartyDatabaseHost"},
+          "DatabaseSecretArn":{"Ref":"PartyDatabaseSecretArn"},
+          "PrivateSubnetIds":{"Fn::Join":[",",{"Ref":"PartySubnetIds"}]},
+          "SecurityGroupIds":{"Fn::Join":[",",{"Ref":"PartySecurityGroupIds"}]},
+          "CognitoIssuer":{"Ref":"PartyCognitoIssuer"},
+          "CognitoClientId":{"Ref":"PartyClientId"},
           "AdminJwtAuthorizerId": {
             "Ref": "AdminJwtAuthorizerId"
           }

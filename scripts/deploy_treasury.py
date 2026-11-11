@@ -20,13 +20,18 @@ def main():
   parent=cf.describe_stacks(StackName=PARENT)['Stacks'][0];child=cf.describe_stacks(StackName=CHILD)['Stacks'][0];assert child['ParentId']==parent['StackId']
   old=cf.get_template(StackName=CHILD,TemplateStage='Original')['TemplateBody'];old=json.loads(old) if isinstance(old,str) else old
   _,desired=assemble();candidate=copy.deepcopy(old)
+  runtime_params={'DatabaseHost','DatabaseSecretArn','PrivateSubnetIds','SecurityGroupIds','CognitoIssuer','CognitoClientId'}
+  for key in runtime_params:candidate['Parameters'][key]=desired['Parameters'][key]
   for key in ADDITIONS|{'TesoreriaRole','TesoreriaFunction'}:candidate['Resources'][key]=desired['Resources'][key]
   before=routes();receipt_routes={key for key in before if '/finance/receipts' in key};assert len(receipt_routes) in (0,2)
   params={x['ParameterKey']:x['ParameterValue'] for x in parent['Parameters']};bucket=params['ArtifactBucket'];assert all(store.get_public_access_block(Bucket=bucket)['PublicAccessBlockConfiguration'].values())
   digest=hashlib.sha256(a.artifact.read_bytes()).hexdigest();artifact_key=f'mastererp/dev/administration/treasury/{a.source_commit}/{digest}.zip';store.upload_file(str(a.artifact),bucket,artifact_key)
   body=json.dumps(candidate,sort_keys=True,separators=(',',':')).encode();template_key='mastererp/dev/finance/templates/'+hashlib.sha256(body).hexdigest()+'.json';store.put_object(Bucket=bucket,Key=template_key,Body=body,ContentType='application/json',ServerSideEncryption='AES256')
   changes={'TesoreriaArtifactKey':artifact_key,'AdministrationTemplateUrl':f'https://{bucket}.s3.us-west-1.amazonaws.com/{template_key}'}
-  response=cf.create_change_set(StackName=PARENT,ChangeSetName='treasury-review-'+str(int(time.time())),ChangeSetType='UPDATE',UsePreviousTemplate=True,IncludeNestedStacks=True,Capabilities=['CAPABILITY_IAM','CAPABILITY_AUTO_EXPAND'],Parameters=[{'ParameterKey':k,**({'ParameterValue':changes[k]} if k in changes else {'UsePreviousValue':True})} for k in params])
+  parent_template=cf.get_template(StackName=PARENT,TemplateStage='Original')['TemplateBody'];parent_template=json.loads(parent_template) if isinstance(parent_template,str) else parent_template
+  mapping=parent_template['Resources']['Administration']['Properties']['Parameters'];aliases={'DatabaseHost':'PartyDatabaseHost','DatabaseSecretArn':'PartyDatabaseSecretArn','PrivateSubnetIds':'PartySubnetIds','SecurityGroupIds':'PartySecurityGroupIds','CognitoIssuer':'PartyCognitoIssuer','CognitoClientId':'PartyClientId'}
+  for key,value in aliases.items():mapping[key]={'Fn::Join':[',',{'Ref':value}]} if key in ('PrivateSubnetIds','SecurityGroupIds') else {'Ref':value}
+  response=cf.create_change_set(StackName=PARENT,ChangeSetName='treasury-review-'+str(int(time.time())),ChangeSetType='UPDATE',TemplateBody=json.dumps(parent_template),IncludeNestedStacks=True,Capabilities=['CAPABILITY_IAM','CAPABILITY_AUTO_EXPAND'],Parameters=[{'ParameterKey':k,**({'ParameterValue':changes[k]} if k in changes else {'UsePreviousValue':True})} for k in params])
   cf.get_waiter('change_set_create_complete').wait(ChangeSetName=response['Id'],WaiterConfig={'Delay':5,'MaxAttempts':80})
   plan={'change_set':response['Id'],'source_commit':a.source_commit,'sha256':digest,'parent':resources(PARENT),'child':resources(CHILD),'routes':before};a.plan.parent.mkdir(parents=True,exist_ok=True);a.plan.write_text(json.dumps(plan,indent=2)+'\n')
  else:
