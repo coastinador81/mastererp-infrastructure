@@ -3,7 +3,14 @@
 Objetivo específico: Planificar recorridos operativos sin poseer repartidores.
 
 Responsabilidad: Rutas, dentro de Transporte.
-Estado: Lambda, rol, logs, integración y seis rutas JWT declarados; no desplegados.
+Estado: Lambda, rol, logs, integración, seis rutas operativas y dos rutas JWT
+del repartidor declarados; no desplegados.
+
+Las rutas nuevas son `GET /driver-route` y `POST
+/routes/{route_id}/driver-deliveries/{order_id}` bajo empresa. Ambas reutilizan
+la Lambda de Rutas y el mismo authorizer; no crean lógica ni infraestructura
+paralela. El Storefront agrega dos rutas JWT equivalentes bajo `/v1/storefront`;
+resuelven la empresa por el dominio activo y reutilizan la misma Lambda.
 
 
 ## Contrato y estado de esta capa
