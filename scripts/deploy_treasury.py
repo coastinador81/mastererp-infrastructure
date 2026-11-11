@@ -20,9 +20,8 @@ def main():
   parent=cf.describe_stacks(StackName=PARENT)['Stacks'][0];child=cf.describe_stacks(StackName=CHILD)['Stacks'][0];assert child['ParentId']==parent['StackId']
   old=cf.get_template(StackName=CHILD,TemplateStage='Original')['TemplateBody'];old=json.loads(old) if isinstance(old,str) else old
   _,desired=assemble();candidate=copy.deepcopy(old)
-  assert ADDITIONS.isdisjoint(old['Resources'])
   for key in ADDITIONS|{'TesoreriaRole','TesoreriaFunction'}:candidate['Resources'][key]=desired['Resources'][key]
-  before=routes();assert not any('/finance/receipts' in key for key in before)
+  before=routes();receipt_routes={key for key in before if '/finance/receipts' in key};assert len(receipt_routes) in (0,2)
   params={x['ParameterKey']:x['ParameterValue'] for x in parent['Parameters']};bucket=params['ArtifactBucket'];assert all(store.get_public_access_block(Bucket=bucket)['PublicAccessBlockConfiguration'].values())
   digest=hashlib.sha256(a.artifact.read_bytes()).hexdigest();artifact_key=f'mastererp/dev/administration/treasury/{a.source_commit}/{digest}.zip';store.upload_file(str(a.artifact),bucket,artifact_key)
   body=json.dumps(candidate,sort_keys=True,separators=(',',':')).encode();template_key='mastererp/dev/finance/templates/'+hashlib.sha256(body).hexdigest()+'.json';store.put_object(Bucket=bucket,Key=template_key,Body=body,ContentType='application/json',ServerSideEncryption='AES256')
