@@ -396,6 +396,27 @@
               "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
               "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
               "Compress": true
+            },
+            {
+              "PathPattern": "/v1/companies/*",
+              "TargetOriginId": "ExistingAdminApi",
+              "ViewerProtocolPolicy": "https-only",
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "PATCH",
+                "POST",
+                "DELETE"
+              ],
+              "CachedMethods": [
+                "GET",
+                "HEAD"
+              ],
+              "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+              "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+              "Compress": true
             }
           ],
           "CustomErrorResponses": [
