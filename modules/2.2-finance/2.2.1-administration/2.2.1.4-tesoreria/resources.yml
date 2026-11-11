@@ -20,7 +20,14 @@
     "ExistingAdminApiId": {
       "Type": "String",
       "Default": "qx8nmypdhi"
-    }
+    },
+    "AdminJwtAuthorizerId": {"Type": "String"},
+    "DatabaseHost": {"Type": "String"},
+    "DatabaseSecretArn": {"Type": "String"},
+    "PrivateSubnetIds": {"Type": "CommaDelimitedList"},
+    "SecurityGroupIds": {"Type": "CommaDelimitedList"},
+    "CognitoIssuer": {"Type": "String"},
+    "CognitoClientId": {"Type": "String"}
   },
   "Resources": {
     "TesoreriaLogs": {
@@ -85,7 +92,9 @@
                       "Arn"
                     ]
                   }
-                }
+                },
+                {"Effect":"Allow","Action":"secretsmanager:GetSecretValue","Resource":{"Ref":"DatabaseSecretArn"}},
+                {"Effect":"Allow","Action":["ec2:CreateNetworkInterface","ec2:DescribeNetworkInterfaces","ec2:DescribeSubnets","ec2:DeleteNetworkInterface","ec2:AssignPrivateIpAddresses","ec2:UnassignPrivateIpAddresses"],"Resource":"*"}
               ]
             }
           }
@@ -119,14 +128,14 @@
         "FunctionName": {
           "Fn::Sub": "mastererp-${Environment}-adm-tesoreria"
         },
-        "Description": "Prueba tecnica; capacidad de negocio no implementada",
+        "Description": "Finance payment review over controlled PostgreSQL functions",
         "Runtime": "python3.12",
         "Handler": "handler.lambda_handler",
         "Architectures": [
           "arm64"
         ],
         "MemorySize": 128,
-        "Timeout": 5,
+        "Timeout": 15,
         "Role": {
           "Fn::GetAtt": [
             "TesoreriaRole",
@@ -141,6 +150,8 @@
             "Ref": "TesoreriaArtifactKey"
           }
         },
+        "VpcConfig":{"SubnetIds":{"Ref":"PrivateSubnetIds"},"SecurityGroupIds":{"Ref":"SecurityGroupIds"}},
+        "Environment":{"Variables":{"DATABASE_HOST":{"Ref":"DatabaseHost"},"DATABASE_SECRET_ARN":{"Ref":"DatabaseSecretArn"},"COGNITO_ISSUER":{"Ref":"CognitoIssuer"},"COGNITO_APP_CLIENT_ID":{"Ref":"CognitoClientId"}}},
         "Tags": [
           {
             "Key": "Project",
@@ -202,6 +213,8 @@
         }
       }
     },
+    "PendingReceiptsRoute":{"Type":"AWS::ApiGatewayV2::Route","Properties":{"ApiId":{"Ref":"ExistingAdminApiId"},"RouteKey":"GET /v1/companies/{company_id}/finance/receipts/pending","AuthorizationType":"JWT","AuthorizerId":{"Ref":"AdminJwtAuthorizerId"},"Target":{"Fn::Join":["/",["integrations",{"Ref":"TesoreriaIntegrationRecovered"}]]}}},
+    "ReviewReceiptRoute":{"Type":"AWS::ApiGatewayV2::Route","Properties":{"ApiId":{"Ref":"ExistingAdminApiId"},"RouteKey":"POST /v1/companies/{company_id}/finance/receipts/{order_id}/review","AuthorizationType":"JWT","AuthorizerId":{"Ref":"AdminJwtAuthorizerId"},"Target":{"Fn::Join":["/",["integrations",{"Ref":"TesoreriaIntegrationRecovered"}]]}}},
     "TesoreriaApiPermission": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
@@ -214,7 +227,7 @@
           "Ref": "AWS::AccountId"
         },
         "SourceArn": {
-          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/GET/v1/administration/tesoreria/health"
+          "Fn::Sub": "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ExistingAdminApiId}/$default/*/v1/companies/*/finance/receipts*"
         }
       }
     }

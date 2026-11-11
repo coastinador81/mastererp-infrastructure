@@ -2,7 +2,7 @@
 
 Responsabilidad general: Organizar cobros, pagos y movimientos de fondos.
 
-Estado: pendiente de implementación.
+Estado: recursos candidatos para validación financiera de pagos; no desplegados por esta entrega.
 
 Propietario funcional: Finanzas → Administración; responsable nominal pendiente de asignación.
 Dependencias: contexto autorizado de tenant y contratos del padre; reglas y criterios de aceptación se definirán con el Product Owner al priorizar la tarea.

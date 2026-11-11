@@ -4,8 +4,8 @@ Objetivo específico: Gestionar pedidos y sus transiciones autorizadas.
 
 Responsabilidad: Pedidos, dentro de Ecommerce.
 Estado: candidato CloudFormation no desplegado. `resources.yml` declara Lambda
-privada, rol mínimo, secreto de credenciales de aplicación, logs y cuatro rutas
-JWT sobre el API Admin existente.
+privada, rol mínimo, secreto de credenciales de aplicación, logs y cinco rutas
+JWT sobre el API Admin existente, incluida la escritura de notas internas.
 
 
 ## Contrato y estado de esta capa
